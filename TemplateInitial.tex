@@ -53,7 +53,7 @@
 \newcommand{\action}[1]{\texttt{#1}\xspace}
 \newcommand{\codescript}[1]{{\scriptsize{\texttt{#1}}}\xspace}
 \newcommand{\code}[1]{{\color{blue}\small{\texttt{#1}}}}
-\newcommand{\fname}[1]{\small{\color{magenta}\texttt{#1}}}
+\newcommand{\fname}[1]{{\small{\color{magenta}\texttt{#1}}}}
 \newcommand{\node}{\textsf{NodeJs}}
 \newcommand{\qa}{\textsf{\textit{QActor}}}
 
@@ -84,7 +84,7 @@
 \newcommand{\ssecsname}{\subsectionsname}
 \newcommand{\onpagename}{on page}
 
-\newcommand{\xauthA}{NameA StudentA }
+\newcommand{\xauthA}{Filippo Frabetti}
 \newcommand{\xauthB}{NameB StudentB}
 \newcommand{\xauthC}{NameC StudentC}
 \newcommand{\xfaculty}{II Faculty of Engineering}
@@ -107,7 +107,7 @@
 \author{\xauthA }
 
 \institute{%
-  \xunibo\\\xaddrBO, \xcityBO\\\email{\{nameA.studentA }
+  \xunibo\\\xaddrBO, \xcityBO\\\email{filippo.frabetti@studio.unibo.it}
 }
 
 \maketitle
@@ -135,6 +135,14 @@ Software engineering, software development process, process representation, ....
 %===========================================================================
 \section{Requirements}
 \labelsec{Requirements}
+
+With reference to a \texttt{mbot} physical robot working in a virtual environment, build an application that sends the data sensed by the virtual and the real sonars to the radar. More specifically:
+\begin{itemize}
+\item[-]the data of the \emph{virtual sonar} \texttt{sonar1} must be displayed on the direction of angle=\fname{30};
+\item[-]the data of the \emph{virtual sonar} \texttt{sonar2} must be displayed on the direction of angle=\fname{120};
+\item[-]the data of the \emph{virtual sonar} on the virtual robot must be displayed on the direction of angle=\fname{90} at the fixed distance of \fname{40};
+\item[-]the data of the \emph{real sonar} on the physical robot must be displayed on the direction of angle=\fname{0};
+\end{itemize}
 %===========================================================================
 
 %===========================================================================

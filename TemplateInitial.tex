@@ -6,6 +6,43 @@
 \usepackage[T1]{fontenc}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{listings}
+
+\usepackage{xcolor}
+\definecolor{darkgreen}{HTML}{007700}
+
+\lstdefinestyle{style_qa}{
+basicstyle=\small\ttfamily, columns=fullflexible,
+keywordstyle=\color{violet}\bfseries, commentstyle=\color{darkgreen},
+language=C++, breaklines=true,	 % sets automatic line breaking
+captionpos=b,					 % sets the caption-position to bottom
+morekeywords={Plan,System,Event,Dispatch,Context,ip,host,port,-httpserver,QActor,context,
+normal,switchTo,transition,whenMsg,finally,repeatPlan,stopAfter,resumeLastPlan,
+onMsg,addRule,replyToCaller,onEvent,removeRule,javaRun,whenTime,sendto,emit,else,not,selfMsg},
+stringstyle=\color{blue},     	 % string literal style
+caption={\lstname},
+% title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
+numbers=left, numberstyle=\tiny,
+stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
+}
+
+\lstnewenvironment{codice_qa}[1][]
+{\lstset{style=style_qa, #1}}{}
+
+% \begin{lstlisting}
+% ...
+% \end{lstlisting}
+
+% \begin{codice_qa}[caption={Programma Blink, "Hello World!"}]
+% ...
+% \end{codice_qa}
+
+% \lstinputlisting[language=Python, firstline=37, lastline=45]{source_filename.py}
+% \lstinputlisting[style=style_qa]{code/robotClient.qa}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \usepackage{url}
 \usepackage{xspace}
 \usepackage{color}
@@ -85,8 +122,8 @@
 \newcommand{\onpagename}{on page}
 
 \newcommand{\xauthA}{Filippo Frabetti}
-\newcommand{\xauthB}{NameB StudentB}
-\newcommand{\xauthC}{NameC StudentC}
+\newcommand{\xauthB}{Nicola Semprini}
+\newcommand{\xauthC}{Paolo Magnani}
 \newcommand{\xfaculty}{II Faculty of Engineering}
 \newcommand{\xunibo}{Alma Mater Studiorum -- University of Bologna}
 \newcommand{\xaddrBO}{viale Risorgimento 2}
@@ -104,7 +141,7 @@
 
 \title{Software Engineering process template (initial) }
 
-\author{\xauthA }
+\author{\xauthA, \xauthB, \xauthC}
 
 \institute{%
   \xunibo\\\xaddrBO, \xcityBO\\\email{filippo.frabetti@studio.unibo.it}
@@ -131,6 +168,11 @@ Software engineering, software development process, process representation, ....
 \section{Introduction}
 \labelsec{intro}
 %===========================================================================
+
+%===========================================================================
+\section{Vision}
+\labelsec{vision}
+%=========================================================================== 
  
 %===========================================================================
 \section{Requirements}
@@ -143,25 +185,51 @@ Software engineering, software development process, process representation, ....
 %\item[-]the data of the \emph{virtual sonar} on the virtual robot must be displayed on the direction of angle=\fname{90} at the fixed distance of \fname{40};
 %\item[-]the data of the \emph{real sonar} on the physical robot must be displayed on the direction of angle=\fname{0};
 %\end{itemize}
+
+% 13 - A new problem
+\begin{enumerate}
+\item The physical robot must expose in a visible way a \code{Led} and:
+\begin{itemize}
+\item[-] the Led must be \code{on} when the robot is engaged by an user (human or machine);
+\item[-] the Led must be \code{off} when the robot is available for booking.
+\end{itemize}
+\item the robot system does not expose any public available usage interface;
+\item in order to use the robot, an user must first of all send 'to the system' a \code{booking request}. The system
+must return an answer including an \code{access token} if the robot is available. If the answer is negative, (robot
+already engaged) and the request includes a '\texttt{notify-me flag}', the system must notify the user when to robot
+becomes again available;
+\item the user that receives the \code{access token} must send within a given \code{acquisition-deadline} (e.g. \code{30 sec}) the request for a \emph{robot-driving command interface}, by appending to the request the \code{access token}. If the
+\emph{acquisition-deadline} expires, the robot returns in its 'available state';
+\item the user can use the \emph{robot-driving command interface} at most for a prefixed \code{usage-duration} time;
+\item the user can explicitly release the robot resource by sending a \code{booking release} message;
+\item if many users attempt to book the robot resource 'at the same time', the system could operate in two different
+ways:
+\begin{itemize}
+\item[(a)] by selecting the first \emph{emitted} request;
+\item[(b)] by selecting the first \emph{received} request
+\end{itemize}
+\end{enumerate}
 %===========================================================================
 
 %===========================================================================
 \section{Requirement analysis}
 \labelsec{ReqAnalysis}
 %===========================================================================
- 
+% \includegraphics[scale = 0.4]{img/req1.png}
+\lstinputlisting[style=style_qa]{robotClient.qa}
 
 %===========================================================================
 \section{Problem analysis}
 \labelsec{ProblemAnalysis}
 %===========================================================================
-
+% \includegraphics[scale = 0.4]{img/probA1.png}
+% \includegraphics[scale = 0.4]{img/probA2.png}
+\lstinputlisting[style=style_qa]{robotServer.qa}
 
 %===========================================================================
 \section{Project}
 \labelsec{Project}
 %===========================================================================
-
 
 %===========================================================================
 \section{Implementation}
@@ -197,7 +265,7 @@ Software engineering, software development process, process representation, ....
   \\
 \hline
    %\includegraphics[scale = 0.7]{img/foto_autore.jpg}
-   \includegraphics{img/foto_autore.jpg}
+   %\includegraphics{img/foto_autore.jpg}
   \\
 \hline
 \end{tabular}

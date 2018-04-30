@@ -1,0 +1,43 @@
+System ledMbotExecutor
+
+Event local_usercmd 	 : usercmd(CMD)  					//from web gui                
+Event bookingRequest     : request(AGENT,NOTIFYME)
+Dispatch bookingResponse : response(TOKEN)
+Dispatch notify 		 : notify()
+Dispatch cmdRequest 	 : cmdRequest(TOKEN)
+Event eventTokenCmd		 : eventTokenCmd(usercmd(CMD),TOKEN)
+
+Context ctxRobotClient    ip [ host="localhost"   port=8088 ] -httpserver 
+
+QActor robotclient context ctxRobotClient {   
+	
+	Plan init normal [  println("robotClient START")   ] 
+    switchTo waitForResponse
+		 
+ 	Plan waitForResponse[ ]
+ 	transition stopAfter 3600000   	//1h 
+		whenMsg bookingResponse   -> handleResponse,
+ 		whenMsg notify -> notified
+ 	finally repeatPlan
+ 	
+ 	Plan handleResponse resumeLastPlan [
+ 		onMsg bookingResponse : response(t(TKN)) -> {
+ 			addRule token(TKN) ;
+ 			replyToCaller -m cmdRequest : cmdRequest(TKN)
+ 		}
+ 	]
+ 	switchTo [ !? token(T) ] useCommandInterface
+	
+	Plan notified resumeLastPlan [ println("notify received") ]
+	
+	Plan useCommandInterface [
+		onEvent local_usercmd : usercmd(CMD) -> {
+			[ !? token(T) ] emit eventTokenCmd : eventTokenCmd(usercmd(CMD),T)
+		}
+	]
+	transition
+		whenTime 60000 -> timeExpired //usage-duration 1min	
+	
+	Plan timeExpired [ removeRule token(T) ]
+	switchTo waitForResponse
+}

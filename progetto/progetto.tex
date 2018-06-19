@@ -1,7 +1,8 @@
 \documentclass{../llncs}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% package sillabazione italiana e uso lettere accentate
-\usepackage[latin1]{inputenc}
+% \usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -137,8 +138,9 @@ stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
 %
 % Comments
 %
-\newcommand{\todo}[1]{\bf{TODO:}\emph{#1}}
-
+% What’s wrong with \bf, \it, etc.? --> https://texfaq.org/FAQ-2letterfontcmd
+% \newcommand{\todo}[1]{\bf{TODO:}\emph{#1}}
+\newcommand{\todo}[1]{\textbf{TODO:} \emph{#1}}
 
 \begin{document}
 
@@ -147,14 +149,22 @@ stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
 \author{\xauthA, \xauthB, \xauthC}
 
 \institute{%
-  \xunibo\\\xaddrBO, \xcityBO\\\email{filippo.frabetti@studio.unibo.it, nicola.semprini4@studio.unibo.it, paolo.magnani5@studio.unibo.it}
+  \xunibo\\\xaddrBO, \xcityBO\\
+  \email{filippo.frabetti@studio.unibo.it}\\
+  \email{nicola.semprini4@studio.unibo.it}\\
+  \email{paolo.magnani5@studio.unibo.it}
 }
 
 \maketitle
 
+% %%%%%%%%%%%%%%%%%%%%%%%% ABSTRACT + KEYWORDS - TODO... %%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
 \footnotesize
-TODO...
+
+This document is the explicit representation of the production process adopted.\\
+
+\todo{abstract and keywords}
+
 % (This part is optional)
 %%This a Latex template to be used for the explicit representation of the production process adopted in the Software Systems Engineering course. 
 % THIS DOCUMENT MUST FILL AT MOST TWO PAGES AND MUST BE PRINTED ON A SINGLE PAPER SHEET.
@@ -163,7 +173,8 @@ TODO...
   
 \keywords{
 % (This part is optional)
-Software engineering, software development process, process representation, .... }
+Software engineering, software development process, process representation, ...
+}
 \end{abstract}
 
 \sloppy
@@ -176,9 +187,9 @@ Software engineering, software development process, process representation, ....
 %===========================================================================
 \section{Vision}
 \labelsec{vision}
-%=========================================================================== 
 
 Scegliamo di procedere top-down, con zooming progressivo verso i dettagli.
+%=========================================================================== 
 
 %===========================================================================
 \section{Requirements}
@@ -239,7 +250,7 @@ balls, cats, etc. (\code{R-AvoidMobile}).
 
 Moreover, the robot must stop its activity when one of the following conditions apply:
 \begin{enumerate}
-\item \code{R-Stop}: an \code{authorized user} has sent a \action{STOP} command by using the \code{console}.
+\item \code{R-Stop}: an \code{authorized user} has sent a \texttt{STOP} command by using the \code{console}.
 \item \code{R-TempKo}: the value temperature of the city becomes higher than the prefixed value.
 \item \code{R-TimeKo}: the current clock time is beyond the given interval.
 \item \code{R-Obstacle}: the robot has found an obstacle that it is unable to avoid.
@@ -263,17 +274,50 @@ Moreover, the robot must stop its activity when one of the following conditions 
 %===========================================================================
 \section{Requirement analysis}
 \labelsec{ReqAnalysis}
+
+Dai requisiti si delineano 4 entità:
+\begin{itemize}
+\item il robot (\texttt{ddr})
+\item l'ambiente in cui si muove (fisico/virtuale), a sua volta costituito da:
+%	\begin{itemize}
+%	\item 2 sensori (\code{sonar1} e \code{sonar2})
+%	\item ostacoli fissi (pareti) e mobili
+%	\end{itemize}
+\item gli attuatori: il \texttt{led} per il robot reale e l'\texttt{Hue Lamp} per quello virtuale
+\item i sensori remoti: un indicatore di temperatura (\texttt{temperatureSensor}) e un orologio (\texttt{clock})
+\end{itemize}
+
+L'ambiente è a sua volta costituito da:
+\begin{itemize}[label={--}]
+\item 2 sensori (\code{sonar1} e \code{sonar2})
+\item ostacoli fissi (pareti) e mobili
+\end{itemize}
+
+L'architettura del sistema può essere descritta in maniera informale dalla \xf{informalRA}.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.4]{img/informalReqAnalysis.png}
+\caption{Architettura informale}\labelfig{informalRA}
+\end{figure}
+
+\subsection{Actuators}
+Il \texttt{led}, essendo un'entità passiva senza un proprio flusso di controllo, è possibile modellarlo come un oggetto {\java} che implementi la seguente interfaccia:\\
+
+\includegraphics[scale=0.4]{img/iled.png}\\
+
+L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un componente software per interagire con essa...\\
+
+\todo{spiegare come è possibile interagire con l'hue lamp}\\
+
+Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp}. Per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.
 %===========================================================================
-% \includegraphics[scale = 0.4]{img/req1.png}
+
 % \lstinputlisting[style=style_qa]{robotClient.qa}
 
 %===========================================================================
 \section{Problem analysis}
 \labelsec{ProblemAnalysis}
 %===========================================================================
-% \includegraphics[scale = 0.4]{img/probA1.png}
-% \includegraphics[scale = 0.4]{img/probA2.png}
-% \lstinputlisting[style=style_qa]{robotServer.qa}
 
 %===========================================================================
 \section{Project}

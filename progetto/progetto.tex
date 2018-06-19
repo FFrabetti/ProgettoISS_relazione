@@ -6,6 +6,9 @@
 \usepackage[T1]{fontenc}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% per gli elenchi
+\usepackage{enumitem}
+
 % https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{listings}
@@ -139,26 +142,27 @@ stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
 
 \begin{document}
 
-\title{Software Engineering process template (initial) }
+\title{Software Systems Engineering: Final task 2018}
 
 \author{\xauthA, \xauthB, \xauthC}
 
 \institute{%
-  \xunibo\\\xaddrBO, \xcityBO\\\email{filippo.frabetti@studio.unibo.it}
+  \xunibo\\\xaddrBO, \xcityBO\\\email{filippo.frabetti@studio.unibo.it, nicola.semprini4@studio.unibo.it, paolo.magnani5@studio.unibo.it}
 }
 
 \maketitle
 
 \begin{abstract}
 \footnotesize
-(This part is optional)
+TODO...
+% (This part is optional)
 %%This a Latex template to be used for the explicit representation of the production process adopted in the Software Systems Engineering course. 
-THIS DOCUMENT MUST FILL AT MOST TWO PAGES AND MUST BE PRINTED ON A SINGLE PAPER SHEET.
+% THIS DOCUMENT MUST FILL AT MOST TWO PAGES AND MUST BE PRINTED ON A SINGLE PAPER SHEET.
 
-The document can be compiled by using the \fname{kitISLatex.zip} given in \code{iss2018/it.unibo.issMaterial/issdocs/Lab}
+% The document can be compiled by using the \fname{kitISLatex.zip} given in \code{iss2018/it.unibo.issMaterial/issdocs/Lab}
   
 \keywords{
-(This part is optional)
+% (This part is optional)
 Software engineering, software development process, process representation, .... }
 \end{abstract}
 
@@ -173,7 +177,9 @@ Software engineering, software development process, process representation, ....
 \section{Vision}
 \labelsec{vision}
 %=========================================================================== 
- 
+
+Scegliamo di procedere top-down, con zooming progressivo verso i dettagli.
+
 %===========================================================================
 \section{Requirements}
 \labelsec{Requirements}
@@ -187,28 +193,71 @@ Software engineering, software development process, process representation, ....
 %\end{itemize}
 
 % 13 - A new problem
+%\begin{enumerate}
+%\item The physical robot must expose in a visible way a \code{Led} and:
+%\begin{itemize}
+%\item[-] the Led must be \code{on} when the robot is engaged by an user (human or machine);
+%\item[-] the Led must be \code{off} when the robot is available for booking.
+%\end{itemize}
+%\item the robot system does not expose any public available usage interface;
+%\item in order to use the robot, an user must first of all send 'to the system' a \code{booking request}. The system
+%must return an answer including an \code{access token} if the robot is available. If the answer is negative, (robot
+%already engaged) and the request includes a '\texttt{notify-me flag}', the system must notify the user when to robot
+%becomes again available;
+%\item the user that receives the \code{access token} must send within a given \code{acquisition-deadline} (e.g. \code{30 sec}) the request for a \emph{robot-driving command interface}, by appending to the request the \code{access token}. If the
+%\emph{acquisition-deadline} expires, the robot returns in its 'available state';
+%\item the user can use the \emph{robot-driving command interface} at most for a prefixed \code{usage-duration} time;
+%\item the user can explicitly release the robot resource by sending a \code{booking release} message;
+%\item if many users attempt to book the robot resource 'at the same time', the system could operate in two different
+%ways:
+%\begin{itemize}
+%\item[(a)] by selecting the first \emph{emitted} request;
+%\item[(b)] by selecting the first \emph{received} request
+%\end{itemize}
+%\end{enumerate}
+
+% FINAL TASK 2018
+In a home of a given city (e.g. Bologna), a \texttt{ddr} robot is used to clean the floor of a room (\code{R-FloorClean}).
+
+The floor in the room is a flat floor of solid material and is equipped with two \emph{sonars}, named \code{sonar1} and \code{sonar2} as shown in the picture (\code{sonar1} is that at the top). The initial position (\code{start-point}) of the robot is detected by \code{sonar1}, while the final position (\code{end-point}) is detected by \code{sonar2}.\\
+
+The robot works under the following conditions:
 \begin{enumerate}
-\item The physical robot must expose in a visible way a \code{Led} and:
-\begin{itemize}
-\item[-] the Led must be \code{on} when the robot is engaged by an user (human or machine);
-\item[-] the Led must be \code{off} when the robot is available for booking.
-\end{itemize}
-\item the robot system does not expose any public available usage interface;
-\item in order to use the robot, an user must first of all send 'to the system' a \code{booking request}. The system
-must return an answer including an \code{access token} if the robot is available. If the answer is negative, (robot
-already engaged) and the request includes a '\texttt{notify-me flag}', the system must notify the user when to robot
-becomes again available;
-\item the user that receives the \code{access token} must send within a given \code{acquisition-deadline} (e.g. \code{30 sec}) the request for a \emph{robot-driving command interface}, by appending to the request the \code{access token}. If the
-\emph{acquisition-deadline} expires, the robot returns in its 'available state';
-\item the user can use the \emph{robot-driving command interface} at most for a prefixed \code{usage-duration} time;
-\item the user can explicitly release the robot resource by sending a \code{booking release} message;
-\item if many users attempt to book the robot resource 'at the same time', the system could operate in two different
-ways:
-\begin{itemize}
-\item[(a)] by selecting the first \emph{emitted} request;
-\item[(b)] by selecting the first \emph{received} request
-\end{itemize}
+\item \code{R-Start}: an \code{authorized user} has sent a \texttt{START} command by using a human \texttt{GUI} interface (\code{console}) running
+on a conventional PC or on a smart device (\texttt{Android}).
+\item \code{R-TempOk}: the value temperature of the city is not higher than a prefixed value (e.g. \texttt{25} degrees Celsius).
+\item \code{R-TimeOk}: the current clock time is within a given interval (e.g. between \texttt{7} a.m and \texttt{10} a.m )
 \end{enumerate}
+
+While the robot is working:
+\begin{itemize}[label={--}]
+\item it must blink a \texttt{Led} put on it, if the robot is a \fname{real} robot (\code{R-BlinkLed}).
+\item it must blink a \texttt{Led Hue Lamp} available in the house, if the robot is a \fname{virtual} robot (\code{R-BlinkHue}).
+\item it must avoid fixed obstacles (e.g. furniture) present in the room (\code{R-AvoidFix}) and/or mobile obstacles like
+balls, cats, etc. (\code{R-AvoidMobile}).
+\end{itemize}
+
+Moreover, the robot must stop its activity when one of the following conditions apply:
+\begin{enumerate}
+\item \code{R-Stop}: an \code{authorized user} has sent a \action{STOP} command by using the \code{console}.
+\item \code{R-TempKo}: the value temperature of the city becomes higher than the prefixed value.
+\item \code{R-TimeKo}: the current clock time is beyond the given interval.
+\item \code{R-Obstacle}: the robot has found an obstacle that it is unable to avoid.
+\item \code{R-End}: the robot has finished its work.
+\end{enumerate}
+
+%During its work, the robot can optionally:
+%\begin{itemize}[label={--}]
+%\item \code{R-Map}: build a map of the room floor with the position of the fixed obstacles. Once built, this map can be
+%used to define a plan for an (optimal) path form the \code{start-point} to the \code{end-point}.
+%\end{itemize}
+%
+%Other requirements:
+%\begin{enumerate}
+%\item The work can be done by a team composed of \code{NT} people, with \code{1<=NT<=4}.
+%\item If \code{NT>1}, the team must explicitly indicate the work done by each component.
+%\item If \code{NT==4}, the requirement \code{R-Map} is mandatory.
+%\end{enumerate}
 %===========================================================================
 
 %===========================================================================
@@ -216,7 +265,7 @@ ways:
 \labelsec{ReqAnalysis}
 %===========================================================================
 % \includegraphics[scale = 0.4]{img/req1.png}
-\lstinputlisting[style=style_qa]{robotClient.qa}
+% \lstinputlisting[style=style_qa]{robotClient.qa}
 
 %===========================================================================
 \section{Problem analysis}
@@ -224,7 +273,7 @@ ways:
 %===========================================================================
 % \includegraphics[scale = 0.4]{img/probA1.png}
 % \includegraphics[scale = 0.4]{img/probA2.png}
-\lstinputlisting[style=style_qa]{robotServer.qa}
+% \lstinputlisting[style=style_qa]{robotServer.qa}
 
 %===========================================================================
 \section{Project}
@@ -271,15 +320,3 @@ ways:
 \end{tabular}
  
 \end{document}
-
-
-
-
-
-
-
-
-
-
-
-

@@ -275,19 +275,21 @@ Moreover, the robot must stop its activity when one of the following conditions 
 \section{Requirement analysis}
 \labelsec{ReqAnalysis}
 
-Dai requisiti si delineano 4 entità:
+Dai requisiti si delineano 6 entità:
 \begin{itemize}
-\item il robot (\texttt{ddr})
-\item l'ambiente in cui si muove (fisico/virtuale), a sua volta costituito da:
+\item il robot, che può essere sia fisico sia virtuale (\texttt{RealDDR} e \texttt{VirtualDDR})
+\item l'ambiente in cui si muove (fisico/virtuale) %, a sua volta costituito da:
 %	\begin{itemize}
 %	\item 2 sensori (\code{sonar1} e \code{sonar2})
 %	\item ostacoli fissi (pareti) e mobili
 %	\end{itemize}
-\item gli attuatori: il \texttt{led} per il robot reale e l'\texttt{Hue Lamp} per quello virtuale
-\item i sensori remoti: un indicatore di temperatura (\texttt{temperatureSensor}) e un orologio (\texttt{clock})
+\item gli attuatori: il \texttt{Led} per il robot reale e l'\texttt{Hue Lamp} per quello virtuale
+\item i sensori remoti: un indicatore di temperatura (\texttt{TemperatureSensor}) e un orologio (\texttt{Clock})
+\item un utilizzatore umano (\texttt{HumanOperator})
+\item più un componente che andrà ad incapsulare l'\texttt{Application logic}
 \end{itemize}
 
-L'ambiente è a sua volta costituito da:
+L'ambiente è inoltre a sua volta costituito da:
 \begin{itemize}[label={--}]
 \item 2 sensori (\code{sonar1} e \code{sonar2})
 \item ostacoli fissi (pareti) e mobili
@@ -297,22 +299,36 @@ L'architettura del sistema può essere descritta in maniera informale dalla \xf{
 \begin{figure}[!htb]
 \centering
 \includegraphics[scale=0.4]{img/informalReqAnalysis.png}
-\caption{Architettura informale}\labelfig{informalRA}
+\caption{Architettura informale ottenuta dall'analisi dei requisiti}\labelfig{informalRA}
 \end{figure}
 
 \subsection{Actuators}
-Il \texttt{led}, essendo un'entità passiva senza un proprio flusso di controllo, è possibile modellarlo come un oggetto {\java} che implementi la seguente interfaccia:\\
+Il \texttt{Led}, essendo un'entità passiva senza un proprio flusso di controllo, è possibile modellarlo come un oggetto Java che implementi la seguente interfaccia:\\
 
 \includegraphics[scale=0.4]{img/iled.png}\\
 
-L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un componente software per interagire con essa...\\
-
-\todo{spiegare come è possibile interagire con l'hue lamp}\\
+L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un componente software per poter interagire con essa attraverso un'interfaccia \textit{RESTful} (HTTP).
 
 Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp}. Per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.
+
+\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/hueLampAgent.qa}
+
+Si noti come la scelta di utilizzare l'evento \texttt{blinkCmd} consente di poter "blinkare" più dispositivi non noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
+
+\subsection{Sensors}
+Poiché abbiamo a che fare con sensori remoti, ci viene naturale modellarli come attori che rendono disponibili delle informazioni come eventi espressi in un certo formato.
+
+Nello specifico, sono possibili due approcci: a polling, ovvero è chi necessita dell'informazione a farsi carico di fare richiesta periodicamente al sensore, oppure può essere il sensore stesso a pubblicare all'esterno le informazioni quando queste sono disponibili. Scegliamo di adottare questa seconda strategia, poiché meno costosa in termini di messaggi scambiati e poiché garantisce un minor accoppiamento tra le entità coinvolte.
+
+Anche in questo caso il sensore, non conoscendo i componenti interessati, emette semplicemente un evento che può essere percepito da chiunque sia in ascolto.
+
+\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/temperatureAgent.qa}
+
+Si riportano solo le variazioni essenziali per il \texttt{Clock}:
+
+\lstinputlisting[style=style_qa, firstline=13, lastline=20, firstnumber=13]{../it.unibo.finalTask2018/src/clockAgent.qa}
 %===========================================================================
 
-% \lstinputlisting[style=style_qa]{robotClient.qa}
 
 %===========================================================================
 \section{Problem analysis}

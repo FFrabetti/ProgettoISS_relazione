@@ -8,6 +8,11 @@
 *~
 *.gz
 
+.classpath
+.gradle
+.project
+
+prove/
 
 # https://github.com/github/gitignore/blob/master/Java.gitignore
 # Compiled class file

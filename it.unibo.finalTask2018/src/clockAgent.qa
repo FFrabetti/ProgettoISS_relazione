@@ -1,0 +1,32 @@
+System finalTask2018
+
+Event clock : clock(H,M)
+
+Context ctxClockAgent ip [ host="localhost" port=8884 ]
+
+QActor clockagent context ctxClockAgent {
+	Plan init normal [ 
+		println("clockAgent start")
+	]
+	switchTo checkTime
+	
+	Plan checkTime [
+		delay 5000; // for testing
+		// delay 60000;
+		println("clockAgent checking time");
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
+		[?? currentTime(H,M)] emit clock : clock(H,M)
+	]
+	finally repeatPlan
+}
+
+QActor testertime context ctxClockAgent {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenEvent clock -> printTime
+	
+	Plan printTime [
+		printCurrentEvent
+	]
+	switchTo init
+}

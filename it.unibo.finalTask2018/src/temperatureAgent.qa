@@ -1,0 +1,38 @@
+System finalTask2018
+
+Event temperature : temperature(T)
+
+Context ctxTemperatureAgent ip [ host="localhost" port=8886 ]
+
+QActor temperatureagent context ctxTemperatureAgent {
+	Plan init normal [ 
+		println("temperatureAgent start")
+	]
+	switchTo checkTemperature 
+	
+	Plan checkTemperature [
+		delay 5000;
+		println("temperatureAgent checking temperature");
+		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
+		[?? currentTemp(T)] emit temperature : temperature(T)
+	]
+	finally repeatPlan
+}
+
+QActor testertemp context ctxTemperatureAgent {
+	Plan init normal [ 
+		println("testerTemp start")
+	]
+	switchTo waitForEvents 
+	
+	Plan waitForEvents [
+		println("testerTemp waiting for events")
+	]
+	transition stopAfter 3600000
+		whenEvent temperature -> printTemperature
+	
+	Plan printTemperature [
+		printCurrentEvent
+	]
+	switchTo waitForEvents
+}

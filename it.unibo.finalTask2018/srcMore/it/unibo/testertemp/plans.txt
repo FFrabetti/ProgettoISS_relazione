@@ -1,0 +1,3 @@
+plan(1,init, sentence(true,move(print("testerTemp start")),'','' ))
+plan(1,waitForEvents, sentence(true,move(print("testerTemp waiting for events")),'','' ))
+plan(1,printTemperature, sentence(true,printCurrentEvent(false),'','' ))

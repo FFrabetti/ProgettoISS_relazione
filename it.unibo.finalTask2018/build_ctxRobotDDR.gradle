@@ -1,11 +1,11 @@
 /*
 ================================================================================
-build_ctxHueLampAgent.gradle
+build_ctxRobotDDR.gradle
 GENERATED ONLY ONCE
 USAGE:	 
-	gradle -b build_ctxHueLampAgent.gradle eclipse		//to set the dependency on the library
-	gradle -b build_ctxHueLampAgent.gradle build
-	gradle -b build_ctxHueLampAgent.gradle cleanDistDir	//to clean the src directory
+	gradle -b build_ctxRobotDDR.gradle eclipse		//to set the dependency on the library
+	gradle -b build_ctxRobotDDR.gradle build
+	gradle -b build_ctxRobotDDR.gradle cleanDistDir	//to clean the src directory
 ================================================================================
 */
 apply plugin: 'java'
@@ -21,7 +21,7 @@ PROPERTIES
 version = "1.0"
 sourceCompatibility = "1.8"
 ext{
-	mainClassName = "it.unibo.ctxHueLampAgent.MainCtxHueLampAgent"
+	mainClassName = "it.unibo.ctxRobotDDR.MainCtxRobotDDR"
 }
 /*
 --------------------------------------------------------------
@@ -61,12 +61,12 @@ BASIC SUPPORT (test, akka)
 /*
 UNIBO SUPPORTS
 */		
-	  compile fileTree(dir: 'C:/iss/iss2018Lab/it.unibo.libs2018/libs/unibo', include: 'uniboInterfaces.jar')
-	  compile fileTree(dir: 'C:/iss/iss2018Lab/it.unibo.libs2018/libs/unibo', include: 'unibonoawtsupports.jar')
-	  compile fileTree(dir: 'C:/iss/iss2018Lab/it.unibo.libs2018/libs/unibo', include: 'uniboEnvBaseAwt.jar')
-	  compile fileTree(dir: 'C:/iss/iss2018Lab/it.unibo.libs2018/libs/unibo', include: '2p301.jar')
-	  compile fileTree(dir: 'C:/iss/iss2018Lab/it.unibo.libs2018/libs/unibo', include: 'qa18Akka.jar')
-	  compile fileTree(dir: 'C:/iss/iss2018Lab/it.unibo.libs2018/libs/http',  include: 'nanoHTTPD.jar')
+	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'uniboInterfaces.jar')
+	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'unibonoawtsupports.jar')
+	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'uniboEnvBaseAwt.jar')
+	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: '2p301.jar')
+	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'qa18Akka.jar')
+	  compile fileTree(dir: '../it.unibo.iss.libs/libs/http',  include: 'nanoHTTPD.jar')
 /*
 JSON
 */
@@ -83,8 +83,8 @@ MQTT
 /*
 TO BE ADDED by the application designer: BLUETOOTH
 */
-	  //compile fileTree(dir: '../it.unibo.libs2018/libs/bth', include: 'bluecove-2.1.1-SNAPSHOT.jar')
-	  //compile fileTree(dir: '../it.unibo.libs2018/libs/bth', include: 'bluecove-gpl-2.1.1-SNAPSHOT.jar')
+	  //compile fileTree(dir: '../it.unibo.iss.libs/libs/bth', include: 'bluecove-2.1.1-SNAPSHOT.jar')
+	  //compile fileTree(dir: '../it.unibo.iss.libs/libs/bth', include: 'bluecove-gpl-2.1.1-SNAPSHOT.jar')
 
 /*
 TO BE ADDED by the application designer: Raspberry GPIO support
@@ -94,9 +94,9 @@ TO BE ADDED by the application designer: Raspberry GPIO support
 /*
 TO BE ADDED by the application designer for ButtonLed  
 */	
-//compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'blsHL.jar')
-//compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'blsGUI.jar')
-//compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'blsRasp.jar')
+//compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'blsHL.jar')
+//compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'blsGUI.jar')
+//compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'blsRasp.jar')
 
 /*
 TO BE ADDED by the application designer for: RXJAVA

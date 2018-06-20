@@ -1,0 +1,52 @@
+System finalTask2018            
+
+Dispatch moveRobot : usercmd( CMD )
+  
+Context ctxRobotDDR ip [ host="localhost" port=8882 ] 	 
+
+QActor robotddr context ctxRobotDDR {   
+	Plan init normal [       
+	    println("robotDDR start")    
+  	] 
+    switchTo waitForCmd        
+		
+   	Plan waitForCmd[ 
+   		println("robotDDR waiting for commands")
+   	]  
+  	transition stopAfter 3600000 
+ 		whenMsg moveRobot -> execMove 
+   	finally repeatPlan    
+	   
+  	Plan execMove resumeLastPlan[     
+     	onMsg moveRobot : usercmd( robotgui(h(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();  
+  		onMsg moveRobot : usercmd( robotgui(w(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();    
+    	onMsg moveRobot : usercmd( robotgui(s(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward(); 
+  		onMsg moveRobot : usercmd( robotgui(a(X)) ) -> {
+  			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
+			delay 680; // TODO: use some configuration parameter
+ 			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()				
+  		};    
+   		onMsg moveRobot : usercmd( robotgui(d(X)) ) -> {
+			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight();
+			delay 680; // TODO: use some configuration parameter
+	 		javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()   			
+   		} 
+   		// TOTHINK: comando robtClean() ?
+   	]           
+}
+
+QActor testerrobot context ctxRobotDDR {
+	Plan init normal [
+		println("testerRobot start");
+		delay 2000;
+		forward robotddr -m moveRobot : usercmd( robotgui(h(X)) );
+		delay 2000;
+		forward robotddr -m moveRobot : usercmd( robotgui(w(X)) );
+		delay 2000;
+		forward robotddr -m moveRobot : usercmd( robotgui(s(X)) );
+		delay 2000;
+		forward robotddr -m moveRobot : usercmd( robotgui(a(X)) );
+		delay 2000;
+		forward robotddr -m moveRobot : usercmd( robotgui(d(X)) )
+	]
+}

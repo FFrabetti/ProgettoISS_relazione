@@ -1,0 +1,7 @@
+plan(1,init, sentence(true,move(print("testerenv start")),'','' ))
+plan(2,init, sentence(true,delay( 200) ,'','' ))
+plan(3,init, sentence(true,raise( sonarSensor , sonar( sonar1,10) )'),'','' ))
+plan(4,init, sentence(true,delay( 200) ,'','' ))
+plan(5,init, sentence(true,raise( sonarSensor , sonar( sonar2,20) )'),'','' ))
+plan(6,init, sentence(true,delay( 200) ,'','' ))
+plan(7,init, sentence(true,raise( sonarSensor , sonar( frontSonar,5) )'),'','' ))

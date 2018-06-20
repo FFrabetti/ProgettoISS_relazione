@@ -1,1 +1,2 @@
 plan(1,printTime, sentence(true,printCurrentEvent(false),'','' ))
+plan(2,printTime, sentence(true,move(resumeplan),'','' ))

@@ -1,0 +1,38 @@
+System finalTask2018
+
+Dispatch cmd : cmd(X)
+
+Context ctxHumanOperator ip [host="localhost" port=8010] 
+//Context ctxApplLogic ip [host="localhost" port=8484] -standalone 
+
+QActor humanoperatorqa context ctxHumanOperator {
+	
+	Plan init normal [
+		println("humanoperatorqa start")
+	]
+	switchTo sendCmd
+	
+	Plan sendCmd [
+//		sendto applqa in ctxApplLogic -m cmd : cmd(1)
+		delay 400;
+		forward testapplqa -m cmd : cmd(1);
+		delay 400;
+		forward testapplqa -m cmd : cmd(2)
+	]
+}
+
+QActor testapplqa context ctxHumanOperator {
+	Plan init normal [
+		println("testapplqa start")
+	]
+	switchTo waitForCmd
+	
+	Plan waitForCmd [ ]
+	transition stopAfter 60000
+		whenMsg cmd -> msgReceived
+	finally repeatPlan
+		
+	Plan msgReceived resumeLastPlan [
+		onMsg cmd : cmd(X) -> println(ricevuto(X))
+	]	
+}

@@ -1,0 +1,5 @@
+plan(1,init, sentence(true,move(print("humanoperatorqa start")),'','' ))
+plan(1,sendCmd, sentence(true,delay( 400) ,'','' ))
+plan(2,sendCmd, sentence(true,forward(testapplqa, cmd,cmd( 1)),'','' ))
+plan(3,sendCmd, sentence(true,delay( 400) ,'','' ))
+plan(4,sendCmd, sentence(true,forward(testapplqa, cmd,cmd( 2)),'','' ))

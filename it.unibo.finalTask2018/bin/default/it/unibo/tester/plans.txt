@@ -1,7 +1,0 @@
-plan(1,init, sentence(true,move(print("tester start")),'','' ))
-plan(2,init, sentence(true,delay( 200) ,'','' ))
-plan(3,init, sentence(true,raise( blinkCmd , blinkCmd( on) )'),'','' ))
-plan(4,init, sentence(true,delay( 200) ,'','' ))
-plan(5,init, sentence(true,raise( blinkCmd , blinkCmd( off) )'),'','' ))
-plan(6,init, sentence(true,delay( 200) ,'','' ))
-plan(7,init, sentence(true,raise( blinkCmd , blinkCmd( on) )'),'','' ))

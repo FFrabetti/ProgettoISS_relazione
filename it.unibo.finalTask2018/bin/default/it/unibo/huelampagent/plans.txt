@@ -1,4 +1,0 @@
-plan(1,init, sentence(true,move(print("hueLampAgent start")),'','' ))
-plan(1,waitForEvents, sentence(true,move(print("hueLampAgent waiting for events")),'','' ))
-plan(1,commandLed, sentence(true,eventswitch(blinkCmd, »blinkCmd( on), not here StateMoveNormal ),'','' ))
-plan(2,commandLed, sentence(true,eventswitch(blinkCmd, »blinkCmd( off), not here StateMoveNormal ),'','' ))

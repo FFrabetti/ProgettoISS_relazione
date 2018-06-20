@@ -1,10 +1,10 @@
 System finalTask2018
 
-Event virtualRobot : virtualRobot(STATE)
+Event blinkCmd : blinkCmd(STATE)
 
-Context hueLampAgentCtx ip [ host="localhost" port=8888 ]
+Context ctxHueLampAgent ip [ host="localhost" port=8888 ]
 
-QActor huelampagent context hueLampAgentCtx {
+QActor huelampagent context ctxHueLampAgent {
 	Plan init normal [ 
 		println("hueLampAgent start")
 	]
@@ -14,11 +14,11 @@ QActor huelampagent context hueLampAgentCtx {
 		println("hueLampAgent waiting for events")
 	]
 	transition stopAfter 3600000
-		whenEvent virtualRobot -> commandLed
+		whenEvent blinkCmd -> commandLed
 	
 	Plan commandLed [
-		onEvent virtualRobot : virtualRobot( START ) -> javaRun it.unibo.finalTask2018.ledAdapter.blinking("start");
-		onEvent virtualRobot : virtualRobot ( STOP ) -> javaRun it.unibo.finalTask2018.ledAdapter.blinking("stop")
+		onEvent blinkCmd : blinkCmd( on ) -> javaRun it.unibo.finalTask2018.ledAdapter.blinking("on");
+		onEvent blinkCmd : blinkCmd ( off ) -> javaRun it.unibo.finalTask2018.ledAdapter.blinking("off")
 	]
 	switchTo waitForEvents
 }

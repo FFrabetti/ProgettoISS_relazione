@@ -1,0 +1,36 @@
+System finalTask2018
+
+Event blinkCmd : blinkCmd(STATE)
+
+Context ctxHueLampAgent ip [ host="localhost" port=8888 ]
+
+QActor huelampagent context ctxHueLampAgent {
+	Plan init normal [ 
+		println("hueLampAgent start")
+	]
+	switchTo waitForEvents 
+	
+	Plan waitForEvents [
+		println("hueLampAgent waiting for events")
+	]
+	transition stopAfter 3600000
+		whenEvent blinkCmd -> commandLed
+	
+	Plan commandLed [
+		onEvent blinkCmd : blinkCmd( on ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("on");
+		onEvent blinkCmd : blinkCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("off")
+	]
+	switchTo waitForEvents
+}
+
+QActor tester context ctxHueLampAgent {
+	Plan init normal[
+		println("tester start");
+		delay 200;
+		emit blinkCmd : blinkCmd(on);
+		delay 200;
+		emit blinkCmd : blinkCmd(off);
+		delay 200;
+		emit blinkCmd : blinkCmd(on)	
+	]	
+}

@@ -8,6 +8,8 @@
 *~
 *.gz
 
+*.gradle
+
 .classpath
 .gradle
 .project

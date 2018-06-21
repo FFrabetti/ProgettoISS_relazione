@@ -1,0 +1,92 @@
+System mvc  
+
+Event temperature : temperature( T )	
+Event clock : clock(H) 
+Event cmd : cmd (X)
+
+Event moveRobot : usercmd(C)
+
+Event changeModel : changeModelItem( TYPE, CATEG, NAME, VALUE )
+Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
+
+Event inputCtrlEvent  : inputEvent( CATEG, NAME, VALUE )	 
+Event outputCtrlEvent : outputEvent( DATA )	//DATA : integer
+
+pubSubServer "tcp://localhost:1883"  
+//pubSubServer "tcp://192.168.43.229:1883"  
+//pubSubServer  "tcp://m2m.eclipse.org:1883"  
+//pubSubServer  "tcp://test.mosquitto.org:1883"  
+
+Context mvcCtx ip [ host="localhost"  port=8019 ]   -httpserver 
+EventHandler evadapter for temperature,clock  { //maps a temperature, clock and ctrlEvent into a inputCtrlEvent
+emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature, t1, T );
+emit inputCtrlEvent fromContent clock( H ) to inputEvent( clock, c1, H );
+emit inputCtrlEvent fromContent cmd(X) to inputEvent(control , ctrl1, X)
+
+};
+/*
+ * CONTROL model-based
+ * works by reacting to inputCtrlEvent  emitted by a change of a sensor model
+ * performs ACTIONS that change the model of some sensor/actuator resource  
+ * and activates changedModelAction/3 that performs an action for the world
+ */
+QActor mvccontroller context mvcCtx  -pubsub{
+Rules{ //The model is in the theory resourceModel. 
+	   //Here we write the actions to be performs when the model changes.
+	   //The change of the temperature t1 could modify a Led
+	limitTemperatureValue( 25 ).
+	changedModelAction( temperature, t1, V  ):-
+			limitTemperatureValue( MAX ), 
+ 		    eval( ge, V , MAX ),   
+ 		    emitevent( ctrlEvent, ctrlEvent(control,ctrl1,h)).		      			
+ 	
+ 	changedModelAction(clock,c1,T):-
+ 			eval(lt,T,7),
+ 		    emitevent( ctrlEvent, ctrlEvent(control,ctrl1,h)).		      			
+ 	changedModelAction(clock,c1,T):-
+ 			eval(gt,T,10),
+ 		    emitevent( ctrlEvent, ctrlEvent(control,ctrl1,h)).		      			
+ 			
+ 	changedModelAction(control,ctrl1, C):-
+ 			 emitevent( ctrlEvent, ctrlEvent(control,ctrl1,C)).		      			
+ 			
+ 			
+ 	//The change of a Led model must activate an actuator (working as an event listener)
+ 	//changedModelAction( leds, led1, V  ):-
+ 	//		emitevent( ctrlEvent, ctrlEvent( leds, led1, V) ).
+ }
+	Plan init normal [         
+		demo consult("./resourceModel.pl");  //contains the models and related rules
+   		println( qacontrol(starts)  )   
+   	]
+   	switchTo waitForInputEvent      
+ 
+    Plan waitForInputEvent[  ]  
+    transition stopAfter 6000000 
+     	whenEvent inputCtrlEvent -> handleInputEvent
+    finally repeatPlan	
+       
+    Plan handleInputEvent resumeLastPlan [   
+//    	demo a;
+     	printCurrentEvent;  
+    	onEvent inputCtrlEvent : inputEvent( CATEG, NAME, VALUE ) ->  //change the model
+    		demo changeModelItem( CATEG, NAME, VALUE )
+    ]
+}
+
+QActor robotmock context mvcCtx -pubsub{
+	Plan init normal [         
+   		println("robot mock")
+   	]
+   	switchTo waitForCommand     
+  
+    Plan waitForCommand[  ]  
+    transition stopAfter 100000 
+     	whenEvent ctrlEvent -> handleCmd
+    finally repeatPlan	
+   	 
+	Plan handleCmd resumeLastPlan[
+//  		printCurrentEvent;
+		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : usercmd(C)
+	]
+}

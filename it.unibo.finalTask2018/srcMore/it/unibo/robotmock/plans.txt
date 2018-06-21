@@ -1,0 +1,3 @@
+plan(1,init, sentence(true,move(print("robot mock")),'','' ))
+plan(1,handleCmd, sentence(true,eventswitch(ctrlEvent, »ctrlEvent( control,ctrl1,C), raise( moveRobot , usercmd( C) )') ),'','' ))
+plan(2,handleCmd, sentence(true,move(resumeplan),'','' ))

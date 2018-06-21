@@ -24,13 +24,28 @@ language=C++, breaklines=true,	 % sets automatic line breaking
 captionpos=b,					 % sets the caption-position to bottom
 morekeywords={Plan,System,Event,Dispatch,Context,ip,host,port,-httpserver,QActor,context,
 normal,switchTo,transition,whenMsg,finally,repeatPlan,stopAfter,resumeLastPlan,
-onMsg,addRule,replyToCaller,onEvent,removeRule,javaRun,whenTime,sendto,emit,else,not,selfMsg},
+onMsg,addRule,replyToCaller,onEvent,removeRule,javaRun,whenTime,sendto,emit,else,not,
+selfMsg,forward,delay,whenEvent,printCurrentEvent},
 stringstyle=\color{blue},     	 % string literal style
 caption={\lstname},
 % title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
 numbers=left, numberstyle=\tiny,
 stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
 }
+
+
+\lstdefinestyle{style_java}{
+basicstyle=\small\ttfamily, columns=fullflexible,
+keywordstyle=\color{violet}\bfseries, commentstyle=\color{darkgreen},
+language=Java, breaklines=true,	 % sets automatic line breaking
+captionpos=b,					 % sets the caption-position to bottom
+stringstyle=\color{blue},     	 % string literal style
+caption={\lstname},
+% title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
+numbers=left, numberstyle=\tiny,
+stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
+}
+
 
 \lstnewenvironment{codice_qa}[1][]
 {\lstset{style=style_qa, #1}}{}
@@ -276,7 +291,7 @@ Moreover, the robot must stop its activity when one of the following conditions 
 \labelsec{ReqAnalysis}
 
 Dai requisiti si delineano 6 entità:
-\begin{itemize}
+\begin{enumerate}
 \item il robot, che può essere sia fisico sia virtuale (\texttt{RealDDR} e \texttt{VirtualDDR})
 \item l'ambiente in cui si muove (fisico/virtuale) %, a sua volta costituito da:
 %	\begin{itemize}
@@ -287,7 +302,7 @@ Dai requisiti si delineano 6 entità:
 \item i sensori remoti: un indicatore di temperatura (\texttt{TemperatureSensor}) e un orologio (\texttt{Clock})
 \item un utilizzatore umano (\texttt{HumanOperator})
 \item più un componente che andrà ad incapsulare l'\texttt{Application logic}
-\end{itemize}
+\end{enumerate}
 
 L'ambiente è inoltre costituito a sua volta da:
 \begin{itemize}[label={--}]
@@ -313,7 +328,7 @@ Possiamo quindi definire il modello di un attore in grado di interagire con l'\t
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/hueLampAgent.qa}
 
-Si noti come la scelta di utilizzare l'evento \texttt{blinkCmd} consente di far \textit{lampeggiare} più dispositivi non noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
+Si noti come la scelta di utilizzare l'evento \texttt{blinkCmd} consente di far \textit{lampeggiare} più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
 
 \subsection{Sensors}
 Poiché abbiamo a che fare con sensori remoti, ci viene naturale modellarli come attori che rendono disponibili delle informazioni espresse in un certo formato.
@@ -325,13 +340,45 @@ Nello specifico, sono possibili due approcci:
 \end{itemize}
 Scegliamo di adottare questa seconda strategia, poiché meno costosa in termini di dati scambiati e poiché garantisce un minor accoppiamento tra le entità coinvolte.
 
-Anche in questo caso il sensore, non conoscendo i componenti interessati, emette un evento che può essere percepito da chiunque sia in ascolto.
+Anche in questo caso il sensore, non conoscendo i componenti interessati, emette un evento che può essere percepito da chiunque sia in ascolto.\\
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/temperatureAgent.qa}
 
 Si riportano solo le variazioni essenziali per il \texttt{Clock}:
 
 \lstinputlisting[style=style_qa, firstline=13, lastline=20, firstnumber=13]{../it.unibo.finalTask2018/src/clockAgent.qa}
+
+\subsection{DDR}
+Ci viene fornito un modello del robot virtuale espresso nel linguaggio \qa: questi è in grado di ricevere messaggi \texttt{\textit{moveRobot : moveRobot( CMD )}} e di interpretarli come comandi di movimento (stop, forward, left, right, backward).
+
+Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato. L'implementazione delle varie mosse è delegata ad un'opportuna classe Java che può essere modificata senza alterare il modello del robot.\\
+
+\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/robotDDR.qa}
+
+\subsection{HumanOperator}
+Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. In realtà, per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità, che rappresenta la logica applicativa, così che non sia vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
+
+\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/humanOperator.qa}
+
+Per un primo testing, l'intermediario dei messaggi è un attore \texttt{testapplqa} che si trova nello stesso contesto dell'operator. In futuro, quest'ultimo dovrà conoscere il contesto dell'entità che rappresenta la logica applicativa, così da poterle inviare messaggi (vedi riga 6).
+
+\subsection{Environment}
+Nell'ambiente virtuale sono presenti i due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo, l'ambiente stesso può essere visto alla stregua di un ulteriore sensore che emette eventi \texttt{\textit{sonarSensor}}.\\
+
+\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/virtualEnvironment.qa}
+
+Da notare come l'emissione di tali eventi dipenda dalla specifica implementazione del \textit{virtual environment}:
+
+\lstinputlisting[style=style_java, firstline=7, lastline=17, firstnumber=7]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/adapter/envAdapter.java}
+
+\subsection{Application logic}
+La nostra applicazione, oltre ad incapsulare le politiche della logica applicativa, deve quindi mettere in collegamento i vari componenti così che questi possano interagire: sensori, attuatori, operatori, ambiente e robot. Si noti infatti come ogni componente è stato fino ad ora modellato come un micro-servizio indipendente.
+
+L'immagine della \xf{informalRA} può essere quindi formalmente definita dal seguente sistema \qa:\\
+
+\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
+
+Poiché abbiamo utilizzato un modello eseguibile, questo ci fornisce anche un primo prototipo funzionante della nostra applicazione.
 %===========================================================================
 
 

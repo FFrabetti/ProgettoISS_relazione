@@ -30,23 +30,22 @@ QActor robotddr context ctxRobotDDR {
 			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight();
 			delay 680; // TODO: use some configuration parameter
 	 		javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()   			
-   		} 
-   		// TOTHINK: comando robotClean() ?
-   	]           
+   		}
+   	]       
 }
 
 QActor testerrobot context ctxRobotDDR {
 	Plan init normal [
 		println("testerRobot start");
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot( robotgui(h(X)) );
+		forward robotddr -m moveRobot : moveRobot(robotgui(h(X)));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot( robotgui(w(X)) );
+		forward robotddr -m moveRobot : moveRobot(robotgui(w(X)));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot( robotgui(s(X)) );
+		forward robotddr -m moveRobot : moveRobot(robotgui(s(X)));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot( robotgui(a(X)) );
+		forward robotddr -m moveRobot : moveRobot(robotgui(a(X)));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot( robotgui(d(X)) )
+		forward robotddr -m moveRobot : moveRobot(robotgui(d(X)))
 	]
 }

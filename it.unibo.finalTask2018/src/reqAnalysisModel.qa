@@ -66,8 +66,7 @@ QActor robotddr1 context ctxReqAnalysis {
 			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight();
 			delay 680; // TODO: use some configuration parameter
 	 		javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()   			
-   		} 
-   		// TOTHINK: comando robotClean() ?
+   		}
    	]           
 }
 
@@ -91,14 +90,12 @@ QActor huelampagent1 context ctxReqAnalysis {
 }
 
 QActor humanoperatorqa1 context ctxReqAnalysis {
-	
 	Plan init normal [
 		println("humanoperatorqa start")
 	]
 	switchTo sendCmd
 	
 	Plan sendCmd [
-//		sendto applqa in ctxApplLogic -m cmd : cmd(1)
 		delay 400;
 		forward appl1 -m cmd : cmd(robotgui(w(X)));
 		delay 400;
@@ -107,7 +104,6 @@ QActor humanoperatorqa1 context ctxReqAnalysis {
 }
 
 QActor virtualenv1 context ctxReqAnalysis {
-
 	Plan init normal [
 		println("virtualEnv start");
 		javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment();
@@ -116,7 +112,6 @@ QActor virtualenv1 context ctxReqAnalysis {
 		emit sonarSensor: sonar(s1,10)
 	]
 	transition stopAfter 3600000
-	
 }
 
 QActor appl1 context ctxReqAnalysis {

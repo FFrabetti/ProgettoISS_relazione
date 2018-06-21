@@ -5,14 +5,12 @@ import it.unibo.qactors.akka.QActor;
 public class envAdapter {
 
 	public static void setUpEnvironment(QActor qa) {
-		// TODO Auto-generated method stub
-		System.out.println("TODO: setting up the virtual environment...");
+		System.out.println("setting up the environment...");
 		
+		// testing the emission of a sonarSensor event
 		try {
-			
-			Thread.sleep(2);
+			Thread.sleep(2000);
 			qa.emit("sonarSensor", "sonar(envAdapter, 8)");
-			
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

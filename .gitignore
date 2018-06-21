@@ -1,5 +1,4 @@
 *.log
-*.pdf
 *.blg
 *.bbl
 *.aux
@@ -8,11 +7,16 @@
 *~
 *.gz
 
+# no pdf "compilati" se ci sono già i sorgenti (.tex) 
+/progetto/*.pdf
+
 .classpath
 .gradle
 .project
 
+# cartella per le prove
 prove/
+
 
 # https://github.com/github/gitignore/blob/master/Java.gitignore
 # Compiled class file

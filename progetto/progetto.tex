@@ -33,7 +33,6 @@ numbers=left, numberstyle=\tiny,
 stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
 }
 
-
 \lstdefinestyle{style_java}{
 basicstyle=\small\ttfamily, columns=fullflexible,
 keywordstyle=\color{violet}\bfseries, commentstyle=\color{darkgreen},
@@ -71,6 +70,9 @@ stepnumber=1, numbersep=5pt, frame=shadowbox % , float=*
 
 \makeatother
 
+% https://en.wikibooks.org/wiki/LaTeX/Hyperlinks
+% LaTeXimpaziente: "Il pacchetto hyperref, che di regola va caricato per ultimo, crea i collegamenti ipertestualivall’interno del documento, rendendo cliccabili i riferimenti incrociati"
+\usepackage{hyperref}
 
 %%%%%%%
  \newif\ifpdf
@@ -322,13 +324,14 @@ Il \texttt{Led}, essendo un'entità passiva senza un proprio flusso di controllo
 
 \includegraphics[scale=0.4]{img/iled.png}
 
-L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un componente software per poter interagire con essa attraverso un'interfaccia \textit{RESTful} (HTTP).
+L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un componente software per poter interagire con essa attraverso un'interfaccia \textit{RESTful}
+\footnote{link doc page}.
 
 Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp}. Per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.\\
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/hueLampAgent.qa}
 
-Si noti come la scelta di utilizzare l'evento \texttt{blinkCmd} consente di far \textit{lampeggiare} più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
+Si noti come la scelta di utilizzare l'evento \codescript{blinkCmd} consente di far \textit{lampeggiare} più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
 
 \subsection{Sensors}
 Poiché abbiamo a che fare con sensori remoti, ci viene naturale modellarli come attori che rendono disponibili delle informazioni espresse in un certo formato.
@@ -349,7 +352,9 @@ Si riportano solo le variazioni essenziali per il \texttt{Clock}:
 \lstinputlisting[style=style_qa, firstline=13, lastline=20, firstnumber=13]{../it.unibo.finalTask2018/src/clockAgent.qa}
 
 \subsection{DDR}
-Ci viene fornito un modello del robot virtuale espresso nel linguaggio \qa: questi è in grado di ricevere messaggi \texttt{\textit{moveRobot : moveRobot( CMD )}} e di interpretarli come comandi di movimento (stop, forward, left, right, backward).
+Ci viene fornito un modello del robot virtuale espresso nel linguaggio \qa
+\footnote{percorso file}
+: questi è in grado di ricevere messaggi \codescript{moveRobot : moveRobot( CMD )} e di interpretarli come comandi di movimento (stop, forward, left, right, backward).
 
 Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato. L'implementazione delle varie mosse è delegata ad un'opportuna classe Java che può essere modificata senza alterare il modello del robot.\\
 
@@ -360,10 +365,10 @@ Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi pe
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/humanOperator.qa}
 
-Per un primo testing, l'intermediario dei messaggi è un attore \texttt{testapplqa} che si trova nello stesso contesto dell'operator. In futuro, quest'ultimo dovrà conoscere il contesto dell'entità che rappresenta la logica applicativa, così da poterle inviare messaggi (vedi riga 6).
+Per un primo testing, l'intermediario dei messaggi è un attore \codescript{testapplqa} che si trova nello stesso contesto dell'operator. In futuro, quest'ultimo dovrà conoscere il contesto dell'entità che rappresenta la logica applicativa, così da poterle inviare messaggi (vedi riga 6).
 
 \subsection{Environment}
-Nell'ambiente virtuale sono presenti i due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo, l'ambiente stesso può essere visto alla stregua di un ulteriore sensore che emette eventi \texttt{\textit{sonarSensor}}.\\
+Nell'ambiente virtuale sono presenti i due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo, l'ambiente stesso può essere visto alla stregua di un ulteriore sensore che emette eventi \codescript{sonarSensor}.\\
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/virtualEnvironment.qa}
 
@@ -372,11 +377,14 @@ Da notare come l'emissione di tali eventi dipenda dalla specifica implementazion
 \lstinputlisting[style=style_java, firstline=7, lastline=17, firstnumber=7]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/adapter/envAdapter.java}
 
 \subsection{Application logic}
-La nostra applicazione, oltre ad incapsulare le politiche della logica applicativa, deve quindi mettere in collegamento i vari componenti così che questi possano interagire: sensori, attuatori, operatori, ambiente e robot. Si noti infatti come ogni componente è stato fino ad ora modellato come un micro-servizio indipendente.
+La nostra applicazione, oltre ad incapsulare le politiche della logica applicativa, deve innanzitutto agire come \textit{"system integrator"}, mettendo in collegamento i vari componenti così che questi possano interagire.
+Si noti infatti come ogni componente è stato fino ad ora modellato come un micro-servizio indipendente.\\
 
-L'immagine della \xf{informalRA} può essere quindi formalmente definita dal seguente sistema \qa:\\
+L'immagine della \xf{informalRA} può essere quindi formalmente definita dal seguente sistema {\qa}:\\
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
+
+In questo caso sensori, attuatori, operatori, ambiente e robot sono stati tutti inseriti all'interno di un unico contesto per motivi di rapidità di modellazione e di \textit{integration testing}.
 
 Poiché abbiamo utilizzato un modello eseguibile, questo ci fornisce anche un primo prototipo funzionante della nostra applicazione.
 %===========================================================================

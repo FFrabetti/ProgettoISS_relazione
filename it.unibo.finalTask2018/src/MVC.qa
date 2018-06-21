@@ -4,7 +4,7 @@ Event temperature : temperature( T )
 Event clock : clock(H) 
 Event cmd : cmd (X)
 
-Event moveRobot : usercmd(C)
+Event moveRobot : moveRobot(C)
 
 Event changeModel : changeModelItem( TYPE, CATEG, NAME, VALUE )
 Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
@@ -20,7 +20,7 @@ pubSubServer "tcp://localhost:1883"
 Context mvcCtx ip [ host="localhost"  port=8019 ]   -httpserver 
 EventHandler evadapter for temperature,clock  { //maps a temperature, clock and ctrlEvent into a inputCtrlEvent
 emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature, t1, T );
-emit inputCtrlEvent fromContent clock( H ) to inputEvent( clock, c1, H );
+emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) );
 emit inputCtrlEvent fromContent cmd(X) to inputEvent(control , ctrl1, X)
 
 };
@@ -87,6 +87,6 @@ QActor robotmock context mvcCtx -pubsub{
    	 
 	Plan handleCmd resumeLastPlan[
 //  		printCurrentEvent;
-		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : usercmd(C)
+		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : moveRobot(C)
 	]
 }

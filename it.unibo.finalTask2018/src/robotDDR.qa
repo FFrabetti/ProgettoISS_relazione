@@ -1,6 +1,6 @@
 System finalTask2018            
 
-Dispatch moveRobot : usercmd( CMD )
+Dispatch moveRobot : moveRobot( CMD )
   
 Context ctxRobotDDR ip [ host="localhost" port=8882 ] 	 
 
@@ -18,20 +18,20 @@ QActor robotddr context ctxRobotDDR {
    	finally repeatPlan    
 	   
   	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : usercmd( robotgui(h(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();  
-  		onMsg moveRobot : usercmd( robotgui(w(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();    
-    	onMsg moveRobot : usercmd( robotgui(s(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward(); 
-  		onMsg moveRobot : usercmd( robotgui(a(X)) ) -> {
+     	onMsg moveRobot : moveRobot( robotgui(h(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();  
+  		onMsg moveRobot : moveRobot( robotgui(w(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();    
+    	onMsg moveRobot : moveRobot( robotgui(s(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward(); 
+  		onMsg moveRobot : moveRobot( robotgui(a(X)) ) -> {
   			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
 			delay 680; // TODO: use some configuration parameter
  			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()				
   		};    
-   		onMsg moveRobot : usercmd( robotgui(d(X)) ) -> {
+   		onMsg moveRobot : moveRobot( robotgui(d(X)) ) -> {
 			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight();
 			delay 680; // TODO: use some configuration parameter
 	 		javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()   			
    		} 
-   		// TOTHINK: comando robtClean() ?
+   		// TOTHINK: comando robotClean() ?
    	]           
 }
 
@@ -39,14 +39,14 @@ QActor testerrobot context ctxRobotDDR {
 	Plan init normal [
 		println("testerRobot start");
 		delay 2000;
-		forward robotddr -m moveRobot : usercmd( robotgui(h(X)) );
+		forward robotddr -m moveRobot : moveRobot( robotgui(h(X)) );
 		delay 2000;
-		forward robotddr -m moveRobot : usercmd( robotgui(w(X)) );
+		forward robotddr -m moveRobot : moveRobot( robotgui(w(X)) );
 		delay 2000;
-		forward robotddr -m moveRobot : usercmd( robotgui(s(X)) );
+		forward robotddr -m moveRobot : moveRobot( robotgui(s(X)) );
 		delay 2000;
-		forward robotddr -m moveRobot : usercmd( robotgui(a(X)) );
+		forward robotddr -m moveRobot : moveRobot( robotgui(a(X)) );
 		delay 2000;
-		forward robotddr -m moveRobot : usercmd( robotgui(d(X)) )
+		forward robotddr -m moveRobot : moveRobot( robotgui(d(X)) )
 	]
 }

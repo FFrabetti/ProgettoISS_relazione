@@ -27,9 +27,9 @@ protected IEventItem event;
 		if( newcontent != null ){ emit( "inputCtrlEvent", newcontent ); }
 		}
 		//RaiseOtherEvent
-		{String newcontent = "inputEvent(clock,c1,H)";
-		newcontent =  updateVars( Term.createTerm("clock(H)"), 
-			                Term.createTerm("clock(H)"), 
+		{String newcontent = "inputEvent(clock,c1,h(H,M))";
+		newcontent =  updateVars( Term.createTerm("clock(H,M)"), 
+			                Term.createTerm("clock(H,M)"), 
 			                Term.createTerm( event.getMsg() ), newcontent);
 		//println("newcontent="+newcontent);
 		if( newcontent != null ){ emit( "inputCtrlEvent", newcontent ); }

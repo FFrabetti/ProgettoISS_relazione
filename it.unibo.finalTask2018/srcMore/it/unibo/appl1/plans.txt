@@ -1,0 +1,7 @@
+plan(1,init, sentence(true,move(print("appl start")),'','' ))
+plan(1,testHue, sentence(true,raise( blinkCmd , blinkCmd( on) )'),'','' ))
+plan(2,testHue, sentence(true,delay( 1000) ,'','' ))
+plan(3,testHue, sentence(true,raise( blinkCmd , blinkCmd( off) )'),'','' ))
+plan(4,testHue, sentence(true,move(resumeplan),'','' ))
+plan(1,msgReceived, sentence(true,msgswitch(cmd, cmd( X) , forward(robotddr1, moveRobot,moveRobot( X))),'','' ))
+plan(2,msgReceived, sentence(true,move(resumeplan),'','' ))

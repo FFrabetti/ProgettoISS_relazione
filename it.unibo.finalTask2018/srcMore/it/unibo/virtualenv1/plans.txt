@@ -1,0 +1,4 @@
+plan(1,init, sentence(true,move(print("virtualEnv start")),'','' ))
+plan(2,init, sentence(true,not here StateMoveNormal,'','' ))
+plan(3,init, sentence(true,delay( 2000) ,'','' ))
+plan(4,init, sentence(true,raise( sonarSensor , sonar( s1,10) )'),'','' ))

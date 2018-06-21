@@ -1,0 +1,145 @@
+System finalTask2018
+
+Event clock : clock(H,M)
+Event temperature : temperature(T)
+Dispatch cmd : cmd(X)
+Event sonarSensor : sonar(NAME, DISTANCE)
+Dispatch moveRobot : moveRobot( CMD )
+Event blinkCmd : blinkCmd(STATE)
+
+Context ctxReqAnalysis ip [host="localhost" port=8888]
+
+QActor clockagent1 context ctxReqAnalysis {
+	Plan init normal [ 
+		println("clockAgent start")
+	]
+	switchTo checkTime
+	
+	Plan checkTime [
+		delay 5000; // for testing
+		// delay 60000;
+		println("clockAgent checking time");
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
+		[?? currentTime(H,M)] emit clock : clock(H,M)
+	]
+	finally repeatPlan
+}
+
+QActor temperatureagent1 context ctxReqAnalysis {
+	Plan init normal [ 
+		println("temperatureAgent start")
+	]
+	switchTo checkTemperature 
+	
+	Plan checkTemperature [
+		delay 5000;
+		println("temperatureAgent checking temperature");
+		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
+		[?? currentTemp(T)] emit temperature : temperature(T)
+	]
+	finally repeatPlan
+}
+
+QActor robotddr1 context ctxReqAnalysis {   
+	Plan init normal [       
+	    println("robotDDR start")    
+  	] 
+    switchTo waitForCmd        
+		
+   	Plan waitForCmd[ 
+   		println("robotDDR waiting for commands")
+   	]  
+  	transition stopAfter 3600000 
+ 		whenMsg moveRobot -> execMove 
+   	finally repeatPlan    
+	   
+  	Plan execMove resumeLastPlan[     
+     	onMsg moveRobot : moveRobot( robotgui(h(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();  
+  		onMsg moveRobot : moveRobot( robotgui(w(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();    
+    	onMsg moveRobot : moveRobot( robotgui(s(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward(); 
+  		onMsg moveRobot : moveRobot( robotgui(a(X)) ) -> {
+  			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
+			delay 680; // TODO: use some configuration parameter
+ 			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()				
+  		};    
+   		onMsg moveRobot : moveRobot( robotgui(d(X)) ) -> {
+			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight();
+			delay 680; // TODO: use some configuration parameter
+	 		javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()   			
+   		} 
+   		// TOTHINK: comando robotClean() ?
+   	]           
+}
+
+QActor huelampagent1 context ctxReqAnalysis {
+	Plan init normal [ 
+		println("hueLampAgent start")
+	]
+	switchTo waitForEvents 
+	
+	Plan waitForEvents [
+		println("hueLampAgent waiting for events")
+	]
+	transition stopAfter 3600000
+		whenEvent blinkCmd -> commandLed
+	
+	Plan commandLed [
+		onEvent blinkCmd : blinkCmd( on ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("on");
+		onEvent blinkCmd : blinkCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("off")
+	]
+	switchTo waitForEvents
+}
+
+QActor humanoperatorqa1 context ctxReqAnalysis {
+	
+	Plan init normal [
+		println("humanoperatorqa start")
+	]
+	switchTo sendCmd
+	
+	Plan sendCmd [
+//		sendto applqa in ctxApplLogic -m cmd : cmd(1)
+		delay 400;
+		forward appl1 -m cmd : cmd(robotgui(w(X)));
+		delay 400;
+		forward appl1 -m cmd : cmd(robotgui(d(X)))
+	]
+}
+
+QActor virtualenv1 context ctxReqAnalysis {
+
+	Plan init normal [
+		println("virtualEnv start");
+		javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment();
+		
+		delay 2000;
+		emit sonarSensor: sonar(s1,10)
+	]
+	transition stopAfter 3600000
+	
+}
+
+QActor appl1 context ctxReqAnalysis {
+	Plan init normal[
+		println("appl start")
+	]
+	switchTo waitForCmd
+	
+	Plan waitForCmd[]
+	transition stopAfter 60000
+		whenEvent clock : clock(h(H,M)) do printCurrentEvent,
+		whenEvent sonarSensor : sonar(N,D) do printCurrentEvent,
+		whenEvent temperature -> testHue,
+		whenMsg cmd -> msgReceived
+	finally repeatPlan
+	
+	Plan testHue resumeLastPlan [
+		emit blinkCmd : blinkCmd(on);
+		delay 1000;
+		emit blinkCmd : blinkCmd(off)
+	]
+	
+	Plan msgReceived resumeLastPlan[
+		onMsg cmd: cmd(X) -> forward robotddr1 -m moveRobot : moveRobot(X)
+	]
+}

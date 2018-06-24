@@ -24,8 +24,8 @@ changeModelItem( CATEG, NAME, VALUE ) :-
 eval( ge, X, X ) :- !. 
 eval( ge, X, V ) :- eval( gt, X , V ) .
 
-eval(lt,X,Y):- x<Y.
-eval(gt,X,Y):- X>Y.
+eval(le,X,X) :- !.
+eval(le,X,V) :- eval( lt, X , V).
  
 emitevent( EVID, EVCONTENT ) :- 
 	actorobj( Actor ), 

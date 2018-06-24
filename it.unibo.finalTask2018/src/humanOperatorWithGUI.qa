@@ -1,0 +1,35 @@
+System finalTask2018
+
+Dispatch cmd : cmd(X)
+Event usercmd : usercmd(X)
+
+Context ctxHumanOperatorWithGui ip [host="localhost" port=8020] -httpserver
+//Context ctxApplLogic ip [host="localhost" port=8484] -standalone 
+
+QActor humanoperatorwithgui context ctxHumanOperatorWithGui {
+	
+	Plan init normal [
+		println("humanoperator with GUI start")
+	]
+	switchTo waitForUserCmd
+	
+	Plan waitForUserCmd [		
+	]
+	transition stopAfter 3600000
+	whenEvent usercmd -> sendCmd
+	finally repeatPlan
+
+	Plan sendCmd resumeLastPlan [
+		onEvent usercmd : usercmd( robotgui(w(X)) ) -> forward applqa -m cmd : cmd(moveForward);    
+    	onEvent usercmd : usercmd( robotgui(s(X)) ) -> forward applqa -m cmd : cmd(moveBackward);  
+  		onEvent usercmd : usercmd( robotgui(a(X)) ) -> forward applqa -m cmd : cmd(turnLeft);   
+   		onEvent usercmd : usercmd( robotgui(d(X)) ) -> forward applqa -m cmd : cmd(turnRight);   
+   		onEvent usercmd : usercmd( robotgui(h(X)) ) -> forward applqa -m cmd : cmd(moveStop)
+	]
+}
+ 
+QActor applqa context ctxHumanOperatorWithGui {
+	Plan init normal [
+		println("applqa start")
+	]
+}

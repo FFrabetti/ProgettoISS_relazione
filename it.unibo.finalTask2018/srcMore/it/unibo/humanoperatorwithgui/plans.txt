@@ -1,0 +1,7 @@
+plan(1,init, sentence(true,move(print("humanoperator with GUI start")),'','' ))
+plan(1,sendCmd, sentence(true,eventswitch(usercmd, »usercmd( robotgui( w( X))), forward(applqa, cmd,cmd( moveForward)) ),'','' ))
+plan(2,sendCmd, sentence(true,eventswitch(usercmd, »usercmd( robotgui( s( X))), forward(applqa, cmd,cmd( moveBackward)) ),'','' ))
+plan(3,sendCmd, sentence(true,eventswitch(usercmd, »usercmd( robotgui( a( X))), forward(applqa, cmd,cmd( turnLeft)) ),'','' ))
+plan(4,sendCmd, sentence(true,eventswitch(usercmd, »usercmd( robotgui( d( X))), forward(applqa, cmd,cmd( turnRight)) ),'','' ))
+plan(5,sendCmd, sentence(true,eventswitch(usercmd, »usercmd( robotgui( h( X))), forward(applqa, cmd,cmd( moveStop)) ),'','' ))
+plan(6,sendCmd, sentence(true,move(resumeplan),'','' ))

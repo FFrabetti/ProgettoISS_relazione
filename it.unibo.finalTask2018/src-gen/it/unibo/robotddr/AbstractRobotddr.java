@@ -110,7 +110,7 @@ public abstract class AbstractRobotddr extends QActor {
 	    	String myselfName = "execMove";  
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(h(X)))");
+	    	curT = Term.createTerm("moveRobot(moveStop)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
@@ -120,7 +120,7 @@ public abstract class AbstractRobotddr extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(w(X)))");
+	    	curT = Term.createTerm("moveRobot(moveForward)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
@@ -130,7 +130,7 @@ public abstract class AbstractRobotddr extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(s(X)))");
+	    	curT = Term.createTerm("moveRobot(moveBackward)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
@@ -140,7 +140,7 @@ public abstract class AbstractRobotddr extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(a(X)))");
+	    	curT = Term.createTerm("moveRobot(turnLeft)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
@@ -156,7 +156,7 @@ public abstract class AbstractRobotddr extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(d(X)))");
+	    	curT = Term.createTerm("moveRobot(turnRight)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 

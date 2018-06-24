@@ -18,15 +18,15 @@ QActor robotddr context ctxRobotDDR {
    	finally repeatPlan    
 	   
   	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( robotgui(h(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();  
-  		onMsg moveRobot : moveRobot( robotgui(w(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();    
-    	onMsg moveRobot : moveRobot( robotgui(s(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward(); 
-  		onMsg moveRobot : moveRobot( robotgui(a(X)) ) -> {
+     	onMsg moveRobot : moveRobot( moveStop ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();  
+  		onMsg moveRobot : moveRobot( moveForward ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();    
+    	onMsg moveRobot : moveRobot( moveBackward ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward(); 
+  		onMsg moveRobot : moveRobot( turnLeft ) -> {
   			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
 			delay 680; // TODO: use some configuration parameter
  			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()				
   		};    
-   		onMsg moveRobot : moveRobot( robotgui(d(X)) ) -> {
+   		onMsg moveRobot : moveRobot( turnRight ) -> {
 			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight();
 			delay 680; // TODO: use some configuration parameter
 	 		javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()   			
@@ -38,14 +38,14 @@ QActor testerrobot context ctxRobotDDR {
 	Plan init normal [
 		println("testerRobot start");
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(robotgui(h(X)));
+		forward robotddr -m moveRobot : moveRobot(moveStop);
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(robotgui(w(X)));
+		forward robotddr -m moveRobot : moveRobot(moveForward);
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(robotgui(s(X)));
+		forward robotddr -m moveRobot : moveRobot(moveBackward);
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(robotgui(a(X)));
+		forward robotddr -m moveRobot : moveRobot(turnLeft);
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(robotgui(d(X)))
+		forward robotddr -m moveRobot : moveRobot(turnRight)
 	]
 }

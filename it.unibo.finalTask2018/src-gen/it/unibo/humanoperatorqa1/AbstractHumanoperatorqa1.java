@@ -93,13 +93,13 @@ public abstract class AbstractHumanoperatorqa1 extends QActor {
 	    	aar = delayReactive(400,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "sendCmd";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(robotgui(w(X)))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(w(X))", guardVars ).toString();
 	    	sendMsg("cmd","appl1", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(400,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "sendCmd";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(robotgui(d(X)))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(X))", guardVars ).toString();
 	    	sendMsg("cmd","appl1", QActorContext.dispatch, temporaryStr ); 
 	    	repeatPlanNoTransition(pr,myselfName,"humanoperatorqa1_"+myselfName,false,false);
 	    }catch(Exception e_sendCmd){  

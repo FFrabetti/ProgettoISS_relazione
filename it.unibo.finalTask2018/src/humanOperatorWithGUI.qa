@@ -4,7 +4,7 @@ Dispatch cmd : cmd(X)
 Event usercmd : usercmd(X)
 
 Context ctxHumanOperatorWithGui ip [host="localhost" port=8020] -httpserver
-//Context ctxApplLogic ip [host="localhost" port=8484] -standalone 
+Context ctxMVC ip [host="localhost" port=8019] -standalone 
 
 QActor humanoperatorwithgui context ctxHumanOperatorWithGui {
 	
@@ -13,29 +13,32 @@ QActor humanoperatorwithgui context ctxHumanOperatorWithGui {
 	]
 	switchTo waitForUserCmd
 	
-	Plan waitForUserCmd [		
-	]
+	Plan waitForUserCmd [ ]
 	transition stopAfter 3600000
-	whenEvent usercmd -> sendCmd
+		whenEvent usercmd -> sendCmd
 	finally repeatPlan
 
 	Plan sendCmd resumeLastPlan [
-		onEvent usercmd : usercmd( robotgui(w(X)) ) -> forward applqa -m cmd : cmd(w(X));    
-    	onEvent usercmd : usercmd( robotgui(s(X)) ) -> forward applqa -m cmd : cmd(s(X));  
-  		onEvent usercmd : usercmd( robotgui(a(X)) ) -> forward applqa -m cmd : cmd(a(X));   
-   		onEvent usercmd : usercmd( robotgui(d(X)) ) -> forward applqa -m cmd : cmd(d(X));   
-   		onEvent usercmd : usercmd( robotgui(h(X)) ) -> forward applqa -m cmd : cmd(h(X))
+		onEvent usercmd : usercmd( robotgui(CMD) ) -> println(robotgui(CMD));
+		onEvent usercmd : usercmd( robotgui(CMD) ) -> sendto mvccontroller in ctxMVC -m cmd : cmd(CMD)
+//		sendto mvccontroller in ctxMVC -m cmd : cmd(a(1))
+
+//		onEvent usercmd : usercmd( robotgui(w(X)) ) -> sendto mvccontroller in ctxMVC -m cmd : cmd(w(X));    
+//    	onEvent usercmd : usercmd( robotgui(s(X)) ) -> sendto mvccontroller in ctxMVC -m cmd : cmd(s(X));  
+//  	onEvent usercmd : usercmd( robotgui(a(X)) ) -> sendto mvccontroller in ctxMVC -m cmd : cmd(a(X));   
+//   	onEvent usercmd : usercmd( robotgui(d(X)) ) -> sendto mvccontroller in ctxMVC -m cmd : cmd(d(X));   
+//   	onEvent usercmd : usercmd( robotgui(h(X)) ) -> sendto mvccontroller in ctxMVC -m cmd : cmd(h(X))
 	]
 }
  
-QActor applqa context ctxHumanOperatorWithGui {
-	Plan init normal [
-		println("applqa start")
-	]
-	transition stopAfter 10000 
-	whenMsg cmd -> handleMsg
-	
-	Plan handleMsg[
-		onMsg cmd : cmd(CMD) -> println(CMD)
-	]
-}
+//QActor applqa context ctxHumanOperatorWithGui {
+//	Plan init normal [
+//		println("applqa start")
+//	]
+//	transition stopAfter 10000 
+//	whenMsg cmd -> handleMsg
+//	
+//	Plan handleMsg[
+//		onMsg cmd : cmd(CMD) -> println(CMD)
+//	]
+//}

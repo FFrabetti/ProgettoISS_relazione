@@ -2,12 +2,12 @@
 /*
 This code is generated only ONCE
 */
-package it.unibo.applqa;
+package it.unibo.nodebroker;
 import it.unibo.is.interfaces.IOutputEnvView;
 import it.unibo.qactors.QActorContext;
 
-public class Applqa extends AbstractApplqa { 
-	public Applqa(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
+public class Nodebroker extends AbstractNodebroker { 
+	public Nodebroker(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
 		super(actorId, myCtx, outEnvView);
 	}
 /*

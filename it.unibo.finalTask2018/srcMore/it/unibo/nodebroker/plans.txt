@@ -1,0 +1,3 @@
+plan(1,handleMsg, sentence(true,msgswitch(ctrlMsg, ctrlMsg( C,N,V) , move(print(ctrlMsg( C,N,V)))),'','' ))
+plan(2,handleMsg, sentence(true,msgswitch(ctrlMsg, ctrlMsg( C,N,V) , forward(robotnode, moveRobot,moveRobot( V))),'','' ))
+plan(3,handleMsg, sentence(true,move(resumeplan),'','' ))

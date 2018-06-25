@@ -152,14 +152,36 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
 	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		//println("WARNING: variable substitution not yet fully implemented " ); 
-	    		{//actionseq
-	    		temporaryStr = "X";
-	    		println( temporaryStr );  
-	    		parg = "changeModelItem(robot,r1,X)";
-	    		//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
-	    		solveGoal( parg ); //sept2017
-	    		};//actionseq
+	    		String parg = "ricevuto(X)";
+	    		/* Print */
+	    		parg =  updateVars( Term.createTerm("cmd(X)"), 
+	    		                    Term.createTerm("cmd(X)"), 
+	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) println( parg );
+	    	}
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("cmd(X)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
+	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg="changeModelItem(robot,r1,X)";
+	    		/* PHead */
+	    		parg =  updateVars( Term.createTerm("cmd(X)"), 
+	    		                    Term.createTerm("cmd(X)"), 
+	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
+	    			if( parg != null ) {
+	    			    aar = QActorUtils.solveGoal(this,myCtx,pengine,parg,"",outEnvView,86400000);
+	    				//println(getName() + " plan " + curPlanInExec  +  " interrupted=" + aar.getInterrupted() + " action goon="+aar.getGoon());
+	    				if( aar.getInterrupted() ){
+	    					curPlanInExec   = "handleCmd";
+	    					if( aar.getTimeRemained() <= 0 ) addRule("tout(demo,"+getName()+")");
+	    					if( ! aar.getGoon() ) return ;
+	    				} 			
+	    				if( aar.getResult().equals("failure")){
+	    					if( ! aar.getGoon() ) return ;
+	    				}else if( ! aar.getGoon() ) return ;
+	    			}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"mvccontroller_"+myselfName,false,true);
 	    }catch(Exception e_handleCmd){  

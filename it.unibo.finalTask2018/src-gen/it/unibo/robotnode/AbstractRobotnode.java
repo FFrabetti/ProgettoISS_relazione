@@ -77,6 +77,7 @@ public abstract class AbstractRobotnode extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"robotnode start\"";
 	    	println( temporaryStr );  
+	    	it.unibo.finalTask2018.adapter.envNodeAdapter.setUpEnvironment( myself  );
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?robotConfig(A,P)" )) != null ){
 	    	it.unibo.finalTask2018.robotDDR.robotNode.init( myself ,guardVars.get("A"), guardVars.get("P")  );
 	    	}
@@ -113,6 +114,19 @@ public abstract class AbstractRobotnode extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("execMove",-1);
 	    	String myselfName = "execMove";  
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("moveRobot(CMD)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg = "moveRobot(CMD)";
+	    		/* Print */
+	    		parg =  updateVars( Term.createTerm("moveRobot(CMD)"), 
+	    		                    Term.createTerm("moveRobot(CMD)"), 
+	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) println( parg );
+	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(h(X))");

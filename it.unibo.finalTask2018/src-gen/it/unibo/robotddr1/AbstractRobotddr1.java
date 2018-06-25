@@ -77,6 +77,7 @@ public abstract class AbstractRobotddr1 extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"robotDDR start\"";
 	    	println( temporaryStr );  
+	    	it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment( myself  );
 	    	//switchTo waitForCmd
 	        switchToPlanAsNextState(pr, myselfName, "robotddr1_"+myselfName, 
 	              "waitForCmd",false, false, null); 
@@ -110,7 +111,7 @@ public abstract class AbstractRobotddr1 extends QActor {
 	    	String myselfName = "execMove";  
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(h(X)))");
+	    	curT = Term.createTerm("moveRobot(h(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
@@ -120,7 +121,7 @@ public abstract class AbstractRobotddr1 extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(w(X)))");
+	    	curT = Term.createTerm("moveRobot(w(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
@@ -130,7 +131,7 @@ public abstract class AbstractRobotddr1 extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(s(X)))");
+	    	curT = Term.createTerm("moveRobot(s(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
@@ -140,35 +141,23 @@ public abstract class AbstractRobotddr1 extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(a(X)))");
+	    	curT = Term.createTerm("moveRobot(a(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		//println("WARNING: variable substitution not yet fully implemented " ); 
-	    		{//actionseq
-	    		it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft( myself  );
-	    		//delay  ( no more reactive within a plan)
-	    		aar = delayReactive(680,"" , "");
-	    		if( aar.getInterrupted() ) curPlanInExec   = "execMove";
-	    		if( ! aar.getGoon() ) return ;
-	    		it.unibo.finalTask2018.robotDDR.robotMoves.robotStop( myself  );
-	    		};//actionseq
+	    		{/* JavaLikeMove */ 
+	    		it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft(this );
+	    		}
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(robotgui(d(X)))");
+	    	curT = Term.createTerm("moveRobot(d(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		//println("WARNING: variable substitution not yet fully implemented " ); 
-	    		{//actionseq
-	    		it.unibo.finalTask2018.robotDDR.robotMoves.robotRight( myself  );
-	    		//delay  ( no more reactive within a plan)
-	    		aar = delayReactive(680,"" , "");
-	    		if( aar.getInterrupted() ) curPlanInExec   = "execMove";
-	    		if( ! aar.getGoon() ) return ;
-	    		it.unibo.finalTask2018.robotDDR.robotMoves.robotStop( myself  );
-	    		};//actionseq
+	    		{/* JavaLikeMove */ 
+	    		it.unibo.finalTask2018.robotDDR.robotMoves.robotRight(this );
+	    		}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"robotddr1_"+myselfName,false,true);
 	    }catch(Exception e_execMove){  

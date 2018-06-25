@@ -3,8 +3,9 @@ System finalTask2018
 Event clock : clock(H,M)
 Event temperature : temperature(T)
 Dispatch cmd : cmd(X)
+Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME, DISTANCE)
-Dispatch moveRobot : moveRobot( CMD )
+Dispatch moveRobot : moveRobot(CMD)
 Event blinkCmd : blinkCmd(STATE)
 
 Context ctxReqAnalysis ip [host="localhost" port=8888]
@@ -42,11 +43,13 @@ QActor temperatureagent1 context ctxReqAnalysis {
 
 QActor robotddr1 context ctxReqAnalysis {   
 	Plan init normal [       
-	    println("robotDDR start")    
-  	] 
+	    println("robotDDR start");
+	    
+	    javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment()
+  	]
     switchTo waitForCmd        
 		
-   	Plan waitForCmd[ 
+   	Plan waitForCmd[
    		println("robotDDR waiting for commands")
    	]  
   	transition stopAfter 3600000 
@@ -54,20 +57,12 @@ QActor robotddr1 context ctxReqAnalysis {
    	finally repeatPlan    
 	   
   	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( robotgui(h(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();  
-  		onMsg moveRobot : moveRobot( robotgui(w(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();    
-    	onMsg moveRobot : moveRobot( robotgui(s(X)) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward(); 
-  		onMsg moveRobot : moveRobot( robotgui(a(X)) ) -> {
-  			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
-			delay 680; // TODO: use some configuration parameter
- 			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()				
-  		};    
-   		onMsg moveRobot : moveRobot( robotgui(d(X)) ) -> {
-			javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight();
-			delay 680; // TODO: use some configuration parameter
-	 		javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop()   			
-   		}
-   	]           
+     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();
+  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();
+    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward();
+  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
+   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight()
+   	]
 }
 
 QActor huelampagent1 context ctxReqAnalysis {
@@ -97,21 +92,10 @@ QActor humanoperatorqa1 context ctxReqAnalysis {
 	
 	Plan sendCmd [
 		delay 400;
-		forward appl1 -m cmd : cmd(robotgui(w(X)));
+		forward appl1 -m cmd : cmd(w(X));
 		delay 400;
-		forward appl1 -m cmd : cmd(robotgui(d(X)))
+		forward appl1 -m cmd : cmd(d(X))
 	]
-}
-
-QActor virtualenv1 context ctxReqAnalysis {
-	Plan init normal [
-		println("virtualEnv start");
-		javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment();
-		
-		delay 2000;
-		emit sonarSensor: sonar(s1,10)
-	]
-	transition stopAfter 3600000
 }
 
 QActor appl1 context ctxReqAnalysis {

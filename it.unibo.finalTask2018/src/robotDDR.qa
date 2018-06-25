@@ -1,16 +1,20 @@
 System finalTask2018            
 
 Dispatch moveRobot : moveRobot( CMD )
-  
+Event frontSonar : sonar( DISTANCE )
+Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
+
 Context ctxRobotDDR ip [ host="localhost" port=8882 ] 	 
 
 QActor robotddr context ctxRobotDDR {   
 	Plan init normal [       
-	    println("robotDDR start")    
-  	] 
+	    println("robotDDR start");
+	    
+	    javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment()
+  	]
     switchTo waitForCmd        
 		
-   	Plan waitForCmd[ 
+   	Plan waitForCmd[
    		println("robotDDR waiting for commands")
    	]  
   	transition stopAfter 3600000 

@@ -1,4 +1,5 @@
 plan(1,init, sentence(true,move(print("robotDDR start")),'','' ))
+plan(2,init, sentence(true,not here StateMoveNormal,'','' ))
 plan(1,waitForCmd, sentence(true,move(print("robotDDR waiting for commands")),'','' ))
 plan(1,execMove, sentence(true,msgswitch(moveRobot, moveRobot( h( X)) , not here StateMoveNormal),'','' ))
 plan(2,execMove, sentence(true,msgswitch(moveRobot, moveRobot( w( X)) , not here StateMoveNormal),'','' ))

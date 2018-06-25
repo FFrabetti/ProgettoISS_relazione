@@ -108,63 +108,28 @@ public abstract class AbstractHumanoperatorwithgui extends QActor {
 	    	String myselfName = "sendCmd";  
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(w(X)))");
+	    	curT = Term.createTerm("usercmd(robotgui(CMD))");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(w(X))";
-	    			/* SendDispatch */
-	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(w(X)))"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) sendMsg("cmd","applqa", QActorContext.dispatch, parg ); 
+	    			String parg = "robotgui(CMD)";
+	    			/* Print */
+	    			parg =  updateVars( Term.createTerm("usercmd(X)"), 
+	    			                    Term.createTerm("usercmd(robotgui(CMD))"), 
+	    				    		  	Term.createTerm(currentEvent.getMsg()), parg);
+	    			if( parg != null ) println( parg );
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(s(X)))");
+	    	curT = Term.createTerm("usercmd(robotgui(CMD))");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(s(X))";
+	    			String parg="cmd(CMD)";
 	    			/* SendDispatch */
-	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(s(X)))"), 
+	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(CMD))"), 
 	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) sendMsg("cmd","applqa", QActorContext.dispatch, parg ); 
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(a(X)))");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(a(X))";
-	    			/* SendDispatch */
-	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(a(X)))"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) sendMsg("cmd","applqa", QActorContext.dispatch, parg ); 
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(d(X)))");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(d(X))";
-	    			/* SendDispatch */
-	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(d(X)))"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) sendMsg("cmd","applqa", QActorContext.dispatch, parg ); 
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(h(X)))");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(h(X))";
-	    			/* SendDispatch */
-	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(h(X)))"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) sendMsg("cmd","applqa", QActorContext.dispatch, parg ); 
+	    			if( parg != null ) sendExtMsg("cmd","mvccontroller","ctxMVC",QActorContext.dispatch, parg ); 
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"humanoperatorwithgui_"+myselfName,false,true);
 	    }catch(Exception e_sendCmd){  

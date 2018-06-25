@@ -21,13 +21,13 @@ public class robotNode {
 	}
 	
 	public static void robotForward(QActor qa) {
-//		clientTcp.sendCmd(qa, "moveForward", -1); // "forever", until an obstacle is reached
-		clientTcp.sendCmd(qa, "moveForward");
+		clientTcp.sendCmd(qa, "moveForward", -1); // "forever", until an obstacle is reached
+//		clientTcp.sendCmd(qa, "moveForward");
 	}
 
 	public static void robotBackward(QActor qa) {
-//		clientTcp.sendCmd(qa, "moveBackward", -1); // "forever", until an obstacle is reached
-		clientTcp.sendCmd(qa, "moveBackward");
+		clientTcp.sendCmd(qa, "moveBackward", -1); // "forever", until an obstacle is reached
+//		clientTcp.sendCmd(qa, "moveBackward");
 	}
 
 	public static void robotLeft(QActor qa) {

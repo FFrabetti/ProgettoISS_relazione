@@ -12,7 +12,7 @@ Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
 Event inputCtrlEvent  : inputEvent( CATEG, NAME, VALUE )	 
 Event outputCtrlEvent : outputEvent( DATA )	//DATA : integer
 
-Context ctxMvc ip [ host="localhost"  port=8019 ]   -httpserver 
+Context ctxMvc ip [ host="localhost"  port=8019 ]  // -httpserver 
 EventHandler evadapter for temperature,clock  { //maps a temperature, clock and ctrlEvent into a inputCtrlEvent
 emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature, t1, T );
 emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) )
@@ -76,23 +76,26 @@ Rules{ //The model is in the theory resourceModel.
     ]
     
     Plan handleCmd resumeLastPlan[
-    	onMsg cmd : cmd(X) -> {println(X); demo changeModelItem(robot,r1,X)}
+    	onMsg cmd : cmd(X) -> println(ricevuto(X));
+    	onMsg cmd : cmd(X) -> demo changeModelItem(robot,r1,X)
     ]
 }
 
-QActor robotmock context ctxMvc -pubsub{
-	Plan init normal [         
-   		println("robot mock")
-   	]
-   	switchTo waitForCommand     
-  
-    Plan waitForCommand[  ]  
-    transition stopAfter 100000 
-     	whenEvent ctrlEvent -> handleCmd
-    finally repeatPlan	
-   	 
-	Plan handleCmd resumeLastPlan[
-//  		printCurrentEvent;
-		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : moveRobot(C)
-	]
-}
+//QActor robotmock context ctxMvc -pubsub{
+//	Plan init normal [         
+//   		println("robot mock");
+//   		delay 1000;
+//   		forward mvccontroller -m cmd : cmd(a(1))
+//   	]
+//   	switchTo waitForCommand     
+//  
+//    Plan waitForCommand[  ]  
+//    transition stopAfter 100000 
+//     	whenEvent ctrlEvent -> handleCmd
+//    finally repeatPlan	
+//   	 
+//	Plan handleCmd resumeLastPlan[
+////  		printCurrentEvent;
+////		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : moveRobot(C)
+//	]
+//}

@@ -1,5 +1,5 @@
 plan(1,init, sentence(true,move(print("humanoperatorqa start")),'','' ))
 plan(1,sendCmd, sentence(true,delay( 400) ,'','' ))
-plan(2,sendCmd, sentence(true,forward(appl1, cmd,cmd( robotgui( w( X)))),'','' ))
+plan(2,sendCmd, sentence(true,forward(appl1, cmd,cmd( w( X))),'','' ))
 plan(3,sendCmd, sentence(true,delay( 400) ,'','' ))
-plan(4,sendCmd, sentence(true,forward(appl1, cmd,cmd( robotgui( d( X)))),'','' ))
+plan(4,sendCmd, sentence(true,forward(appl1, cmd,cmd( d( X))),'','' ))

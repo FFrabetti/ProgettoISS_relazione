@@ -13,8 +13,6 @@ qactor( huelampagent1 , ctxreqanalysis, "it.unibo.huelampagent1.MsgHandle_Huelam
 qactor( huelampagent1_ctrl , ctxreqanalysis, "it.unibo.huelampagent1.Huelampagent1"   ). %%control-driven 
 qactor( humanoperatorqa1 , ctxreqanalysis, "it.unibo.humanoperatorqa1.MsgHandle_Humanoperatorqa1"   ). %%store msgs 
 qactor( humanoperatorqa1_ctrl , ctxreqanalysis, "it.unibo.humanoperatorqa1.Humanoperatorqa1"   ). %%control-driven 
-qactor( virtualenv1 , ctxreqanalysis, "it.unibo.virtualenv1.MsgHandle_Virtualenv1"   ). %%store msgs 
-qactor( virtualenv1_ctrl , ctxreqanalysis, "it.unibo.virtualenv1.Virtualenv1"   ). %%control-driven 
 qactor( appl1 , ctxreqanalysis, "it.unibo.appl1.MsgHandle_Appl1"   ). %%store msgs 
 qactor( appl1_ctrl , ctxreqanalysis, "it.unibo.appl1.Appl1"   ). %%control-driven 
 %%% -------------------------------------------

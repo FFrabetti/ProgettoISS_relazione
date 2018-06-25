@@ -77,6 +77,7 @@ public abstract class AbstractRobotddr extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"robotDDR start\"";
 	    	println( temporaryStr );  
+	    	it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment( myself  );
 	    	//switchTo waitForCmd
 	        switchToPlanAsNextState(pr, myselfName, "robotddr_"+myselfName, 
 	              "waitForCmd",false, false, null); 

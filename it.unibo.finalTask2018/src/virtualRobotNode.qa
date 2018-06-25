@@ -1,8 +1,16 @@
 System finalTask2018            
 
 Dispatch moveRobot : moveRobot( CMD )
-  
+Event frontSonar : sonar( DISTANCE )
+Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
+
+Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
+Dispatch ctrlMsg : ctrlMsg(CATEG, NAME, CMD)
+
 Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
+EventHandler evhnode for ctrlEvent -print {
+	forwardEvent nodebroker -m ctrlMsg // stesso payload
+};
 
 QActor robotnode context ctxVirtualRobotNode {
 	Rules {
@@ -11,7 +19,8 @@ QActor robotnode context ctxVirtualRobotNode {
 	
 	Plan init normal [       
 	    println("robotnode start");
-	    
+	    javaRun it.unibo.finalTask2018.adapter.envNodeAdapter.setUpEnvironment();
+	    		
 	    [ !? robotConfig(A,P) ]
 	    	javaRun it.unibo.finalTask2018.robotDDR.robotNode.init(A, P)
 		else
@@ -26,7 +35,9 @@ QActor robotnode context ctxVirtualRobotNode {
  		whenMsg moveRobot -> execMove 
    	finally repeatPlan    
 	   
-  	Plan execMove resumeLastPlan[     
+  	Plan execMove resumeLastPlan[
+  		onMsg moveRobot : moveRobot(CMD) -> println(moveRobot(CMD));
+  		
      	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotStop();  
   		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotForward();    
     	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotBackward(); 
@@ -35,18 +46,30 @@ QActor robotnode context ctxVirtualRobotNode {
    	]
 }
 
-QActor testerrobotnode context ctxVirtualRobotNode {
-	Plan init normal [
-		println("testerrobotnode start");
-		delay 2000;
-		forward robotnode -m moveRobot : moveRobot(w(1));
-		delay 2000;
-		forward robotnode -m moveRobot : moveRobot(h(1));
-		delay 2000;
-		forward robotnode -m moveRobot : moveRobot(s(1));
-		delay 2000;
-		forward robotnode -m moveRobot : moveRobot(a(1));
-		delay 2000;
-		forward robotnode -m moveRobot : moveRobot(d(1))
+QActor nodebroker context ctxVirtualRobotNode {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenMsg ctrlMsg -> handleMsg
+	finally repeatPlan
+	
+	Plan handleMsg resumeLastPlan [
+		onMsg ctrlMsg : ctrlMsg(C, N, V) -> println(ctrlMsg(C, N, V));
+		onMsg ctrlMsg : ctrlMsg(C, N, V) -> forward robotnode -m moveRobot : moveRobot(V)
 	]
 }
+
+//QActor testerrobotnode context ctxVirtualRobotNode {
+//	Plan init normal [
+//		println("testerrobotnode start");
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(w(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(h(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(s(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(a(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(d(1))
+//	]
+//}

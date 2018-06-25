@@ -146,7 +146,11 @@ limitTemperatureValue( 25).
 changedModelAction( temperature,t1,V):-limitTemperatureValue( MAX),eval( ge,V,MAX),emitevent( ctrlEvent,ctrlEvent( control,ctrl1,h)).
 changedModelAction( clock,c1,T):-eval( lt,T,7),emitevent( ctrlEvent,ctrlEvent( control,ctrl1,h)).
 changedModelAction( clock,c1,T):-eval( gt,T,10),emitevent( ctrlEvent,ctrlEvent( control,ctrl1,h)).
-changedModelAction( control,ctrl1,C):-emitevent( ctrlEvent,ctrlEvent( control,ctrl1,C)).
+changedModelAction( robot,R,CMD):-emitevent( ctrlEvent,ctrlEvent( robot,R,CMD)),fail.
+changedModelAction( robot,R,w( X)):-changeModelItem( led,l1,blink).
+changedModelAction( robot,R,s( X)):-changeModelItem( led,l1,blink).
+changedModelAction( robot,R,h( X)):-changeModelItem( led,l1,noblink).
+changedModelAction( led,L,X):-emitevent( ctrlEvent,ctrlEvent( led,L,X)).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

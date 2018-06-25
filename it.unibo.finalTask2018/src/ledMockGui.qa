@@ -2,8 +2,8 @@ System ledMockGui
 
 //la parte commentata è relativa allo stile usato dal file del prof con un altro tipo di evento (ctrlEvent)
 
-//Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
-Event blinkCmd : blinkCmd(STATE)
+Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
+//Event blinkCmd : blinkCmd(STATE)
 
 Context ctxLedMockGui ip [ host="localhost"   port=8039 ]    
 
@@ -21,28 +21,28 @@ QActor ledmockgui context ctxLedMockGui{
   
     Plan waitForCommand[  ]  
     transition stopAfter 6000000 
-     	//whenEvent ctrlEvent -> handleCmd
-     	whenEvent blinkCmd -> handleCmd
+     	whenEvent ctrlEvent -> handleCmd
+//     	whenEvent blinkCmd -> handleCmd
     finally repeatPlan	
    	 
 	Plan handleCmd resumeLastPlan[
  		printCurrentEvent;
-		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
-		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
-//		onEvent ctrlEvent : ctrlEvent(leds, led1, on)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
-//		onEvent ctrlEvent : ctrlEvent(leds, led1, off)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+//		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
+//		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+		onEvent ctrlEvent : ctrlEvent(leds, led1, blink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
+		onEvent ctrlEvent : ctrlEvent(leds, led1, noblink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
 	]
 }
 
 QActor testeventemitter context ctxLedMockGui {
 	Plan init normal [         
       	delay 5000;
-   		//emit ctrlEvent : ctrlEvent(leds, led1, on);
-   		emit blinkCmd: blinkCmd(on);
+   		emit ctrlEvent : ctrlEvent(leds, led1, blink);
+//   		emit blinkCmd: blinkCmd(on);
    		println("Parte a blinkare");
 		delay 10000;
-//		emit ctrlEvent : ctrlEvent(leds, led1, off)
-		emit blinkCmd: blinkCmd(off);
+		emit ctrlEvent : ctrlEvent(leds, led1, noblink);
+//		emit blinkCmd: blinkCmd(off);
 		println("smette di blinkare")
 ]
    	finally repeatPlan 3

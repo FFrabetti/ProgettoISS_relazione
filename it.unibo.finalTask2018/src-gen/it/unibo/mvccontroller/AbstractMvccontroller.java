@@ -58,6 +58,7 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	stateTab.put("init",init);
 	    	stateTab.put("waitForInputEvent",waitForInputEvent);
 	    	stateTab.put("handleInputEvent",handleInputEvent);
+	    	stateTab.put("handleCmd",handleCmd);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -80,7 +81,6 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = "qacontrol(starts)";
 	    	println( temporaryStr );  
-	     connectToMqttServer("tcp://localhost:1883");
 	    	//switchTo waitForInputEvent
 	        switchToPlanAsNextState(pr, myselfName, "mvccontroller_"+myselfName, 
 	              "waitForInputEvent",false, false, null); 
@@ -97,8 +97,8 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	String myselfName = "waitForInputEvent";  
 	    	//bbb
 	     msgTransition( pr,myselfName,"mvccontroller_"+myselfName,false,
-	          new StateFun[]{stateTab.get("handleInputEvent") }, 
-	          new String[]{"true","E","inputCtrlEvent" },
+	          new StateFun[]{stateTab.get("handleInputEvent"), stateTab.get("handleCmd") }, 
+	          new String[]{"true","E","inputCtrlEvent", "true","M","cmd" },
 	          6000000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForInputEvent){  
 	    	 println( getName() + " plan=waitForInputEvent WARNING:" + e_waitForInputEvent.getMessage() );
@@ -141,6 +141,32 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//handleInputEvent
+	    
+	    StateFun handleCmd = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("handleCmd",-1);
+	    	String myselfName = "handleCmd";  
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("cmd(X)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
+	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		//println("WARNING: variable substitution not yet fully implemented " ); 
+	    		{//actionseq
+	    		temporaryStr = "X";
+	    		println( temporaryStr );  
+	    		parg = "changeModelItem(robot,r1,X)";
+	    		//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    		solveGoal( parg ); //sept2017
+	    		};//actionseq
+	    	}
+	    	repeatPlanNoTransition(pr,myselfName,"mvccontroller_"+myselfName,false,true);
+	    }catch(Exception e_handleCmd){  
+	    	 println( getName() + " plan=handleCmd WARNING:" + e_handleCmd.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//handleCmd
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

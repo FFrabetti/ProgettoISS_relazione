@@ -105,7 +105,7 @@ public abstract class AbstractLedmockgui extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"ledmockgui_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleCmd") }, 
-	          new String[]{"true","E","blinkCmd" },
+	          new String[]{"true","E","ctrlEvent" },
 	          6000000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForCommand){  
 	    	 println( getName() + " plan=waitForCommand WARNING:" + e_waitForCommand.getMessage() );
@@ -120,9 +120,9 @@ public abstract class AbstractLedmockgui extends QActor {
 	    	printCurrentEvent(false);
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("blinkCmd(on)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
-	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
+	    	curT = Term.createTerm("ctrlEvent(leds,led1,blink)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("ctrlEvent") && 
+	    		pengine.unify(curT, Term.createTerm("ctrlEvent(CATEG,NAME,CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "on" ;
@@ -132,9 +132,9 @@ public abstract class AbstractLedmockgui extends QActor {
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("blinkCmd(off)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
-	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
+	    	curT = Term.createTerm("ctrlEvent(leds,led1,noblink)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("ctrlEvent") && 
+	    		pengine.unify(curT, Term.createTerm("ctrlEvent(CATEG,NAME,CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;

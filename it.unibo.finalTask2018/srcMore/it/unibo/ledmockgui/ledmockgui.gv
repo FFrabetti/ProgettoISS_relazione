@@ -13,7 +13,7 @@ digraph finite_state_machine {
 	handleCmd [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	waitForCommand [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	
-	waitForCommand -> handleCmd [ label = "blinkCmd" ][ color = red ][ fontcolor = red ][ dir = both ]
+	waitForCommand -> handleCmd [ label = "ctrlEvent" ][ color = red ][ fontcolor = red ][ dir = both ]
 	init -> waitForCommand [ label = "switch" ][ color = black ][ fontcolor = black ]
 	waitForCommand -> handleToutBuiltIn [ label = "timeout(6000000)" ][ color = green ][ fontcolor = green ]
 	waitForCommand -> waitForCommand [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]

@@ -78,16 +78,16 @@ public abstract class AbstractTesteventemitter extends QActor {
 	    	aar = delayReactive(5000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "blinkCmd(STATE)","blinkCmd(on)", guardVars ).toString();
-	    	emit( "blinkCmd", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(leds,led1,blink)", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"Parte a blinkare\"";
 	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(10000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "blinkCmd(STATE)","blinkCmd(off)", guardVars ).toString();
-	    	emit( "blinkCmd", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(leds,led1,noblink)", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"smette di blinkare\"";
 	    	println( temporaryStr );  
 	    	repeatPlanNoTransition(pr,myselfName,"testeventemitter_"+myselfName,true,false);

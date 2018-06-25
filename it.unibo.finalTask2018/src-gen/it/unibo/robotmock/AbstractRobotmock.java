@@ -77,7 +77,6 @@ public abstract class AbstractRobotmock extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"robot mock\"";
 	    	println( temporaryStr );  
-	     connectToMqttServer("tcp://localhost:1883");
 	    	//switchTo waitForCommand
 	        switchToPlanAsNextState(pr, myselfName, "robotmock_"+myselfName, 
 	              "waitForCommand",false, false, null); 

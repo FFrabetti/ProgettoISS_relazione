@@ -286,14 +286,9 @@ Moreover, the robot must stop its activity when one of the following conditions 
 \section{Requirement analysis}
 \labelsec{ReqAnalysis}
 
-Dai requisiti si delineano 6 entità:
+Dai requisiti si delineano 5 entità:
 \begin{enumerate}
-\item il robot, che può essere sia fisico sia virtuale (\texttt{RealDDR} e \texttt{VirtualDDR})
-\item l'ambiente in cui si muove (fisico/virtuale) %, a sua volta costituito da:
-%	\begin{itemize}
-%	\item 2 sensori (\code{sonar1} e \code{sonar2})
-%	\item ostacoli fissi (pareti) e mobili
-%	\end{itemize}
+\item il robot, che può essere sia fisico sia virtuale (\texttt{RealDDR} e \texttt{VirtualDDR}), e l'ambiente in cui si muove (fisico/virtuale)
 \item gli attuatori: il \texttt{Led} per il robot reale e l'\texttt{Hue Lamp} per quello virtuale
 \item i sensori remoti: un indicatore di temperatura (\texttt{TemperatureSensor}) e un orologio (\texttt{Clock})
 \item un utilizzatore umano (\texttt{HumanOperator})
@@ -350,12 +345,22 @@ Anche in questo caso il sensore, non conoscendo i componenti interessati, emette
 \lstinputlisting[style=style_qa, firstline=13, lastline=20, firstnumber=13]{../it.unibo.finalTask2018/src/clockAgent.qa}
 
 \subsection{Robot}
-Ci viene fornito un modello del robot virtuale espresso nel linguaggio \qa
+Ci viene fornito un modello del robot espresso nel linguaggio \qa
 \footnote{it.unibo.mbot.divide/src/realRobotExecutor.qa}: questi è in grado di ricevere messaggi \codescript{moveRobot : moveRobot( CMD )} e di interpretarli come comandi di movimento (stop, forward, left, right, backward).
 
-Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato. L'implementazione delle varie mosse è delegata ad un'opportuna classe Java che può essere modificata senza alterare il modello del robot.\\
+Il robot è anche dotato di un sonar frontale che gli permette di rilevare la presenza di ostacoli (\code{R-AvoidFix} e \code{R-AvoidMobile}). Il robot riveste quindi il duplice ruolo di attuatore e di sensore, in quanto emette informazioni relative alla distanza dagli ostacoli che incontra sotto forma di eventi \codescript{frontSonar : sonar( DISTANCE )}.\\
+
+Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato ed emettere eventi relativi al sonar frontale. L'implementazione delle varie mosse è delegata ad un'opportuna classe Java che può essere modificata senza alterare il modello del robot.\\
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/robotDDR.qa}
+
+\vspace{8px}
+
+Nell'ambiente virtuale sono presenti due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo definiamo un ulteriore evento \codescript{sonarSensor : sonar(NAME, DISTANCE)}, dove \emph{NAME} è \code{sonar1} o \code{sonar2}.\\
+
+Da notare come l'emissione di tali eventi dipenda dalla specifica implementazione del \textit{virtual environment} (le operazioni ad esso relative sono delegate ad una classe Java):
+
+\lstinputlisting[language=Java, firstline=7, lastline=17, firstnumber=7]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/adapter/envAdapter.java}
 
 \subsection{HumanOperator}
 Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
@@ -363,15 +368,6 @@ Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi pe
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/humanOperator.qa}
 
 Per un primo testing, l'intermediario dei messaggi è l'attore \codescript{testapplqa} che si trova nello stesso contesto dell'operator. In futuro, quest'ultimo dovrà conoscere il contesto dell'entità che rappresenta la logica applicativa, così da poterle inviare messaggi (vedi riga 6).
-
-\subsection{Environment}
-Nell'ambiente virtuale sono presenti i due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo, l'ambiente stesso può essere visto alla stregua di un ulteriore sensore che emette eventi \codescript{sonarSensor}.\\
-
-\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/virtualEnvironment.qa}
-
-Da notare come l'emissione di tali eventi dipenda dalla specifica implementazione del \textit{virtual environment}:
-
-\lstinputlisting[language=Java, firstline=7, lastline=17, firstnumber=7]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/adapter/envAdapter.java}
 
 \subsection{Application logic}
 La nostra applicazione, oltre ad incapsulare le politiche della logica applicativa, deve innanzitutto agire come \textit{``system integrator''}, mettendo in collegamento i vari componenti così che questi possano interagire.
@@ -381,7 +377,7 @@ L'immagine della \xf{informalRA} può essere quindi formalmente definita dal seg
 
 \lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
 
-In questo caso sensori, attuatori, operatori, ambiente e robot sono stati tutti inseriti all'interno di un unico contesto per motivi di rapidità di modellazione e di \textit{integration testing}.
+In questo caso sensori, attuatori, operatori e robot sono stati tutti inseriti all'interno di un unico contesto per motivi di rapidità di modellazione e di \textit{integration testing}.
 
 \vspace{8px}
 

@@ -1,0 +1,16 @@
+System finalTask2018
+
+Event sonarSensor : sonar(NAME, DISTANCE)
+
+Context ctxNodeEnvironment ip [ host="localhost" port=8882 ]
+
+QActor nodeenv context ctxNodeEnvironment {
+
+	Plan init normal [
+		println("nodeenv start");
+		
+		javaRun it.unibo.finalTask2018.adapter.envNodeAdapter.setUpEnvironment()
+	]
+	transition stopAfter 3600000
+	
+}

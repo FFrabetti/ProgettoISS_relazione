@@ -3,12 +3,12 @@
 resourceModel.pl
 ===============================================================
 */
-model( type(actuator, leds),      name(led1), value(off) ).
+model( type(actuator, led), name(l1), value(noblink) ).
 model( type(sensor, temperature), name(t1),   value(25)  ).
 model( type(sensor, clock), name(c1),   value(h(7,0))  ).
 
 %%Modello del robot
-model( type(controls, control), name(ctrl1), value(stop) ).
+model( type(robots, robot), name(r1), value(h(0)) ).
 
 getModelItem( TYPE, CATEG, NAME, VALUE ) :-
 		model( type(TYPE, CATEG), name(NAME), value(VALUE) ).

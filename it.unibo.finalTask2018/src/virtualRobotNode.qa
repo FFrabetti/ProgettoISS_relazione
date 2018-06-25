@@ -1,0 +1,52 @@
+System finalTask2018            
+
+Dispatch moveRobot : moveRobot( CMD )
+  
+Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
+
+QActor robotnode context ctxVirtualRobotNode {
+	Rules {
+		robotConfig("localhost", 8999).
+	}
+	
+	Plan init normal [       
+	    println("robotnode start");
+	    
+	    [ !? robotConfig(A,P) ]
+	    	javaRun it.unibo.finalTask2018.robotDDR.robotNode.init(A, P)
+		else
+			javaRun it.unibo.finalTask2018.robotDDR.robotNode.init()
+  	]
+    switchTo waitForCmd
+		
+   	Plan waitForCmd[
+   		println("robotnode waiting for commands")
+   	]  
+  	transition stopAfter 3600000 
+ 		whenMsg moveRobot -> execMove 
+   	finally repeatPlan    
+	   
+  	Plan execMove resumeLastPlan[     
+     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotStop();  
+  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotForward();    
+    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotBackward(); 
+  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotLeft();  
+   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotRight()
+   	]
+}
+
+QActor testerrobotnode context ctxVirtualRobotNode {
+	Plan init normal [
+		println("testerrobotnode start");
+		delay 2000;
+		forward robotnode -m moveRobot : moveRobot(w(1));
+		delay 2000;
+		forward robotnode -m moveRobot : moveRobot(h(1));
+		delay 2000;
+		forward robotnode -m moveRobot : moveRobot(s(1));
+		delay 2000;
+		forward robotnode -m moveRobot : moveRobot(a(1));
+		delay 2000;
+		forward robotnode -m moveRobot : moveRobot(d(1))
+	]
+}

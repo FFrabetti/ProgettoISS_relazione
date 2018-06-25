@@ -12,6 +12,8 @@ EventHandler evhnode for ctrlEvent -print {
 	forwardEvent nodebroker -m ctrlMsg // stesso payload
 };
 
+Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
+
 QActor robotnode context ctxVirtualRobotNode {
 	Rules {
 		robotConfig("localhost", 8999).
@@ -36,7 +38,8 @@ QActor robotnode context ctxVirtualRobotNode {
    	finally repeatPlan    
 	   
   	Plan execMove resumeLastPlan[
-  		onMsg moveRobot : moveRobot(CMD) -> println(moveRobot(CMD));
+//  	onMsg moveRobot : moveRobot(CMD) -> println(moveRobot(CMD));
+  		printCurrentMessage;
   		
      	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotStop();  
   		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotForward();    
@@ -49,13 +52,13 @@ QActor robotnode context ctxVirtualRobotNode {
 QActor nodebroker context ctxVirtualRobotNode {
 	Plan init normal [ ]
 	transition stopAfter 3600000
-		whenMsg ctrlMsg -> handleMsg
+		whenMsg ctrlMsg : ctrlMsg(robot,r1,CMD) do forward robotnode -m moveRobot : moveRobot(CMD)
 	finally repeatPlan
 	
-	Plan handleMsg resumeLastPlan [
-		onMsg ctrlMsg : ctrlMsg(C, N, V) -> println(ctrlMsg(C, N, V));
-		onMsg ctrlMsg : ctrlMsg(C, N, V) -> forward robotnode -m moveRobot : moveRobot(V)
-	]
+//	Plan handleMsg resumeLastPlan [
+//		onMsg ctrlMsg : ctrlMsg(C, N, V) -> println(ctrlMsg(C, N, V));
+//		onMsg ctrlMsg : ctrlMsg(C, N, V) -> forward robotnode -m moveRobot : moveRobot(V)
+//	]
 }
 
 //QActor testerrobotnode context ctxVirtualRobotNode {

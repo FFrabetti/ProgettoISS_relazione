@@ -114,19 +114,7 @@ public abstract class AbstractRobotnode extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("execMove",-1);
 	    	String myselfName = "execMove";  
-	    	//onMsg 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(CMD)");
-	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg = "moveRobot(CMD)";
-	    		/* Print */
-	    		parg =  updateVars( Term.createTerm("moveRobot(CMD)"), 
-	    		                    Term.createTerm("moveRobot(CMD)"), 
-	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) println( parg );
-	    	}
+	    	printCurrentMessage(false);
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(h(X))");

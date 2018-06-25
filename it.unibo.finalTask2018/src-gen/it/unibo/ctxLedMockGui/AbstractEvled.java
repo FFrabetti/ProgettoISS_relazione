@@ -20,16 +20,16 @@ protected IEventItem event;
 		if( event == null ) return;
 		//RaiseOtherEvent
 		{String newcontent = "blinkCmd(on)";
-		newcontent =  updateVars( Term.createTerm("ctrlEvent(CATEG,NAME,blink)"), 
-			                Term.createTerm("ctrlEvent(CATEG,NAME,blink)"), 
+		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,blink)"), 
+			                Term.createTerm("ctrlEvent(led,l1,blink)"), 
 			                Term.createTerm( event.getMsg() ), newcontent);
 		//println("newcontent="+newcontent);
 		if( newcontent != null ){ emit( "blinkCmd", newcontent ); }
 		}
 		//RaiseOtherEvent
 		{String newcontent = "blinkCmd(off)";
-		newcontent =  updateVars( Term.createTerm("ctrlEvent(CATEG,NAME,noblink)"), 
-			                Term.createTerm("ctrlEvent(CATEG,NAME,noblink)"), 
+		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,noblink)"), 
+			                Term.createTerm("ctrlEvent(led,l1,noblink)"), 
 			                Term.createTerm( event.getMsg() ), newcontent);
 		//println("newcontent="+newcontent);
 		if( newcontent != null ){ emit( "blinkCmd", newcontent ); }

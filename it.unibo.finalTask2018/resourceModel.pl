@@ -12,6 +12,10 @@ model( type(robots, robot), name(r1), value(h(0)) ).
 
 getModelItem( TYPE, CATEG, NAME, VALUE ) :-
 		model( type(TYPE, CATEG), name(NAME), value(VALUE) ).
+
+% se devo sovrascrivere lo stesso valore, non faccio niente
+changeModelItem( CATEG, NAME, VALUE ) :- getModelItem( _, CATEG, NAME, VALUE ), !.
+
 changeModelItem( CATEG, NAME, VALUE ) :-
  		replaceRule( 
 			model( type(TYPE, CATEG), name(NAME), value(_) ),  

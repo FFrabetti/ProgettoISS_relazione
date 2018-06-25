@@ -7,5 +7,6 @@ context(ctxmvc, "localhost",  "TCP", "8019" ).
 qactor( ledmockgui , ctxledmockgui, "it.unibo.ledmockgui.MsgHandle_Ledmockgui"   ). %%store msgs 
 qactor( ledmockgui_ctrl , ctxledmockgui, "it.unibo.ledmockgui.Ledmockgui"   ). %%control-driven 
 %%% -------------------------------------------
+eventhandler(evled,ctxledmockgui,"it.unibo.ctxLedMockGui.Evled","ctrlEvent").  
 %%% -------------------------------------------
 

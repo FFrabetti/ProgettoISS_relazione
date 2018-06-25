@@ -64,7 +64,8 @@ Rules{ //The model is in the theory resourceModel.
  
     Plan waitForInputEvent[
     	// print del modello del robot
-    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE))
+    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
+    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE))
     ]  
     transition stopAfter 6000000 
      	whenEvent inputCtrlEvent -> handleInputEvent,
@@ -84,18 +85,18 @@ Rules{ //The model is in the theory resourceModel.
     ]
 }
 
-QActor robotmock context ctxMvc {
-	Plan init normal [         
-   		println("robot mock");
-   		delay 20000;
-   		forward mvccontroller -m cmd : cmd(w(1)); // start blinking
-   		delay 20000;
-   		forward mvccontroller -m cmd : cmd(h(1)); // stop blinking
-   		delay 20000;
-   		forward mvccontroller -m cmd : cmd(s(1)); // start blinking
-   		delay 20000;
-   		forward mvccontroller -m cmd : cmd(h(1)) // stop blinking
-   	]
+//QActor robotmock context ctxMvc {
+//	Plan init normal [         
+//   		println("robot mock");
+//   		delay 20000;
+//   		forward mvccontroller -m cmd : cmd(w(1)); // start blinking
+//   		delay 20000;
+//   		forward mvccontroller -m cmd : cmd(h(1)); // stop blinking
+//   		delay 20000;
+//   		forward mvccontroller -m cmd : cmd(s(1)); // start blinking
+//   		delay 20000;
+//   		forward mvccontroller -m cmd : cmd(h(1)) // stop blinking
+//   	]
 //   	switchTo waitForCommand     
 //  
 //    Plan waitForCommand[  ]  
@@ -107,4 +108,4 @@ QActor robotmock context ctxMvc {
 //  		printCurrentEvent;
 //		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : moveRobot(C)
 //	]
-}
+//}

@@ -3,9 +3,13 @@ System ledMockGui
 //la parte commentata è relativa allo stile usato dal file del prof con un altro tipo di evento (ctrlEvent)
 
 Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
-//Event blinkCmd : blinkCmd(STATE)
+Event blinkCmd : blinkCmd(STATE)
 
 Context ctxLedMockGui ip [ host="localhost"   port=8039 ]
+EventHandler evled for ctrlEvent  {
+emit blinkCmd fromContent ctrlEvent( CATEG, NAME, blink ) to blinkCmd(on);
+emit blinkCmd fromContent ctrlEvent( CATEG, NAME, noblink ) to blinkCmd(off)
+};
 Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
 
 QActor ledmockgui context ctxLedMockGui{
@@ -22,16 +26,16 @@ QActor ledmockgui context ctxLedMockGui{
   
     Plan waitForCommand[  ]  
     transition stopAfter 6000000 
-     	whenEvent ctrlEvent -> handleCmd
-//     	whenEvent blinkCmd -> handleCmd
+//     	whenEvent ctrlEvent -> handleCmd
+     	whenEvent blinkCmd -> handleCmd
     finally repeatPlan	
    	 
 	Plan handleCmd resumeLastPlan[
  		printCurrentEvent;
-//		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
-//		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
-		onEvent ctrlEvent : ctrlEvent(led, l1, blink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
-		onEvent ctrlEvent : ctrlEvent(led, l1, noblink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
+		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+//		onEvent ctrlEvent : ctrlEvent(led, l1, blink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
+//		onEvent ctrlEvent : ctrlEvent(led, l1, noblink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
 	]
 }
 

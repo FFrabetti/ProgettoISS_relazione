@@ -35,8 +35,6 @@ emitevent( EVID, EVCONTENT ) :-
 initResourceTheory :- output("initializing the initResourceTheory ...").
 :- initialization(initResourceTheory).
 
-
-
 /*  		
 	changedModelAction( temperature, t1, V  ):-
  		    eval( ge, V , 30 ), !,  
@@ -45,4 +43,4 @@ initResourceTheory :- output("initializing the initResourceTheory ...").
  			changemodelitem( leds, led1, off).     			 			
  	changedModelAction( leds, led1, V  ):-
  			emitevent( ctrlEvent, ctrlEvent( leds, led1, V) ).
- */
+*/

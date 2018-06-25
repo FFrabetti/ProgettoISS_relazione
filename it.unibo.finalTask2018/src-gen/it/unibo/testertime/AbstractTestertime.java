@@ -90,7 +90,9 @@ public abstract class AbstractTestertime extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp("printTime",-1);
 	    	String myselfName = "printTime";  
 	    	printCurrentEvent(false);
-	    	repeatPlanNoTransition(pr,myselfName,"testertime_"+myselfName,false,true);
+	    	//switchTo init
+	        switchToPlanAsNextState(pr, myselfName, "testertime_"+myselfName, 
+	              "init",false, false, null); 
 	    }catch(Exception e_printTime){  
 	    	 println( getName() + " plan=printTime WARNING:" + e_printTime.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

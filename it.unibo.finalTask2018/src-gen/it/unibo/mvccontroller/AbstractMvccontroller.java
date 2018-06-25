@@ -100,6 +100,11 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(actuator,led,l1,VALUE)" )) != null ){
+	    	temporaryStr = "model(l1,VALUE)";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	println( temporaryStr );  
+	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"mvccontroller_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleInputEvent"), stateTab.get("handleCmd") }, 

@@ -62,7 +62,10 @@ Rules{ //The model is in the theory resourceModel.
    	]
    	switchTo waitForInputEvent      
  
-    Plan waitForInputEvent[  ]  
+    Plan waitForInputEvent[
+    	// print del modello del robot
+    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE))
+    ]  
     transition stopAfter 6000000 
      	whenEvent inputCtrlEvent -> handleInputEvent,
      	whenMsg cmd -> handleCmd
@@ -81,12 +84,12 @@ Rules{ //The model is in the theory resourceModel.
     ]
 }
 
-//QActor robotmock context ctxMvc -pubsub{
-//	Plan init normal [         
-//   		println("robot mock");
-//   		delay 1000;
-//   		forward mvccontroller -m cmd : cmd(a(1))
-//   	]
+QActor robotmock context ctxMvc {
+	Plan init normal [         
+   		println("robot mock");
+   		delay 1000;
+   		forward mvccontroller -m cmd : cmd(a(1))
+   	]
 //   	switchTo waitForCommand     
 //  
 //    Plan waitForCommand[  ]  
@@ -95,7 +98,7 @@ Rules{ //The model is in the theory resourceModel.
 //    finally repeatPlan	
 //   	 
 //	Plan handleCmd resumeLastPlan[
-////  		printCurrentEvent;
-////		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : moveRobot(C)
+//  		printCurrentEvent;
+//		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : moveRobot(C)
 //	]
-//}
+}

@@ -95,6 +95,11 @@ public abstract class AbstractMvccontroller extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_waitForInputEvent",0);
 	     pr.incNumIter(); 	
 	    	String myselfName = "waitForInputEvent";  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(robots,robot,r1,VALUE)" )) != null ){
+	    	temporaryStr = "model(r1,VALUE)";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	println( temporaryStr );  
+	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"mvccontroller_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleInputEvent"), stateTab.get("handleCmd") }, 

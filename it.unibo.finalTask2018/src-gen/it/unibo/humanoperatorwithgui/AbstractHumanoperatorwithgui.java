@@ -112,7 +112,7 @@ public abstract class AbstractHumanoperatorwithgui extends QActor {
 	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(moveForward)";
+	    			String parg="cmd(w(X))";
 	    			/* SendDispatch */
 	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(w(X)))"), 
 	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
@@ -124,7 +124,7 @@ public abstract class AbstractHumanoperatorwithgui extends QActor {
 	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(moveBackward)";
+	    			String parg="cmd(s(X))";
 	    			/* SendDispatch */
 	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(s(X)))"), 
 	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
@@ -136,7 +136,7 @@ public abstract class AbstractHumanoperatorwithgui extends QActor {
 	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(turnLeft)";
+	    			String parg="cmd(a(X))";
 	    			/* SendDispatch */
 	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(a(X)))"), 
 	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
@@ -148,7 +148,7 @@ public abstract class AbstractHumanoperatorwithgui extends QActor {
 	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(turnRight)";
+	    			String parg="cmd(d(X))";
 	    			/* SendDispatch */
 	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(d(X)))"), 
 	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
@@ -160,7 +160,7 @@ public abstract class AbstractHumanoperatorwithgui extends QActor {
 	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="cmd(moveStop)";
+	    			String parg="cmd(h(X))";
 	    			/* SendDispatch */
 	    			parg = updateVars(Term.createTerm("usercmd(X)"),  Term.createTerm("usercmd(robotgui(h(X)))"), 
 	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);

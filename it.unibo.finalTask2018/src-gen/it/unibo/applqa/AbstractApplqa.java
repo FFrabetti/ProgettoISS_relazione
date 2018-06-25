@@ -56,6 +56,7 @@ public abstract class AbstractApplqa extends QActor {
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
+	    	stateTab.put("handleMsg",handleMsg);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -75,12 +76,40 @@ public abstract class AbstractApplqa extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"applqa start\"";
 	    	println( temporaryStr );  
-	    	repeatPlanNoTransition(pr,myselfName,"applqa_"+myselfName,false,false);
+	    	//bbb
+	     msgTransition( pr,myselfName,"applqa_"+myselfName,false,
+	          new StateFun[]{stateTab.get("handleMsg") }, 
+	          new String[]{"true","M","cmd" },
+	          10000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//init
+	    
+	    StateFun handleMsg = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("handleMsg",-1);
+	    	String myselfName = "handleMsg";  
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("cmd(CMD)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
+	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg = "CMD";
+	    		/* Print */
+	    		parg =  updateVars( Term.createTerm("cmd(X)"), 
+	    		                    Term.createTerm("cmd(CMD)"), 
+	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) println( parg );
+	    	}
+	    	repeatPlanNoTransition(pr,myselfName,"applqa_"+myselfName,false,false);
+	    }catch(Exception e_handleMsg){  
+	    	 println( getName() + " plan=handleMsg WARNING:" + e_handleMsg.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//handleMsg
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

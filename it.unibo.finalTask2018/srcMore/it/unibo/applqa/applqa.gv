@@ -10,6 +10,8 @@ digraph finite_state_machine {
 	size="8,5"
 	
 	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
-	init [ color = blue ][ fontcolor = blue ][ penwidth = 3 ]
+	handleMsg [ color = blue ][ fontcolor = blue ][ penwidth = 3 ]
 	
+	init -> handleMsg [ label = "cmd" ][ color = black ][ fontcolor = black ]
+	init -> handleToutBuiltIn [ label = "timeout(10000)" ][ color = green ][ fontcolor = green ]
 }

@@ -1,1 +1,2 @@
 plan(1,init, sentence(true,move(print("applqa start")),'','' ))
+plan(1,handleMsg, sentence(true,msgswitch(cmd, cmd( CMD) , move(print(CMD))),'','' ))

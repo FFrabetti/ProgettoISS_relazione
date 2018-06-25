@@ -120,7 +120,7 @@ public abstract class AbstractLedmockgui extends QActor {
 	    	printCurrentEvent(false);
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("ctrlEvent(leds,led1,blink)");
+	    	curT = Term.createTerm("ctrlEvent(led,l1,blink)");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("ctrlEvent") && 
 	    		pengine.unify(curT, Term.createTerm("ctrlEvent(CATEG,NAME,CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
@@ -132,7 +132,7 @@ public abstract class AbstractLedmockgui extends QActor {
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("ctrlEvent(leds,led1,noblink)");
+	    	curT = Term.createTerm("ctrlEvent(led,l1,noblink)");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("ctrlEvent") && 
 	    		pengine.unify(curT, Term.createTerm("ctrlEvent(CATEG,NAME,CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 

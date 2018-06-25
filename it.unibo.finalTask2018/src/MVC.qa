@@ -87,8 +87,14 @@ Rules{ //The model is in the theory resourceModel.
 QActor robotmock context ctxMvc {
 	Plan init normal [         
    		println("robot mock");
-   		delay 1000;
-   		forward mvccontroller -m cmd : cmd(a(1))
+   		delay 20000;
+   		forward mvccontroller -m cmd : cmd(w(1)); // start blinking
+   		delay 20000;
+   		forward mvccontroller -m cmd : cmd(h(1)); // stop blinking
+   		delay 20000;
+   		forward mvccontroller -m cmd : cmd(s(1)); // start blinking
+   		delay 20000;
+   		forward mvccontroller -m cmd : cmd(h(1)) // stop blinking
    	]
 //   	switchTo waitForCommand     
 //  

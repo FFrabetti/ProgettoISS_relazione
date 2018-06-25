@@ -5,7 +5,8 @@ System ledMockGui
 Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
 //Event blinkCmd : blinkCmd(STATE)
 
-Context ctxLedMockGui ip [ host="localhost"   port=8039 ]    
+Context ctxLedMockGui ip [ host="localhost"   port=8039 ]
+Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
 
 QActor ledmockgui context ctxLedMockGui{
 	Plan init normal [         
@@ -29,21 +30,21 @@ QActor ledmockgui context ctxLedMockGui{
  		printCurrentEvent;
 //		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
 //		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
-		onEvent ctrlEvent : ctrlEvent(leds, led1, blink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
-		onEvent ctrlEvent : ctrlEvent(leds, led1, noblink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+		onEvent ctrlEvent : ctrlEvent(led, l1, blink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
+		onEvent ctrlEvent : ctrlEvent(led, l1, noblink)  -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
 	]
 }
 
-QActor testeventemitter context ctxLedMockGui {
-	Plan init normal [         
-      	delay 5000;
-   		emit ctrlEvent : ctrlEvent(leds, led1, blink);
-//   		emit blinkCmd: blinkCmd(on);
-   		println("Parte a blinkare");
-		delay 10000;
-		emit ctrlEvent : ctrlEvent(leds, led1, noblink);
-//		emit blinkCmd: blinkCmd(off);
-		println("smette di blinkare")
-]
-   	finally repeatPlan 3
- }
+//QActor testeventemitter context ctxLedMockGui {
+//	Plan init normal [         
+//      	delay 5000;
+//   		emit ctrlEvent : ctrlEvent(leds, led1, blink);
+////   		emit blinkCmd: blinkCmd(on);
+//   		println("Parte a blinkare");
+//		delay 10000;
+//		emit ctrlEvent : ctrlEvent(leds, led1, noblink);
+////		emit blinkCmd: blinkCmd(off);
+//		println("smette di blinkare")
+//]
+//   	finally repeatPlan 3
+// }

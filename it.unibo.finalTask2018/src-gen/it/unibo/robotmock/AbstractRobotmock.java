@@ -76,10 +76,28 @@ public abstract class AbstractRobotmock extends QActor {
 	    	temporaryStr = "\"robot mock\"";
 	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
+	    	aar = delayReactive(20000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(a(1))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(w(1))", guardVars ).toString();
+	    	sendMsg("cmd","mvccontroller", QActorContext.dispatch, temporaryStr ); 
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(20000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(h(1))", guardVars ).toString();
+	    	sendMsg("cmd","mvccontroller", QActorContext.dispatch, temporaryStr ); 
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(20000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(s(1))", guardVars ).toString();
+	    	sendMsg("cmd","mvccontroller", QActorContext.dispatch, temporaryStr ); 
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(20000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(h(1))", guardVars ).toString();
 	    	sendMsg("cmd","mvccontroller", QActorContext.dispatch, temporaryStr ); 
 	    	repeatPlanNoTransition(pr,myselfName,"robotmock_"+myselfName,false,false);
 	    }catch(Exception e_init){  

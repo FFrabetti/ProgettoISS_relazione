@@ -3,6 +3,7 @@ System finalTask2018
 Event temperature : temperature(T)
 
 Context ctxTemperatureAgent ip [ host="localhost" port=8886 ]
+Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
 
 QActor temperatureagent context ctxTemperatureAgent {
 	Plan init normal [ 

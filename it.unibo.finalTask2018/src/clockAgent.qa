@@ -3,6 +3,7 @@ System finalTask2018
 Event clock : clock(H,M)
 
 Context ctxClockAgent ip [ host="localhost" port=8884 ]
+Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
 
 QActor clockagent context ctxClockAgent {
 	Plan init normal [ 

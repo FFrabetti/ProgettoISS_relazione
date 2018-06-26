@@ -1,16 +1,13 @@
-System mvc  
-
+System mvc 
+ 
+Dispatch cmd : cmd (X)
 Event temperature : temperature(T)	
 Event clock : clock(H,M) 
-Dispatch cmd : cmd (X)
-
+Event frontSonar : sonar( DISTANCE )
+Event sonarSensor : sonar(NAME, DISTANCE)
 Event moveRobot : moveRobot(C)
-
-Event changeModel : changeModelItem( TYPE, CATEG, NAME, VALUE )
 Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
-
 Event inputCtrlEvent  : inputEvent( CATEG, NAME, VALUE )	 
-Event outputCtrlEvent : outputEvent( DATA )	//DATA : integer
 
 Context ctxMvc ip [ host="localhost"  port=8019 ]  // -httpserver 
 EventHandler evadapter for temperature,clock  { //maps a temperature, clock and ctrlEvent into a inputCtrlEvent
@@ -29,20 +26,23 @@ QActor mvccontroller context ctxMvc {
 Rules{ //The model is in the theory resourceModel. 
 	   //Here we write the actions to be performs when the model changes.
 	   //The change of the temperature t1 could modify a Led
+	
+	//fatti
 	limitTemperatureValue( 25 ).
+	timeInterval(h(7,0),h(10,0)).
+	
+	//se cambia il modello della temperatura
 	changedModelAction( temperature, t1, V  ):-
 			limitTemperatureValue( MAX ), 
  		    eval( ge, V , MAX ),   
- 		    emitevent( ctrlEvent, ctrlEvent(control,ctrl1,h)).		      			
- 	
- 	changedModelAction(clock,c1,T):-
- 			eval(lt,T,7),
- 		    emitevent( ctrlEvent, ctrlEvent(control,ctrl1,h)).		      			
- 	changedModelAction(clock,c1,T):-
- 			eval(gt,T,10),
- 		    emitevent( ctrlEvent, ctrlEvent(control,ctrl1,h)).		      			
- 	
- 	//se cambia il modello del robot
+ 		    changeModelItem(robot,r1,h(0)).		      			
+
+ 	//se cambia il modello del clock
+ 	changedModelAction(clock,c1,h(HC,MC)):-
+ 			non(inTime(HC,MC)),
+ 			changeModelItem(robot,r1,h(0)).
+ 			 	
+ 	//se cambia il modello del robot 	
  	changedModelAction(robot,R,CMD):-
  			emitevent( ctrlEvent, ctrlEvent(robot,R,CMD)), fail.	
  	changedModelAction(robot,R, w(X)):-
@@ -51,10 +51,41 @@ Rules{ //The model is in the theory resourceModel.
  			changeModelItem(led,l1,blink).
  	changedModelAction(robot,R, h(X)):-
  			changeModelItem(led,l1,noblink).
+ 	changedModelAction(robot,R, a(X)):-
+ 			changeModelItem(robot,R,h(X)).		
+ 	changedModelAction(robot,R, d(X)):-
+ 			changeModelItem(robot,R,h(X)).
  	
  	//Se cambia il modello del led		
  	changedModelAction(led,L,X):-
  			emitevent(ctrlEvent,ctrlEvent(led,L,X)).
+ 	
+ 	//Per non cambiare il modello se il robot non può muoversi
+ 	changeRobotModel(X):-
+ 			canMove,
+ 			changeModelItem(robot,r1,X).
+ 	 	
+ 	//utility: restituisce vero se il primo tempo è precedente al secondo		
+ 	timeBefore(H1,_,H2,_):-
+ 			eval(lt,H1,H2),!.
+ 	timeBefore(H,M1,H,M2):-
+ 			eval(lt,M1,M2).
+ 	
+ 	//vero se HC,MC è dentro all'intervallo		
+ 	inTime(HC,MC):-
+ 			timeInterval(h(H1,M1),h(H2,M2)),
+ 			timeBefore(H1,M1,HC,MC),
+ 			timeBefore(HC,MC,H2,M2).
+ 			
+ 	//Possibilita di muovere il robot R-TempOk e R-TimeOk
+ 	canMove:-
+ 			limitTemperatureValue( MAX ),
+ 			getModelItem(sensor,temperature,t1,T),
+ 			eval(lt,T,MAX),
+ 			getModelItem(sensor,clock,c1,h(HC,MC)),
+ 			inTime(HC,MC).
+ 			
+ 			
  }
 	Plan init normal [         
 		demo consult("./resourceModel.pl");  //contains the models and related rules
@@ -64,8 +95,11 @@ Rules{ //The model is in the theory resourceModel.
  
     Plan waitForInputEvent[
     	// print del modello del robot
-    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
-    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE))
+//    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
+//    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE));
+//    	[ !? getModelItem(sensor, temperature, t1, VALUE) ] println(model(t1, VALUE));
+//    	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
+//    	println("-----------------------------------------------------------------")
     ]  
     transition stopAfter 6000000 
      	whenEvent inputCtrlEvent -> handleInputEvent,
@@ -81,33 +115,53 @@ Rules{ //The model is in the theory resourceModel.
     
     Plan handleCmd resumeLastPlan[
     	onMsg cmd : cmd(X) -> println(ricevuto(X));
-    	onMsg cmd : cmd(X) -> demo changeModelItem(robot,r1,X)
+    	onMsg cmd : cmd(X) -> demo changeRobotModel(X)
     ]
 }
 
-//QActor robotmock context ctxMvc {
-//	Plan init normal [         
-//   		println("robot mock");
-//   		delay 20000;
-//   		forward mvccontroller -m cmd : cmd(w(1)); // start blinking
-//   		delay 20000;
-//   		forward mvccontroller -m cmd : cmd(h(1)); // stop blinking
-//   		delay 20000;
-//   		forward mvccontroller -m cmd : cmd(h(1)); // should be ignored
-//   		delay 20000;
-//   		forward mvccontroller -m cmd : cmd(s(1)); // start blinking
-//   		delay 20000;
-//   		forward mvccontroller -m cmd : cmd(h(1)) // stop blinking
-//   	]
-//   	switchTo waitForCommand     
-//  
-//    Plan waitForCommand[  ]  
-//    transition stopAfter 100000 
-//     	whenEvent ctrlEvent -> handleCmd
-//    finally repeatPlan	
-//   	 
-//	Plan handleCmd resumeLastPlan[
-//  		printCurrentEvent;
-//		onEvent ctrlEvent : ctrlEvent(control, ctrl1, C)  -> emit moveRobot : moveRobot(C)
-//	]
-//}
+QActor swag context ctxMvc {
+	Rules{
+		isClose :-
+			sonarDetect(_,D),
+			eval(gt,D,0),!,
+			eval(lt,D,5).
+		
+		isClose :-
+			sonarDetect(_,D),
+			eval(minus,0,D,R),
+			eval(lt,R,5).
+	}	
+
+	Plan init normal [         
+   		println("start swag")
+   	]
+   	switchTo waitForSonar     
+  
+    Plan waitForSonar[  ]  
+    transition stopAfter 3600000 
+     	whenEvent frontSonar -> handleFront,
+     	whenEvent sonarSensor -> handleSensor
+    finally repeatPlan	
+   	 
+	Plan handleFront resumeLastPlan[
+  		printCurrentEvent;
+		onEvent frontSonar : sonar(D) -> forward mvccontroller -m cmd : cmd(h(0))
+	]
+	
+	Plan handleSensor resumeLastPlan[
+  		printCurrentEvent;
+		onEvent sonarSensor : sonar(N,D) -> addRule sonarDetect(N,D);
+		[ !? isClose ] { 	forward mvccontroller -m cmd : cmd(d(0));
+							delay 250;
+							forward mvccontroller -m cmd : cmd(d(0));
+							delay 250;
+							forward mvccontroller -m cmd : cmd(d(0));
+							delay 250;
+							forward mvccontroller -m cmd : cmd(d(0));
+							delay 250;
+							forward mvccontroller -m cmd : cmd(s(0));
+							delay 250;
+							forward mvccontroller -m cmd : cmd(h(0)) };
+		[ ?? sonarDetect(N,D) ] println( removing(N,D) )
+	]
+}

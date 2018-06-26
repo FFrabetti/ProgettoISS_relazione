@@ -8,7 +8,7 @@ Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
 Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
 
 Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
-EventHandler evhnode for ctrlEvent -print {
+EventHandler evhnode for ctrlEvent /*-print*/ {
 	forwardEvent nodebroker -m ctrlMsg // stesso payload
 };
 

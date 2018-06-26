@@ -18,9 +18,6 @@ protected IEventItem event;
 	public void handleCurrentEvent() throws Exception {
 		event = this.currentEvent; //AKKA getEventItem();
 		if( event == null ) return;
-//showMsg( "---------------------------------------------------------------------" );	
-showMsg( event.getPrologRep()  );				 
-//showMsg( "---------------------------------------------------------------------" );	
 		{
 		Term msgt       = Term.createTerm(event.getMsg());
 		Term msgPattern = Term.createTerm("ctrlEvent(CATEG,NAME,CMD)");

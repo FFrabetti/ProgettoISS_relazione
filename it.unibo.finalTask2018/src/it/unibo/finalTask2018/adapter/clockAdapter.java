@@ -5,11 +5,12 @@ import scala.util.Random;
 
 public class clockAdapter {
 	
-	static int cont = 0;
+	static int cont = 30;
 	
 	public static void getTime(QActor qa) {
-		//qa.addRule("currentTime(" + cont++ + "," + cont*10 + ")");
-		Random r=new Random();
-		qa.addRule("currentTime(" + r.nextInt(24) + "," + r.nextInt(60) + ")");
+		cont++;
+		qa.addRule("currentTime(" + cont/6 + "," + cont + ")");
+//		Random r=new Random();
+//		qa.addRule("currentTime(" + r.nextInt(24) + "," + r.nextInt(60) + ")");
 	}
 }

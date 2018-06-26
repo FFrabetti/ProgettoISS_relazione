@@ -1,11 +1,11 @@
 %==============================================
-% WorldTheory.pl for actor mvccontroller
+% WorldTheory.pl for actor swag
 %==============================================
 /*
 For a QActor as a singleton statically degined in the model
 */
-myname(qatumvccontroller).	%%old version (deprecated)
-actorobj(qatumvccontroller).	%% see registerActorInProlog18 in QActor
+myname(qatuswag).	%%old version (deprecated)
+actorobj(qatuswag).	%% see registerActorInProlog18 in QActor
 
 /*
 For a QActor instance of name=Name dynamically created
@@ -81,7 +81,7 @@ evalGuard( G ) :-
 
 output( M ):-stdout <- println( M ).
 %-------------------------------------------------
-%  TuProlo FEATURES of the QActor mvccontroller
+%  TuProlo FEATURES of the QActor swag
 %-------------------------------------------------
 dialog( FileName ) :-  
 	java_object('javax.swing.JFileChooser', [], Dialog),
@@ -89,7 +89,7 @@ dialog( FileName ) :-
 	Dialog <- getSelectedFile returns File,
 	File <- getName returns FileName. 		 
 
-%% :- stdout <- println(  "hello from world theory of mvccontroller" ). 
+%% :- stdout <- println(  "hello from world theory of swag" ). 
 
 %-------------------------------------------------
 %  UTILITIES for TuProlog computations
@@ -140,24 +140,10 @@ inc(I,K,N):-
 actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 
 %-------------------------------------------------
-%  User static rules about mvccontroller
+%  User static rules about swag
 %------------------------------------------------- 
-limitTemperatureValue( 25).
-timeInterval( h( 7,0),h( 10,0)).
-changedModelAction( temperature,t1,V):-limitTemperatureValue( MAX),eval( ge,V,MAX),changeModelItem( robot,r1,h( 0)).
-changedModelAction( clock,c1,h( HC,MC)):-non( inTime( HC,MC)),changeModelItem( robot,r1,h( 0)).
-changedModelAction( robot,R,CMD):-emitevent( ctrlEvent,ctrlEvent( robot,R,CMD)),fail.
-changedModelAction( robot,R,w( X)):-changeModelItem( led,l1,blink).
-changedModelAction( robot,R,s( X)):-changeModelItem( led,l1,blink).
-changedModelAction( robot,R,h( X)):-changeModelItem( led,l1,noblink).
-changedModelAction( robot,R,a( X)):-changeModelItem( robot,R,h( X)).
-changedModelAction( robot,R,d( X)):-changeModelItem( robot,R,h( X)).
-changedModelAction( led,L,X):-emitevent( ctrlEvent,ctrlEvent( led,L,X)).
-changeRobotModel( X):-canMove,changeModelItem( robot,r1,X).
-timeBefore( H1,_,H2,_):-eval( lt,H1,H2), ! .
-timeBefore( H,M1,H,M2):-eval( lt,M1,M2).
-inTime( HC,MC):-timeInterval( h( H1,M1),h( H2,M2)),timeBefore( H1,M1,HC,MC),timeBefore( HC,MC,H2,M2).
-canMove:-limitTemperatureValue( MAX),getModelItem( sensor,temperature,t1,T),eval( lt,T,MAX),getModelItem( sensor,clock,c1,h( HC,MC)),inTime( HC,MC).
+isClose:-sonarDetect( _,D),eval( gt,D,0), ! ,eval( lt,D,5).
+isClose:-sonarDetect( _,D),eval( minus,0,D,R),eval( lt,R,5).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

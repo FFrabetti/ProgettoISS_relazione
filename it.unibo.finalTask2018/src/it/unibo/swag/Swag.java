@@ -2,12 +2,12 @@
 /*
 This code is generated only ONCE
 */
-package it.unibo.robotmock;
+package it.unibo.swag;
 import it.unibo.is.interfaces.IOutputEnvView;
 import it.unibo.qactors.QActorContext;
 
-public class Robotmock extends AbstractRobotmock { 
-	public Robotmock(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
+public class Swag extends AbstractSwag { 
+	public Swag(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
 		super(actorId, myCtx, outEnvView);
 	}
 /*

@@ -95,16 +95,6 @@ public abstract class AbstractMvccontroller extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_waitForInputEvent",0);
 	     pr.incNumIter(); 	
 	    	String myselfName = "waitForInputEvent";  
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(robots,robot,r1,VALUE)" )) != null ){
-	    	temporaryStr = "model(r1,VALUE)";
-	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
-	    	println( temporaryStr );  
-	    	}
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(actuator,led,l1,VALUE)" )) != null ){
-	    	temporaryStr = "model(l1,VALUE)";
-	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
-	    	println( temporaryStr );  
-	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"mvccontroller_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleInputEvent"), stateTab.get("handleCmd") }, 
@@ -175,7 +165,7 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
 	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg="changeModelItem(robot,r1,X)";
+	    		String parg="changeRobotModel(X)";
 	    		/* PHead */
 	    		parg =  updateVars( Term.createTerm("cmd(X)"), 
 	    		                    Term.createTerm("cmd(X)"), 

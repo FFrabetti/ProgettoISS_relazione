@@ -400,10 +400,17 @@ Il modello delle risorse è un disaccoppiatore del mondo fisico dal mondo della 
 Come analisti riteniamo vantaggioso introdurre un modello delle risorse così da non vincolare la logica applicativa a dettagli tecnologico-implementativi, sebbene ciò comporti un piccolo sforzo aggiuntivo iniziale. Tale overhead è però un investimento a fronte di futuri sviluppi di applicazioni simili, inoltre, se il modello fosse standardizzato, sarebbe garantita l'interoperabilità tra sistemi diversi.
 
 \subsection{Resource model}
-Usiamo per la definizione del modello delle risorse un linguaggio dichiarativo che consenta di esprimere sia lo stato di ciascun componente, sia le operazioni primitive su di esso. A tal fine, introduciamo il seguente modello scritto in Prolog:
+Usiamo per la definizione del modello delle risorse un linguaggio dichiarativo che consenta di esprimere sia lo stato di ciascun componente, sia le operazioni primitive su di esso. A tal fine, introduciamo il seguente modello scritto in Prolog:\\
 
-\lstinputlisting[language=Prolog]{../it.unibo.finalTask2018/resourceModel.pl}
+\lstinputlisting[language=Prolog, keywordstyle=\color{black}]{../it.unibo.finalTask2018/resourceModel.pl}
 
+\subsection{Logical architecture}
+Immagine informale. Sottoparagrafi per spiegare meglio i componenti che sono cambiamenti rispetto a prima (analisi dei requisiti) in seguito all'introduzione del modello delle risorse.
+
+mvccontroller (racchiude il resource model) + eventHandler
+softwareagent (quali requisiti sono stati soddisfatti al momento)
+console web (-httpserver) e come funziona la catena di eventi
+virtual robot: eventHandler per accodare e non perdere gli eventi ctrlEvent essendo un componente event-driven. Questi sono inviati da...
 %===========================================================================
 
 %===========================================================================

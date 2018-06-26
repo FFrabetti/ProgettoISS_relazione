@@ -23,7 +23,7 @@ showMsg( event.getPrologRep()  );
 //showMsg( "---------------------------------------------------------------------" );	
 		{
 		Term msgt       = Term.createTerm(event.getMsg());
-		Term msgPattern = Term.createTerm("ctrlMsg(CATEG,NAME,CMD)");
+		Term msgPattern = Term.createTerm("ctrlEvent(CATEG,NAME,CMD)");
 				boolean b = this.pengine.unify(msgt, msgPattern);
 				if( b ) {
 			  		sendMsg("ctrlMsg","nodebroker", QActorContext.dispatch, msgt.toString() ); 

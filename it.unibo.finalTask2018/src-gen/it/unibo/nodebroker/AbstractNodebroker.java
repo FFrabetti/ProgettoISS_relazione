@@ -80,10 +80,10 @@ public abstract class AbstractNodebroker extends QActor {
 	          try{
 	            PlanRepeat pr1 = PlanRepeat.setUp("adhocstate",-1);
 	            //ActionSwitch for a message or event
-	             if( currentMessage.msgContent().startsWith("ctrlMsg") ){
+	             if( currentMessage.msgContent().startsWith("ctrlEvent") ){
 	            	String parg="moveRobot(CMD)";
 	            	/* SendDispatch */
-	            	parg = updateVars(Term.createTerm("ctrlMsg(CATEG,NAME,CMD)"),  Term.createTerm("ctrlMsg(robot,r1,CMD)"), 
+	            	parg = updateVars(Term.createTerm("ctrlEvent(CATEG,NAME,CMD)"),  Term.createTerm("ctrlEvent(robot,r1,CMD)"), 
 	            		    		  					Term.createTerm(currentMessage.msgContent()), parg);
 	            	if( parg != null ) sendMsg("moveRobot","robotnode", QActorContext.dispatch, parg ); 
 	             }

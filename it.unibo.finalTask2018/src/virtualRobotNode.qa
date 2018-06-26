@@ -5,7 +5,7 @@ Event frontSonar : sonar( DISTANCE )
 Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
 
 Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
-Dispatch ctrlMsg : ctrlMsg(CATEG, NAME, CMD)
+Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
 
 Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
 EventHandler evhnode for ctrlEvent -print {
@@ -52,7 +52,7 @@ QActor robotnode context ctxVirtualRobotNode {
 QActor nodebroker context ctxVirtualRobotNode {
 	Plan init normal [ ]
 	transition stopAfter 3600000
-		whenMsg ctrlMsg : ctrlMsg(robot,r1,CMD) do forward robotnode -m moveRobot : moveRobot(CMD)
+		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward robotnode -m moveRobot : moveRobot(CMD)
 	finally repeatPlan
 	
 //	Plan handleMsg resumeLastPlan [

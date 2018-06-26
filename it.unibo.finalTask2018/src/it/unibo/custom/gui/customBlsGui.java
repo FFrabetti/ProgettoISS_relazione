@@ -47,25 +47,16 @@ private static BlinkingThread bt;
     
     public static void blinkLed(QActor qa,String blink) {
     	if(blink.equals("on")) {
-//        	//int cont=0;
-//    		for(;;) {
-//				try {
-//					setLed(qa,"on");
-//					Thread.sleep(200);
-//					setLed(qa,"off");
-//					Thread.sleep(200);
-//
-//				} catch (InterruptedException e) {
-//					break;
-//				}
-//				//System.out.println(cont++);
-//    		}
-    		bt=new BlinkingThread(qa);
-    		bt.start();
+    		if(bt== null || !bt.isAlive()) {
+    			bt=new BlinkingThread(qa);
+    			bt.start();
+    		}
     	}
     	else {
-    		bt.interrupt();
-			setLed(qa,"off");
+    		if(bt!= null) {
+	    		bt.interrupt();
+				setLed(qa,"off");
+    		}
     	}
     }
     /*

@@ -6,27 +6,19 @@ Event clock : clock(H,M)
 Event frontSonar : sonar( DISTANCE )
 Event sonarSensor : sonar(NAME, DISTANCE)
 Event moveRobot : moveRobot(C)
-Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD   ) 	//CMD depends on CATEG/NAME
+Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD )
 Event inputCtrlEvent  : inputEvent( CATEG, NAME, VALUE )	 
 
 Context ctxMvc ip [ host="localhost"  port=8019 ]  // -httpserver 
-EventHandler evadapter for temperature,clock  { //maps a temperature, clock and ctrlEvent into a inputCtrlEvent
+EventHandler evadapter for temperature,clock  { //maps a temperature, clock into a inputCtrlEvent
 emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature, t1, T );
 emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) )
-//emit inputCtrlEvent fromContent cmd(X) to inputEvent(robot , r1, X)
 
 };
-/*
- * CONTROL model-based
- * works by reacting to inputCtrlEvent  emitted by a change of a sensor model
- * performs ACTIONS that change the model of some sensor/actuator resource  
- * and activates changedModelAction/3 that performs an action for the world
- */
+
 QActor mvccontroller context ctxMvc {
 Rules{ //The model is in the theory resourceModel. 
-	   //Here we write the actions to be performs when the model changes.
-	   //The change of the temperature t1 could modify a Led
-	
+
 	//fatti
 	limitTemperatureValue( 25 ).
 	timeInterval(h(7,0),h(10,0)).
@@ -60,24 +52,24 @@ Rules{ //The model is in the theory resourceModel.
  	changedModelAction(led,L,X):-
  			emitevent(ctrlEvent,ctrlEvent(led,L,X)).
  	
- 	//Per non cambiare il modello se il robot non può muoversi
+ 	//Per non cambiare il modello se il robot non puo' muoversi
  	changeRobotModel(X):-
  			canMove,
  			changeModelItem(robot,r1,X).
  	 	
- 	//utility: restituisce vero se il primo tempo è precedente al secondo		
+ 	//utility: restituisce vero se il primo tempo e' precedente al secondo		
  	timeBefore(H1,_,H2,_):-
  			eval(lt,H1,H2),!.
  	timeBefore(H,M1,H,M2):-
  			eval(lt,M1,M2).
  	
- 	//vero se HC,MC è dentro all'intervallo		
+ 	//vero se HC,MC e' dentro all'intervallo		
  	inTime(HC,MC):-
  			timeInterval(h(H1,M1),h(H2,M2)),
  			timeBefore(H1,M1,HC,MC),
  			timeBefore(HC,MC,H2,M2).
  			
- 	//Possibilita di muovere il robot R-TempOk e R-TimeOk
+ 	//Possibilita' di muovere il robot R-TempOk e R-TimeOk
  	canMove:-
  			limitTemperatureValue( MAX ),
  			getModelItem(sensor,temperature,t1,T),
@@ -121,6 +113,7 @@ Rules{ //The model is in the theory resourceModel.
 
 QActor swag context ctxMvc {
 	Rules{
+		// for testing
 		isClose :-
 			sonarDetect(_,D),
 			eval(gt,D,0),!,
@@ -135,7 +128,7 @@ QActor swag context ctxMvc {
 	Plan init normal [         
    		println("start swag")
    	]
-   	switchTo waitForSonar     
+   	switchTo waitForSonar   // testing  
   
     Plan waitForSonar[  ]  
     transition stopAfter 3600000 
@@ -150,18 +143,21 @@ QActor swag context ctxMvc {
 	
 	Plan handleSensor resumeLastPlan[
   		printCurrentEvent;
+  		// testing: robot close to sonars makes some moves
 		onEvent sonarSensor : sonar(N,D) -> addRule sonarDetect(N,D);
-		[ !? isClose ] { 	forward mvccontroller -m cmd : cmd(d(0));
-							delay 250;
-							forward mvccontroller -m cmd : cmd(d(0));
-							delay 250;
-							forward mvccontroller -m cmd : cmd(d(0));
-							delay 250;
-							forward mvccontroller -m cmd : cmd(d(0));
-							delay 250;
-							forward mvccontroller -m cmd : cmd(s(0));
-							delay 250;
-							forward mvccontroller -m cmd : cmd(h(0)) };
+		[ !? isClose ] {
+			forward mvccontroller -m cmd : cmd(d(0));
+			delay 250;
+			forward mvccontroller -m cmd : cmd(d(0));
+			delay 250;
+			forward mvccontroller -m cmd : cmd(d(0));
+			delay 250;
+			forward mvccontroller -m cmd : cmd(d(0));
+			delay 250;
+			forward mvccontroller -m cmd : cmd(s(0));
+			delay 250;
+			forward mvccontroller -m cmd : cmd(h(0))
+		};
 		[ ?? sonarDetect(N,D) ] println( removing(N,D) )
 	]
 }

@@ -334,7 +334,7 @@ Nello specifico, sono possibili tre approcci:
 \item \textbf{pattern observer:} l'observer si registra presso l'observable e viene notificato al cambiamento di stato di quest'ultimo;
 \item \textbf{publish/subscribe:} è il sensore stesso a pubblicare all'esterno le informazioni quando queste sono disponibili ad uso degli eventuali subscriber.
 \end{itemize}
-Scegliamo di adottare questa seconda strategia, poiché meno costosa in termini di dati scambiati e poiché garantisce un minor accoppiamento tra le entità coinvolte.
+Scegliamo di adottare la seconda strategia, poiché meno costosa in termini di dati scambiati e poiché garantisce un minor accoppiamento tra le entità coinvolte.
 
 Anche in questo caso il sensore, non conoscendo i componenti interessati, emette un evento che può essere percepito da chiunque sia in ascolto.\\
 
@@ -342,7 +342,7 @@ Anche in questo caso il sensore, non conoscendo i componenti interessati, emette
 
 \noindent Si riportano solo le variazioni essenziali per il \texttt{Clock}:
 
-\lstinputlisting[style=style_qa, firstline=13, lastline=20, firstnumber=13]{../it.unibo.finalTask2018/src/clockAgent.qa}
+\lstinputlisting[style=style_qa, firstline=14, lastline=21, firstnumber=14]{../it.unibo.finalTask2018/src/clockAgent.qa}
 
 \subsection{Robot}
 Ci viene fornito un modello del robot espresso nel linguaggio \qa
@@ -356,7 +356,7 @@ Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ric
 
 \vspace{8px}
 
-Nell'ambiente virtuale sono presenti due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo definiamo un ulteriore evento \codescript{sonarSensor : sonar(NAME, DISTANCE)}, dove \emph{NAME} è \code{sonar1} o \code{sonar2}.\\
+Nell'ambiente virtuale sono presenti due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo definiamo un ulteriore evento \codescript{sonarSensor : sonar(NAME, DISTANCE)}, dove \codescript{NAME} è \code{sonar1} o \code{sonar2}.\\
 
 Da notare come l'emissione di tali eventi dipenda dalla specifica implementazione del \textit{virtual environment} (le operazioni ad esso relative sono delegate ad una classe Java):
 
@@ -387,7 +387,7 @@ Poiché abbiamo utilizzato un modello eseguibile, questo ci fornisce anche un pr
 %===========================================================================
 \section{Problem analysis}
 \labelsec{ProblemAnalysis}
-Il problema definito dai requisiti si colloca nell'ambito dell'IoT, dove è diffuso l'utilizzo della cosiddetta \emph{architettura esagonale} come design pattern per gestire il rapporto tra input, elaborazione ed output nei sistemi distribuiti. Un ruolo centrale viene rivestito dalla business logic e dal modello delle risorse (\emph{resource model}), mentre gli altri componenti del sistema vengono visti attraverso degli adapter verso le varie tecnologie ed implementazioni.\\
+Il problema definito dai requisiti si colloca nell'ambito dell'IoT, dove è diffuso l'utilizzo della cosiddetta \emph{architettura esagonale} come design pattern per gestire il rapporto tra input, elaborazione ed output nei sistemi distribuiti. Un ruolo centrale viene rivestito dalla business logic e dal modello delle risorse (\emph{Resource Model}), mentre gli altri componenti del sistema vengono visti attraverso degli adapter verso le varie tecnologie ed implementazioni.\\
 
 Il modello delle risorse è un disaccoppiatore del mondo fisico dal mondo della logica applicativa, che deve essere indipendente dalla tecnologia. Nello specifico:
 \begin{enumerate}
@@ -399,18 +399,74 @@ Il modello delle risorse è un disaccoppiatore del mondo fisico dal mondo della 
 
 Come analisti riteniamo vantaggioso introdurre un modello delle risorse così da non vincolare la logica applicativa a dettagli tecnologico-implementativi, sebbene ciò comporti un piccolo sforzo aggiuntivo iniziale. Tale overhead è però un investimento a fronte di futuri sviluppi di applicazioni simili, inoltre, se il modello fosse standardizzato, sarebbe garantita l'interoperabilità tra sistemi diversi.
 
-\subsection{Resource model}
+\subsection{Resource Model}
 Usiamo per la definizione del modello delle risorse un linguaggio dichiarativo che consenta di esprimere sia lo stato di ciascun componente, sia le operazioni primitive su di esso. A tal fine, introduciamo il seguente modello scritto in Prolog:\\
 
 \lstinputlisting[language=Prolog, keywordstyle=\color{black}]{../it.unibo.finalTask2018/resourceModel.pl}
 
 \subsection{Logical architecture}
-Immagine informale. Sottoparagrafi per spiegare meglio i componenti che sono cambiamenti rispetto a prima (analisi dei requisiti) in seguito all'introduzione del modello delle risorse.
+%%Immagine informale. Sottoparagrafi per spiegare meglio i componenti che sono cambiamenti rispetto a prima (analisi dei requisiti) in seguito all'introduzione del modello delle risorse.
 
-mvccontroller (racchiude il resource model) + eventHandler
-softwareagent (quali requisiti sono stati soddisfatti al momento)
-console web (-httpserver) e come funziona la catena di eventi
-virtual robot: eventHandler per accodare e non perdere gli eventi ctrlEvent essendo un componente event-driven. Questi sono inviati da...
+In seguito all'aggiunta del \emph{Resource Model} possiamo definire la seguente architettura logica informale del sistema:
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.4]{img/informalLogicalArchitecture.png}
+\caption{Architettura logica informale}\labelfig{informalLA}
+\end{figure}
+
+Rispetto all'architettura risultante dall'analisi dei requisiti, sono stati aggiunti due componenti: \texttt{Controller} e \texttt{SoftwareAgent}. 
+
+\subsection{Controller}
+Il ruolo del \texttt{Controller} è quello di gestire il modello delle risorse in base agli eventi ricevuti dai sensori e alla logica applicativa. Ci viene naturale utilizzare il pattern MVC: Resource Model, sensori/attuatori e Controller.
+
+Modelliamo il \texttt{Controller} come un attore in grado di ricevere informazioni di input ed emettere comandi di output.
+
+\lstinputlisting[style=style_qa, firstline=1, lastline=113]{../it.unibo.finalTask2018/src/MVC.qa}
+
+Il \texttt{Controller}, tramite un \emph{EventHandler}, mappa ogni evento emesso dai sensori in un evento \codescript{inputCtrlEvent  : inputEvent( CATEG, NAME, VALUE )}. In questo modo sensori fisici diversi vengono trattati allo stesso modo e gli eventi da essi inviati non vengono mai persi, essendo l'\emph{EventHandler} un componente event-driven. Il \texttt{Controller}, per discriminare la natura degli eventi, sfrutta i campi \codescript{CATEG} e \codescript{NAME} del payload dell'evento.
+
+Ad ogni modifica del Resource Model, il \texttt{Controller} emette degli eventi \codescript{ctrlEvent : ctrlEvent( CATEG, NAME, CMD )} per notificare il cambiamento di stato ai vari attuatori.
+
+Attualmente sono soddisfatti i requisiti \code{R-TempOk} e \code{R-TimeOk} in quanto il \texttt{Controller} blocca ogni modifica allo stato del robot al di fuori di un certo intervallo temporale o in presenza di temperature troppo elevate.
+
+\subsection{Software Agent}
+Il \texttt{SoftwareAgent} realizza la logica applicativa in collaborazione col Controller,  decidiamo quindi di modellarlo come un attore nel suo stesso contesto.
+
+In questa fase preliminare, per motivi di testing, il \texttt{SoftwareAgent} fa ruotare il robot quando esso viene rilevato dai sonar a distanza ravvicinata.
+
+\lstinputlisting[style=style_qa, firstline=114, firstnumber=114]{../it.unibo.finalTask2018/src/MVC.qa} 
+
+\subsection{Changes to HumanOperator}
+Rispetto al modello precendente, è stata aggiunta una \emph{GUI} utilizzabile dall'utente via web. Questa è composta da bottoni che, quando vengono premuti, scatenano eventi \codescript{usercmd : usercmd(X)}. Lo \texttt{HumanOperator} cattura questi eventi e li inoltra sotto forma di messaggi \codescript{cmd : cmd(X)} al Controller.
+
+Per rapidità di prototipazione, abbiamo deciso di  utilizzare per la \emph{GUI} web il flag \codescript{-httpserver}, ma in futuro potrà essere sostituita da un'implementazione differente per soddisfare i requisiti \code{R-Start} e \code{R-Stop}.
+
+\lstinputlisting[style=style_qa, lastline=25]{../it.unibo.finalTask2018/src/HumanOperatorWithGUI.qa} 
+
+\subsection{VirtualRobotNode}
+Il robot virtuale si mette in attesa di messaggi \codescript{moveRobot} e li interpreta come comandi di movimento. Tuttavia i cambiamenti nel modello del robot vengono notificati all'esterno sotto forma di eventi \codescript{ctrlEvent}.
+
+Per effettuare la conversione da \codescript{ctrlEvent} a messaggi abbiamo utilizzato un \emph{EventHandler}. Questo permette di accodare gli eventi senza il rischio di perderne qualcuno: il robot virtuale è quindi un componente \emph{event-driven}.
+
+\lstinputlisting[style=style_qa, lastline=13]{../it.unibo.finalTask2018/src/virtualRobotNode.qa} 
+
+Poichè gli \emph{EventHandler} possono solo convertire eventi in messaggi con lo stesso payload, introduciamo l'attore \texttt{nodebroker}, il cui compito è quello di convertire messaggi \codescript{ctrlMsg : ctrlEvent(CATEG, NAME, CMD)} inviati dall'\emph{EventHandler} in messaggi \codescript{moveRobot : moveRobot( CMD )} per il robot virtuale.
+
+\lstinputlisting[style=style_qa, firstline=52 , lastline=57, firstnumber=52]{../it.unibo.finalTask2018/src/virtualRobotNode.qa} 
+
+\subsection{Changes to HueLampAgent}
+Come per il robot, anche il modello della \texttt{HueLamp} dev'essere aggiornato per poter lavorare con gli eventi \codescript{ctrlEvent} emessi dal Controller. Analogamente a quanto fatto prima, abbiamo utilizzato un \emph{EventHandler} per convertire tali eventi in \codescript{blinkCmd}, ovvero nel formato degli eventi gestiti dalla lampada.\\
+
+L'attuale implementazione è un oggetto \emph{mock} che mostra un'interfaccia grafica in grado di ''lampeggiare''.
+
+\lstinputlisting[style=style_qa, lastline=35]{../it.unibo.finalTask2018/src/hueLampAgentGui.qa} 
+
+% mvccontroller (racchiude il resource model) + eventHandler
+% softwareagent (quali requisiti sono stati soddisfatti al momento)
+% console web (-httpserver) e come funziona la catena di eventi
+% virtual robot: eventHandler per accodare e non perdere gli eventi ctrlEvent essendo un componente event-driven. Questi sono inviati da...
+
 %===========================================================================
 
 %===========================================================================

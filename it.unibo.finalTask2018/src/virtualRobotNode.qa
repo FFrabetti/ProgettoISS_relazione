@@ -54,11 +54,6 @@ QActor nodebroker context ctxVirtualRobotNode {
 	transition stopAfter 3600000
 		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward robotnode -m moveRobot : moveRobot(CMD)
 	finally repeatPlan
-	
-//	Plan handleMsg resumeLastPlan [
-//		onMsg ctrlMsg : ctrlMsg(C, N, V) -> println(ctrlMsg(C, N, V));
-//		onMsg ctrlMsg : ctrlMsg(C, N, V) -> forward robotnode -m moveRobot : moveRobot(V)
-//	]
 }
 
 //QActor testerrobotnode context ctxVirtualRobotNode {

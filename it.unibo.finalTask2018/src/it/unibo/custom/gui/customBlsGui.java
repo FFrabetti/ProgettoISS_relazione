@@ -36,7 +36,7 @@ private static BlinkingThread bt;
     public static synchronized customBlsGui createCustomLedGui(QActor myActor) {
     	if( curLedGui == null ) curLedGui = new customBlsGui(myActor, "led");
     	return  curLedGui;
-     }
+    }
     public static synchronized customBlsGui createCustomButtonGui(QActor myActor) {
     	if( curLBtnGui == null ) curLBtnGui =  new customBlsGui(myActor, "button");
     	return  curLBtnGui;
@@ -62,6 +62,10 @@ private static BlinkingThread bt;
     /*
      * CONSTRUCTORS
      */
+    public customBlsGui() {
+    	
+    }
+    
     public  customBlsGui(QActor myActor) {
     	this.myActor = myActor;
     	initAll();

@@ -22,8 +22,8 @@ public class BlinkingThread extends Thread{
 			} catch (InterruptedException e) {
 				break;
 			}
-			//Per debug
-			System.out.println("DEBUG:"+cont++ );
+//			//Per debug
+//			System.out.println("DEBUG:"+cont++ );
 		}
 	}
 

@@ -1,0 +1,59 @@
+System finalTask2018            
+
+Event frontSonar : sonar(DISTANCE)
+Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
+Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
+Dispatch moveRobot : moveRobot(CMD)
+
+Context ctxRealRobotMock ip [ host="localhost" port=8866 ]
+EventHandler evhnode for ctrlEvent /*-print*/ {
+	forwardEvent realrobotbroker -m ctrlMsg // stesso payload
+};
+
+Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
+
+
+QActor realrobotmock context ctxRealRobotMock {
+	Plan init normal [       
+	    println("realrobotmock start");
+	    javaRun it.unibo.finalTask2018.robot.realRobotMock.setUpGui()
+  	]
+    switchTo waitForCmd        
+		
+   	Plan waitForCmd[
+   		println("realrobotmock waiting for commands")
+   	]  
+  	transition stopAfter 3600000 
+ 		whenMsg moveRobot -> execMove 
+   	finally repeatPlan    
+
+  	Plan execMove resumeLastPlan[     
+     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotStop();
+  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotForward();
+    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotBackward();
+  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotLeft();
+   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotRight()
+   	]
+}
+
+QActor realrobotbroker context ctxRealRobotMock {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward realrobotmock -m moveRobot : moveRobot(CMD)
+	finally repeatPlan
+}
+
+//QActor testerrealrobotmock context ctxRealRobotMock{
+//	Plan init normal [
+//		println("testerrealrobotmock start");
+//		delay 4000;
+//		forward realrobotmock -m moveRobot : moveRobot(w(1));
+//		delay 4000;
+//		forward realrobotmock -m moveRobot : moveRobot(d(1));
+//		delay 4000;
+//		forward realrobotmock -m moveRobot : moveRobot(s(1));
+//		delay 4000;
+//		forward realrobotmock -m moveRobot : moveRobot(h(1));
+//		println("test finito")
+//	]
+//}

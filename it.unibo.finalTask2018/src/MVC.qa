@@ -87,11 +87,11 @@ Rules{ //The model is in the theory resourceModel.
  
     Plan waitForInputEvent[
     	// print del modello del robot
-//    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
+    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
 //    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE));
-//    	[ !? getModelItem(sensor, temperature, t1, VALUE) ] println(model(t1, VALUE));
-//    	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
-//    	println("-----------------------------------------------------------------")
+    	[ !? getModelItem(sensor, temperature, t1, VALUE) ] println(model(t1, VALUE));
+    	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
+    	println("-----------------------------------------------------------------")
     ]  
     transition stopAfter 6000000 
      	whenEvent inputCtrlEvent -> handleInputEvent,

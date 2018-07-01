@@ -2,70 +2,19 @@ System finalTask2018
 
 Event clock : clock(H,M)
 Event temperature : temperature(T)
-Dispatch cmd : cmd(X)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME, DISTANCE)
-Dispatch moveRobot : moveRobot(CMD)
 Event blinkCmd : blinkCmd(STATE)
 
-Context ctxReqAnalysis ip [host="localhost" port=8888]
+Dispatch cmd : cmd(X)
+Dispatch moveRobot : moveRobot(CMD)
 
-QActor clockagent1 context ctxReqAnalysis {
-	Plan init normal [ 
-		println("clockAgent start")
-	]
-	switchTo checkTime
-	
-	Plan checkTime [
-		delay 5000; // for testing
-		// delay 60000;
-		println("clockAgent checking time");
-		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
-		[?? currentTime(H,M)] emit clock : clock(H,M)
-	]
-	finally repeatPlan
-}
+Context ctxReqAnalysis ip [host="localhost" port=8888] -httpserver
+Context ctxDdr ip [ host="localhost" port=8882 ] -standalone 
 
-QActor temperatureagent1 context ctxReqAnalysis {
-	Plan init normal [ 
-		println("temperatureAgent start")
-	]
-	switchTo checkTemperature 
-	
-	Plan checkTemperature [
-		delay 5000;
-		println("temperatureAgent checking temperature");
-		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
-		[?? currentTemp(T)] emit temperature : temperature(T)
-	]
-	finally repeatPlan
-}
-
-QActor robotddr1 context ctxReqAnalysis {   
-	Plan init normal [       
-	    println("robotDDR start");
-	    
-	    javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment()
-  	]
-    switchTo waitForCmd        
-		
-   	Plan waitForCmd[
-   		println("robotDDR waiting for commands")
-   	]  
-  	transition stopAfter 3600000 
- 		whenMsg moveRobot -> execMove 
-   	finally repeatPlan    
-	   
-  	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward();
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight()
-   	]
-}
-
-QActor huelampagent1 context ctxReqAnalysis {
+// -------------------------- HUE LAMP AGENT --------------------------
+// Event blinkCmd : blinkCmd(STATE)
+QActor huelampagentra context ctxReqAnalysis {
 	Plan init normal [ 
 		println("hueLampAgent start")
 	]
@@ -83,22 +32,65 @@ QActor huelampagent1 context ctxReqAnalysis {
 	]
 	switchTo waitForEvents
 }
+// -------------------------- HUE LAMP AGENT --------------------------
 
-QActor humanoperatorqa1 context ctxReqAnalysis {
+// -------------------------- TEMPERATURE AGENT --------------------------
+// Event temperature : temperature(T)
+QActor temperatureagentra context ctxReqAnalysis {
 	Plan init normal [
-		println("humanoperatorqa start")
+		println("temperatureAgent start")
+	]
+	switchTo checkTemperature 
+	
+	Plan checkTemperature [
+		delay 5000;
+		println("temperatureAgent checking temperature");
+		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
+		[?? currentTemp(T)] emit temperature : temperature(T)
+	]
+	finally repeatPlan
+}
+// -------------------------- TEMPERATURE AGENT --------------------------
+
+// -------------------------- CLOCK AGENT --------------------------
+// Event clock : clock(H,M)
+QActor clockagentra context ctxReqAnalysis {
+	Plan init normal [ 
+		println("clockAgent start")
+	]
+	switchTo checkTime
+	
+	Plan checkTime [
+		delay 6000; // for testing
+		// delay 60000;
+		println("clockAgent checking time");
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
+		[?? currentTime(H,M)] emit clock : clock(H,M)
+	]
+	finally repeatPlan
+}
+// -------------------------- CLOCK AGENT --------------------------
+
+// -------------------------- HUMAN OPERATOR --------------------------
+// Dispatch cmd : cmd(X)
+QActor humanoperatorra context ctxReqAnalysis {
+	Plan init normal [
+		println("humanoperator start")
 	]
 	switchTo sendCmd
 	
 	Plan sendCmd [
+		// for testing
 		delay 400;
-		forward appl1 -m cmd : cmd(w(X));
+		forward applra -m cmd : cmd(w(X));
 		delay 400;
-		forward appl1 -m cmd : cmd(d(X))
+		forward applra -m cmd : cmd(d(X))
 	]
 }
+// -------------------------- HUMAN OPERATOR --------------------------
 
-QActor appl1 context ctxReqAnalysis {
+// -------------------------- APPLICATION LOGIC --------------------------
+QActor applra context ctxReqAnalysis {
 	Plan init normal[
 		println("appl start")
 	]
@@ -119,6 +111,7 @@ QActor appl1 context ctxReqAnalysis {
 	]
 	
 	Plan msgReceived resumeLastPlan[
-		onMsg cmd: cmd(X) -> forward robotddr1 -m moveRobot : moveRobot(X)
+		onMsg cmd: cmd(X) -> sendto ddr in ctxDdr -m moveRobot : moveRobot(X)
 	]
 }
+// -------------------------- APPLICATION LOGIC --------------------------

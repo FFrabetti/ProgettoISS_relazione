@@ -1,21 +1,21 @@
 System finalTask2018            
 
-Dispatch moveRobot : moveRobot( CMD )
-Event frontSonar : sonar( DISTANCE )
+Dispatch moveRobot : moveRobot(CMD)
+
+Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
 
-Context ctxRobotDDR ip [ host="localhost" port=8882 ] 	 
+Context ctxDdr ip [ host="localhost" port=8882 ]
 
-QActor robotddr context ctxRobotDDR {   
+QActor ddr context ctxDdr {   
 	Plan init normal [       
-	    println("robotDDR start");
-	    
+	    println("ddr start");
 	    javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment()
   	]
     switchTo waitForCmd        
 		
    	Plan waitForCmd[
-   		println("robotDDR waiting for commands")
+   		println("ddr waiting for commands")
    	]  
   	transition stopAfter 3600000 
  		whenMsg moveRobot -> execMove 
@@ -30,18 +30,18 @@ QActor robotddr context ctxRobotDDR {
    	]
 }
 
-QActor testerrobot context ctxRobotDDR {
+QActor testerrobot context ctxDdr {
 	Plan init normal [
-		println("testerRobot start");
+		println("testerrobot start");
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(h(X));
+		forward ddr -m moveRobot : moveRobot(h(X));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(w(X));
+		forward ddr -m moveRobot : moveRobot(w(X));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(s(X));
+		forward ddr -m moveRobot : moveRobot(s(X));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(a(X));
+		forward ddr -m moveRobot : moveRobot(a(X));
 		delay 2000;
-		forward robotddr -m moveRobot : moveRobot(d(X))
+		forward ddr -m moveRobot : moveRobot(d(X))
 	]
 }

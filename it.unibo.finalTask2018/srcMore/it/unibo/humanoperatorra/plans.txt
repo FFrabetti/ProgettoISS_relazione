@@ -1,0 +1,5 @@
+plan(1,init, sentence(true,move(print("humanoperator start")),'','' ))
+plan(1,sendCmd, sentence(true,delay( 400) ,'','' ))
+plan(2,sendCmd, sentence(true,forward(applra, cmd,cmd( w( X))),'','' ))
+plan(3,sendCmd, sentence(true,delay( 400) ,'','' ))
+plan(4,sendCmd, sentence(true,forward(applra, cmd,cmd( d( X))),'','' ))

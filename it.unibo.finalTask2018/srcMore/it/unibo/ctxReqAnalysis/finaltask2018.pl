@@ -2,19 +2,18 @@
 % Context ctxReqAnalysis  SYSTEM-configuration: file it.unibo.ctxReqAnalysis.finalTask2018.pl 
 %====================================================================================
 context(ctxreqanalysis, "localhost",  "TCP", "8888" ).  		 
+context(ctxddr, "localhost",  "TCP", "8882" ).  		 
 %%% -------------------------------------------
-qactor( clockagent1 , ctxreqanalysis, "it.unibo.clockagent1.MsgHandle_Clockagent1"   ). %%store msgs 
-qactor( clockagent1_ctrl , ctxreqanalysis, "it.unibo.clockagent1.Clockagent1"   ). %%control-driven 
-qactor( temperatureagent1 , ctxreqanalysis, "it.unibo.temperatureagent1.MsgHandle_Temperatureagent1"   ). %%store msgs 
-qactor( temperatureagent1_ctrl , ctxreqanalysis, "it.unibo.temperatureagent1.Temperatureagent1"   ). %%control-driven 
-qactor( robotddr1 , ctxreqanalysis, "it.unibo.robotddr1.MsgHandle_Robotddr1"   ). %%store msgs 
-qactor( robotddr1_ctrl , ctxreqanalysis, "it.unibo.robotddr1.Robotddr1"   ). %%control-driven 
-qactor( huelampagent1 , ctxreqanalysis, "it.unibo.huelampagent1.MsgHandle_Huelampagent1"   ). %%store msgs 
-qactor( huelampagent1_ctrl , ctxreqanalysis, "it.unibo.huelampagent1.Huelampagent1"   ). %%control-driven 
-qactor( humanoperatorqa1 , ctxreqanalysis, "it.unibo.humanoperatorqa1.MsgHandle_Humanoperatorqa1"   ). %%store msgs 
-qactor( humanoperatorqa1_ctrl , ctxreqanalysis, "it.unibo.humanoperatorqa1.Humanoperatorqa1"   ). %%control-driven 
-qactor( appl1 , ctxreqanalysis, "it.unibo.appl1.MsgHandle_Appl1"   ). %%store msgs 
-qactor( appl1_ctrl , ctxreqanalysis, "it.unibo.appl1.Appl1"   ). %%control-driven 
+qactor( huelampagentra , ctxreqanalysis, "it.unibo.huelampagentra.MsgHandle_Huelampagentra"   ). %%store msgs 
+qactor( huelampagentra_ctrl , ctxreqanalysis, "it.unibo.huelampagentra.Huelampagentra"   ). %%control-driven 
+qactor( temperatureagentra , ctxreqanalysis, "it.unibo.temperatureagentra.MsgHandle_Temperatureagentra"   ). %%store msgs 
+qactor( temperatureagentra_ctrl , ctxreqanalysis, "it.unibo.temperatureagentra.Temperatureagentra"   ). %%control-driven 
+qactor( clockagentra , ctxreqanalysis, "it.unibo.clockagentra.MsgHandle_Clockagentra"   ). %%store msgs 
+qactor( clockagentra_ctrl , ctxreqanalysis, "it.unibo.clockagentra.Clockagentra"   ). %%control-driven 
+qactor( humanoperatorra , ctxreqanalysis, "it.unibo.humanoperatorra.MsgHandle_Humanoperatorra"   ). %%store msgs 
+qactor( humanoperatorra_ctrl , ctxreqanalysis, "it.unibo.humanoperatorra.Humanoperatorra"   ). %%control-driven 
+qactor( applra , ctxreqanalysis, "it.unibo.applra.MsgHandle_Applra"   ). %%store msgs 
+qactor( applra_ctrl , ctxreqanalysis, "it.unibo.applra.Applra"   ). %%control-driven 
 %%% -------------------------------------------
 %%% -------------------------------------------
 

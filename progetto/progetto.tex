@@ -245,8 +245,7 @@ The floor in the room is a flat floor of solid material and is equipped with two
 
 \noindent The robot works under the following conditions:
 \begin{enumerate}
-\item \code{R-Start}: an \code{authorized user} has sent a \texttt{START} command by using a human \texttt{GUI} interface (\code{console}) running
-on a conventional PC or on a smart device (\texttt{Android}).
+\item \code{R-Start}: an \code{authorized user} has sent a \texttt{START} command by using a human \texttt{GUI} interface (\code{console}) running on a conventional PC or on a smart device (\texttt{Android}).
 \item \code{R-TempOk}: the value temperature of the city is not higher than a prefixed value (e.g. \texttt{25} degrees Celsius).
 \item \code{R-TimeOk}: the current clock time is within a given interval (e.g. between \texttt{7} a.m and \texttt{10} a.m).
 \end{enumerate}
@@ -286,7 +285,9 @@ Moreover, the robot must stop its activity when one of the following conditions 
 \section{Requirement analysis}
 \labelsec{ReqAnalysis}
 
-Dai requisiti si delineano 5 entità:
+Dai requisiti emerge il fatto che il sistema sia distribuito e composto da due nodi di esecuzione: uno per il robot e uno che ospita la logica di controllo e la console per pilotare il robot (\code{R-Start} e \code{R-Stop}).\\
+
+\noindent Si delineano nello specifico 5 entità:
 \begin{enumerate}
 \item il robot, che può essere sia fisico sia virtuale (\texttt{RealDDR} e \texttt{VirtualDDR}), e l'ambiente in cui si muove (fisico/virtuale)
 \item gli attuatori: il \texttt{Led} per il robot reale e l'\texttt{Hue Lamp} per quello virtuale
@@ -309,7 +310,7 @@ L'architettura del sistema può essere descritta in maniera informale dalla \xf{
 \end{figure}
 
 \subsection{Actuators}
-Il \texttt{Led}, essendo un componente estremamente semplice e trovandosi sul robot fisico, può essere visto come un'entità passiva senza un proprio flusso di controllo. Pertanto il modello del \texttt{Led} -- un oggetto Java -- può essere formalmente definito dalla seguente interfaccia:
+Il \texttt{Led}, essendo un componente estremamente semplice e trovandosi sul robot fisico, può essere visto come un'entità passiva senza un proprio flusso di controllo. Pertanto, il modello del \texttt{Led} -- un oggetto Java -- può essere formalmente definito dalla seguente interfaccia:
 
 \begin{center}
 \includegraphics[scale=0.4]{img/iled.png}
@@ -320,39 +321,59 @@ L'interazione con il \texttt{Led} può quindi avvenire tramite \textit{procedure
 L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un componente software per poter interagire con essa attraverso un'interfaccia \textit{RESTful}
 \footnote{\url{https://www.developers.meethue.com/philips-hue-api}}.
 
-Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp}. Per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.\\
+Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp} remota: per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.\\
 
-\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/hueLampAgent.qa}
+\lstinputlisting[style=style_qa, firstline=16, lastline=34, firstnumber=16]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
 
 Si noti come la scelta di utilizzare l'evento \codescript{blinkCmd} consente di far \textit{lampeggiare} più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
 
 \subsection{Sensors}
-Poiché abbiamo a che fare con sensori remoti, ci viene naturale modellarli come attori che rendono disponibili delle informazioni espresse in un certo formato.\\
-Nello specifico, sono possibili tre approcci:
+
+\subsubsection{TemperatureSensor}
+\vspace{8px}
+\todo{Da sistemare}
+
+Poiché abbiamo a che fare con un servizio remoto che fornisce i dati sulla temperatura, ci viene naturale modellare un attore che funga da adapter per permettere la comunicazione di questi con il sistema.
+
+Nello specifico, l'applicazione può interagire con l'adapter mediante tre possibili approcci:
 \begin{itemize}
 \item \textbf{polling:} chi necessita dell'informazione a farsi carico di fare richiesta periodicamente al sensore;
 \item \textbf{pattern observer:} l'observer si registra presso l'observable e viene notificato al cambiamento di stato di quest'ultimo;
 \item \textbf{publish/subscribe:} è il sensore stesso a pubblicare all'esterno le informazioni quando queste sono disponibili ad uso degli eventuali subscriber.
 \end{itemize}
-Scegliamo di adottare la seconda strategia, poiché meno costosa in termini di dati scambiati e poiché garantisce un minor accoppiamento tra le entità coinvolte.
+Scegliamo di adottare la terza strategia, poiché meno costosa in termini di dati scambiati e poiché garantisce un minor accoppiamento tra le entità coinvolte.
 
-Anche in questo caso il sensore, non conoscendo i componenti interessati, emette un evento che può essere percepito da chiunque sia in ascolto.\\
+Anche in questo caso l'adapter del sensore, non conoscendo i componenti interessati, emette un evento \codescript{Event temperature : temperature(T)} che può essere percepito da chiunque sia in ascolto.\\
 
-\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/temperatureAgent.qa}
+\lstinputlisting[style=style_qa, firstline=38, lastline=52, firstnumber=38]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
 
-\noindent Si riportano solo le variazioni essenziali per il \texttt{Clock}:
+\subsubsection{Clock}
+\vspace{8px}
+\todo{Da sistemare}
 
-\lstinputlisting[style=style_qa, firstline=14, lastline=21, firstnumber=14]{../it.unibo.finalTask2018/src/clockAgent.qa}
+Poiché nei requisiti non viene specificata la natura del \texttt{Clock}, scegliamo di modellarlo come un attore a se stante -- separato dalla logica applicativa specifica del problema -- così che in futuro possa essere facilmente introdotto un qualsiasi meccanismo di sincronizzazione distribuito (es. orologio logico di Lamport
+\footnote{\url{https://en.wikipedia.org/wiki/Leslie_Lamport}}).
+
+\lstinputlisting[style=style_qa, firstline=56, lastline=71, firstnumber=56]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
+
+Il suo comportamento interno è pressoché analogo a quello visto per il \texttt{TemperatureSensor}.
+
+\subsection{HumanOperator}
+Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
+
+\lstinputlisting[style=style_qa, firstline=75, lastline=89, firstnumber=75]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
+
+Lo \texttt{HumanOperator} dovrà inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'attore, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con un server più sofisticato.
 
 \subsection{Robot}
 Ci viene fornito un modello del robot espresso nel linguaggio \qa
-\footnote{it.unibo.mbot.divide/src/realRobotExecutor.qa}: questi è in grado di ricevere messaggi \codescript{moveRobot : moveRobot( CMD )} e di interpretarli come comandi di movimento (stop, forward, left, right, backward).
+\footnote{it.unibo.mbot.divide/src/realRobotExecutor.qa}: questi è in grado di ricevere messaggi \codescript{moveRobot : moveRobot(CMD)} e di interpretarli come comandi di movimento (stop, forward, left, right, backward).
 
-Il robot è anche dotato di un sonar frontale che gli permette di rilevare la presenza di ostacoli (\code{R-AvoidFix} e \code{R-AvoidMobile}). Il robot riveste quindi il duplice ruolo di attuatore e di sensore, in quanto emette informazioni relative alla distanza dagli ostacoli che incontra sotto forma di eventi \codescript{frontSonar : sonar( DISTANCE )}.\\
+Il robot è anche dotato di un sonar frontale che gli permette di rilevare la presenza di ostacoli (\code{R-AvoidFix} e \code{R-AvoidMobile}). Il robot riveste quindi il duplice ruolo di attuatore e di sensore, in quanto emette informazioni relative alla distanza dagli ostacoli che incontra sotto forma di eventi \codescript{frontSonar : sonar(DISTANCE)}.\\
 
 Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato ed emettere eventi relativi al sonar frontale. L'implementazione delle varie mosse è delegata ad un'opportuna classe Java che può essere modificata senza alterare il modello del robot.\\
 
-\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/robotDDR.qa}
+\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/ddr.qa}
 
 \vspace{8px}
 
@@ -362,24 +383,14 @@ Da notare come l'emissione di tali eventi dipenda dalla specifica implementazion
 
 \lstinputlisting[language=Java, firstline=7, lastline=17, firstnumber=7]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/adapter/envAdapter.java}
 
-\subsection{HumanOperator}
-Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
-
-\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/humanOperator.qa}
-
-Per un primo testing, l'intermediario dei messaggi è l'attore \codescript{testapplqa} che si trova nello stesso contesto dell'operator. In futuro, quest'ultimo dovrà conoscere il contesto dell'entità che rappresenta la logica applicativa, così da poterle inviare messaggi (vedi riga 6).
-
 \subsection{Application logic}
-La nostra applicazione, oltre ad incapsulare le politiche della logica applicativa, deve innanzitutto agire come \textit{``system integrator''}, mettendo in collegamento i vari componenti così che questi possano interagire.
-Si noti infatti come ogni componente è stato fino ad ora modellato come un micro-servizio indipendente.\\
-
 L'immagine della \xf{informalRA} può essere quindi formalmente definita dal seguente sistema {\qa}:\\
 
-\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
-
-In questo caso sensori, attuatori, operatori e robot sono stati tutti inseriti all'interno di un unico contesto per motivi di rapidità di modellazione e di \textit{integration testing}.
+\lstinputlisting[style=style_qa, lastline=13]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
 
 \vspace{8px}
+
+\lstinputlisting[style=style_qa, firstline=93, lastline=116, firstnumber=93]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
 
 Poiché abbiamo utilizzato un modello eseguibile, questo ci fornisce anche un primo prototipo funzionante della nostra applicazione.
 %===========================================================================

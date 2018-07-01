@@ -9,7 +9,7 @@ public class envAdapter {
 		
 		// testing the emission of a sonarSensor event
 		try {
-			Thread.sleep(2000);
+			Thread.sleep(20000);
 			qa.emit("sonarSensor", "sonar(envAdapter, 8)");
 		} catch (InterruptedException e) {
 			e.printStackTrace();

@@ -77,11 +77,11 @@ public abstract class AbstractRobotnode extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"robotnode start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.envNodeAdapter.setUpEnvironment( myself  );
+	    	it.unibo.finalTask2018.adapter.robotAdapter.useImpl( myself ,"node"  );
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?robotConfig(A,P)" )) != null ){
-	    	it.unibo.finalTask2018.robotDDR.robotNode.init( myself ,guardVars.get("A"), guardVars.get("P")  );
+	    	it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself ,guardVars.get("A"), guardVars.get("P")  );
 	    	}
-	    	else{ it.unibo.finalTask2018.robotDDR.robotNode.init( myself  );
+	    	else{ it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself  );
 	    	}
 	    	//switchTo waitForCmd
 	        switchToPlanAsNextState(pr, myselfName, "robotnode_"+myselfName, 
@@ -122,7 +122,7 @@ public abstract class AbstractRobotnode extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robotDDR.robotNode.robotStop(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotStop(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -132,7 +132,7 @@ public abstract class AbstractRobotnode extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robotDDR.robotNode.robotForward(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotForward(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -142,7 +142,7 @@ public abstract class AbstractRobotnode extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robotDDR.robotNode.robotBackward(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotBackward(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -152,7 +152,7 @@ public abstract class AbstractRobotnode extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robotDDR.robotNode.robotLeft(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotLeft(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -162,7 +162,7 @@ public abstract class AbstractRobotnode extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robotDDR.robotNode.robotRight(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotRight(this );
 	    		}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"robotnode_"+myselfName,false,true);

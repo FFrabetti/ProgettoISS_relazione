@@ -1,7 +1,8 @@
 System finalTask2018            
 
-Dispatch moveRobot : moveRobot( CMD )
-Event frontSonar : sonar( DISTANCE )
+Dispatch moveRobot : moveRobot(CMD)
+
+Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
 
 Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
@@ -9,7 +10,7 @@ Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
 
 Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
 EventHandler evhnode for ctrlEvent /*-print*/ {
-	forwardEvent nodebroker -m ctrlMsg // stesso payload
+	forwardEvent nodebroker -m ctrlMsg		// stesso payload
 };
 
 Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
@@ -21,12 +22,12 @@ QActor robotnode context ctxVirtualRobotNode {
 	
 	Plan init normal [       
 	    println("robotnode start");
-	    javaRun it.unibo.finalTask2018.adapter.envNodeAdapter.setUpEnvironment();
-	    		
+	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.useImpl("node");
+	    
 	    [ !? robotConfig(A,P) ]
-	    	javaRun it.unibo.finalTask2018.robotDDR.robotNode.init(A, P)
+	    	javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment(A, P)
 		else
-			javaRun it.unibo.finalTask2018.robotDDR.robotNode.init()
+			javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
   	]
     switchTo waitForCmd
 		
@@ -41,11 +42,11 @@ QActor robotnode context ctxVirtualRobotNode {
 //  	onMsg moveRobot : moveRobot(CMD) -> println(moveRobot(CMD));
   		printCurrentMessage;
   		
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotStop();  
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotForward();    
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotBackward(); 
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotLeft();  
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotNode.robotRight()
+     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();  
+  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();    
+    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward(); 
+  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();  
+   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
    	]
 }
 
@@ -59,7 +60,7 @@ QActor nodebroker context ctxVirtualRobotNode {
 //QActor testerrobotnode context ctxVirtualRobotNode {
 //	Plan init normal [
 //		println("testerrobotnode start");
-//		delay 2000;
+//		delay 20000; // wait for everything else to start...
 //		forward robotnode -m moveRobot : moveRobot(w(1));
 //		delay 2000;
 //		forward robotnode -m moveRobot : moveRobot(h(1));
@@ -70,4 +71,6 @@ QActor nodebroker context ctxVirtualRobotNode {
 //		delay 2000;
 //		forward robotnode -m moveRobot : moveRobot(d(1))
 //	]
+//	transition stopAfter 3600000
+//		whenMsg sonarSensor : sonar(S,D) do println(sonar(S,D))
 //}

@@ -27,7 +27,7 @@ QActor huelampagentra context ctxReqAnalysis {
 		whenEvent blinkCmd -> commandLed
 	
 	Plan commandLed [
-		onEvent blinkCmd : blinkCmd( on ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("on");
+		onEvent blinkCmd : blinkCmd( on ) 	-> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("on");
 		onEvent blinkCmd : blinkCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("off")
 	]
 	switchTo waitForEvents
@@ -75,7 +75,7 @@ QActor clockagentra context ctxReqAnalysis {
 // Dispatch cmd : cmd(X)
 QActor humanoperatorra context ctxReqAnalysis {
 	Plan init normal [
-		println("humanoperator start")
+		println("humanOperator start")
 	]
 	switchTo sendCmd
 	

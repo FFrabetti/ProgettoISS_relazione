@@ -79,31 +79,31 @@ public abstract class AbstractTesterrobot extends QActor {
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(X))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
 	    	sendMsg("moveRobot","ddr", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(X))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(1))", guardVars ).toString();
 	    	sendMsg("moveRobot","ddr", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(s(X))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(s(1))", guardVars ).toString();
 	    	sendMsg("moveRobot","ddr", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(X))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(1))", guardVars ).toString();
 	    	sendMsg("moveRobot","ddr", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(X))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(1))", guardVars ).toString();
 	    	sendMsg("moveRobot","ddr", QActorContext.dispatch, temporaryStr ); 
 	    	repeatPlanNoTransition(pr,myselfName,"testerrobot_"+myselfName,false,false);
 	    }catch(Exception e_init){  

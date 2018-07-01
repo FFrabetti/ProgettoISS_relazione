@@ -74,7 +74,7 @@ public abstract class AbstractHumanoperatorra extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
 	    	String myselfName = "init";  
-	    	temporaryStr = "\"humanoperator start\"";
+	    	temporaryStr = "\"humanOperator start\"";
 	    	println( temporaryStr );  
 	    	//switchTo sendCmd
 	        switchToPlanAsNextState(pr, myselfName, "humanoperatorra_"+myselfName, 

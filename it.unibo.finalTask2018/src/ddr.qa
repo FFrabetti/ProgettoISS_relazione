@@ -10,7 +10,7 @@ Context ctxDdr ip [ host="localhost" port=8882 ]
 QActor ddr context ctxDdr {   
 	Plan init normal [       
 	    println("ddr start");
-	    javaRun it.unibo.finalTask2018.adapter.envAdapter.setUpEnvironment()
+	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
   	]
     switchTo waitForCmd        
 		
@@ -22,11 +22,11 @@ QActor ddr context ctxDdr {
    	finally repeatPlan    
 	   
   	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotStop();
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotForward();
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotBackward();
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotLeft();
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.robotDDR.robotMoves.robotRight()
+     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();
+  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();
+    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward();
+  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();
+   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
    	]
 }
 
@@ -34,14 +34,14 @@ QActor testerrobot context ctxDdr {
 	Plan init normal [
 		println("testerrobot start");
 		delay 2000;
-		forward ddr -m moveRobot : moveRobot(h(X));
+		forward ddr -m moveRobot : moveRobot(w(1));
 		delay 2000;
-		forward ddr -m moveRobot : moveRobot(w(X));
+		forward ddr -m moveRobot : moveRobot(h(1));
 		delay 2000;
-		forward ddr -m moveRobot : moveRobot(s(X));
+		forward ddr -m moveRobot : moveRobot(s(1));
 		delay 2000;
-		forward ddr -m moveRobot : moveRobot(a(X));
+		forward ddr -m moveRobot : moveRobot(a(1));
 		delay 2000;
-		forward ddr -m moveRobot : moveRobot(d(X))
+		forward ddr -m moveRobot : moveRobot(d(1))
 	]
 }

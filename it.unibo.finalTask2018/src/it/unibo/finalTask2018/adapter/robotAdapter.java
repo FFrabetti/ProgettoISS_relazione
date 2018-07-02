@@ -1,5 +1,8 @@
 package it.unibo.finalTask2018.adapter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import it.unibo.finalTask2018.robot.DDRobot;
 import it.unibo.finalTask2018.robot.mockRobot;
 import it.unibo.finalTask2018.robot.NodeRobot;
@@ -9,42 +12,47 @@ public class robotAdapter {
 
 	private static final String HOST = "localhost";
 	private static final int PORT = 8999;
+	private static final DDRobot DEFAULT = new mockRobot();
 	
-	private static DDRobot robot = new mockRobot();
+	private static Map<String,DDRobot> map = new HashMap<>();
+	
+	private static DDRobot getInstance(QActor qa) {
+		return map.getOrDefault(qa.getName(), DEFAULT);
+	}
 	
 	public static void useImpl(QActor qa, String name) {
 		if("node".equals(name))
-			robot = new NodeRobot();
+			map.put(qa.getName(), new NodeRobot());
 	}
 	
 	// ---------------------------------------------------------
 	
 	public static void setUpEnvironment(QActor qa) {
-		robot.setUpEnvironment(qa, HOST, PORT);
+		getInstance(qa).setUpEnvironment(qa, HOST, PORT);
 	}
 
 	public static void setUpEnvironment(QActor qa, String host, String port) {
-		robot.setUpEnvironment(qa, host, Integer.parseInt(port));
+		getInstance(qa).setUpEnvironment(qa, host, Integer.parseInt(port));
 	}
 	
 	public static void robotStop(QActor qa) {
-		robot.stop(qa);
+		getInstance(qa).stop(qa);
 	}
 	
 	public static void robotForward(QActor qa) {
-		robot.forward(qa);
+		getInstance(qa).forward(qa);
 	}
 
 	public static void robotBackward(QActor qa) {
-		robot.backward(qa);
+		getInstance(qa).backward(qa);
 	}
 
 	public static void robotLeft(QActor qa) {
-		robot.left(qa);
+		getInstance(qa).left(qa);
 	}
 
 	public static void robotRight(QActor qa) {
-		robot.right(qa);
+		getInstance(qa).right(qa);
 	}
 	
 }

@@ -1,16 +1,8 @@
 package it.unibo.finalTask2018.robot;
 
-import it.unibo.finalTask2018.robot.ledMock.ILed;
-import it.unibo.finalTask2018.robot.ledMock.ledMockGui;
 import it.unibo.qactors.akka.QActor;
 
 public class mockRobot implements DDRobot {
-	
-	private final static ILed led = new ledMockGui();
-
-	public static void setUpGui(QActor qa) {
-		System.out.println("starting ledMock");
-	}
 	
 	@Override
 	public void setUpEnvironment(QActor qa, String host, int port) {

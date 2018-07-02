@@ -7,9 +7,10 @@ import it.unibo.qactors.akka.QActor;
 
 public class realRobotMock {
 
-	private final static ILed led = new ledMockGui();
+	private static ILed led;
 
 	public static void setUpGui(QActor qa) {
+		led = new ledMockGui();
 		System.out.println("starting ledMock");
 	}
 

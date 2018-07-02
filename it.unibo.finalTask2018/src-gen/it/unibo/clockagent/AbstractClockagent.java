@@ -76,9 +76,8 @@ public abstract class AbstractClockagent extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"clockAgent start\"";
 	    	println( temporaryStr );  
-	    	//switchTo checkTime
-	        switchToPlanAsNextState(pr, myselfName, "clockagent_"+myselfName, 
-	              "checkTime",false, false, null); 
+	    	it.unibo.finalTask2018.adapter.clockAdapter.initGUI( myself  );
+	    	repeatPlanNoTransition(pr,myselfName,"clockagent_"+myselfName,false,false);
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

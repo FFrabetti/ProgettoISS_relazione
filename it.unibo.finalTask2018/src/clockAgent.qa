@@ -7,9 +7,11 @@ Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone
 
 QActor clockagent context ctxClockAgent {
 	Plan init normal [ 
-		println("clockAgent start")
+		println("clockAgent start");
+		
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.initGUI()
 	]
-	switchTo checkTime
+//	switchTo checkTime
 	
 	Plan checkTime [
 		delay 5000; // for testing
@@ -21,13 +23,13 @@ QActor clockagent context ctxClockAgent {
 	finally repeatPlan
 }
 
-QActor testertime context ctxClockAgent {
-	Plan init normal [ ]
-	transition stopAfter 3600000
-		whenEvent clock -> printTime
-	
-	Plan printTime [
-		printCurrentEvent
-	]
-	switchTo init
-}
+//QActor testertime context ctxClockAgent {
+//	Plan init normal [ ]
+//	transition stopAfter 3600000
+//		whenEvent clock -> printTime
+//	
+//	Plan printTime [
+//		printCurrentEvent
+//	]
+//	switchTo init
+//}

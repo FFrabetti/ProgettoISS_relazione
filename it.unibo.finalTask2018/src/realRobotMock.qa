@@ -12,11 +12,11 @@ EventHandler evhnode for ctrlEvent /*-print*/ {
 
 Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
 
-
 QActor realrobotmock context ctxRealRobotMock {
 	Plan init normal [       
 	    println("realrobotmock start");
-	    javaRun it.unibo.finalTask2018.robot.realRobotMock.setUpGui()
+	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.useImpl("realmock");
+	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
   	]
     switchTo waitForCmd        
 		
@@ -28,11 +28,11 @@ QActor realrobotmock context ctxRealRobotMock {
    	finally repeatPlan    
 
   	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotStop();
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotForward();
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotBackward();
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotLeft();
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.robot.realRobotMock.robotRight()
+     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();
+  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();
+    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward();
+  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();
+   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
    	]
 }
 

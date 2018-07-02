@@ -13,7 +13,7 @@ Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone
 QActor huelampagentgui context ctxHueLampAgentGui{
 	Plan init normal [         
    		println( "HueLampAgentGui(starts)" ) ;
-   		javaRun it.unibo.custom.gui.customBlsGui.createCustomLedGui()  ;
+   		javaRun it.unibo.custom.gui.customBlsGui.createCustomLedGui();
    		//lampeggia per prova
    		delay 1000;
    		javaRun it.unibo.custom.gui.customBlsGui.setLed("on");

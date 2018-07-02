@@ -4,15 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import it.unibo.finalTask2018.robot.DDRobot;
-import it.unibo.finalTask2018.robot.mockRobot;
+import it.unibo.finalTask2018.robot.MockRobot;
 import it.unibo.finalTask2018.robot.NodeRobot;
+import it.unibo.finalTask2018.robot.RealRobotMock;
 import it.unibo.qactors.akka.QActor;
 
 public class robotAdapter {
 
 	private static final String HOST = "localhost";
 	private static final int PORT = 8999;
-	private static final DDRobot DEFAULT = new mockRobot();
+	private static final DDRobot DEFAULT = new MockRobot();
 	
 	private static Map<String,DDRobot> map = new HashMap<>();
 	
@@ -23,6 +24,8 @@ public class robotAdapter {
 	public static void useImpl(QActor qa, String name) {
 		if("node".equals(name))
 			map.put(qa.getName(), new NodeRobot());
+		else if("realmock".equals(name))
+			map.put(qa.getName(), new RealRobotMock());
 	}
 	
 	// ---------------------------------------------------------

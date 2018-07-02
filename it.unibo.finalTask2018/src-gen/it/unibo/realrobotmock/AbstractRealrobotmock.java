@@ -77,7 +77,8 @@ public abstract class AbstractRealrobotmock extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"realrobotmock start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.robot.realRobotMock.setUpGui( myself  );
+	    	it.unibo.finalTask2018.adapter.robotAdapter.useImpl( myself ,"realmock"  );
+	    	it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself  );
 	    	//switchTo waitForCmd
 	        switchToPlanAsNextState(pr, myselfName, "realrobotmock_"+myselfName, 
 	              "waitForCmd",false, false, null); 
@@ -116,7 +117,7 @@ public abstract class AbstractRealrobotmock extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robot.realRobotMock.robotStop(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotStop(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -126,7 +127,7 @@ public abstract class AbstractRealrobotmock extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robot.realRobotMock.robotForward(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotForward(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -136,7 +137,7 @@ public abstract class AbstractRealrobotmock extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robot.realRobotMock.robotBackward(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotBackward(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -146,7 +147,7 @@ public abstract class AbstractRealrobotmock extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robot.realRobotMock.robotLeft(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotLeft(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -156,7 +157,7 @@ public abstract class AbstractRealrobotmock extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.robot.realRobotMock.robotRight(this );
+	    		it.unibo.finalTask2018.adapter.robotAdapter.robotRight(this );
 	    		}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"realrobotmock_"+myselfName,false,true);

@@ -37,8 +37,12 @@ private static BlinkingThread bt;
     	if( curLedGui == null ) curLedGui = new customBlsGui(myActor, "led");
     	return  curLedGui;
     }
-    public static synchronized customBlsGui createCustomButtonGui(QActor myActor) {
-    	if( curLBtnGui == null ) curLBtnGui =  new customBlsGui(myActor, "button");
+    public static synchronized customBlsGui createCustomLedGui(QActor myActor, Color color) {
+    	if( curLedGui == null ) curLedGui = new customBlsGui(myActor, "led", color);
+    	return  curLedGui;
+    }
+    public static synchronized customBlsGui createCustomButtonGui(QActor myActor, Color color) {
+    	if( curLBtnGui == null ) curLBtnGui =  new customBlsGui(myActor, "button", color);
     	return  curLBtnGui;
     }
     public static void setLed(QActor myActor, String value) {
@@ -66,19 +70,24 @@ private static BlinkingThread bt;
     	
     }
     
-    public  customBlsGui(QActor myActor) {
+    public customBlsGui(QActor myActor) {
     	this.myActor = myActor;
     	initAll();
     }
-    public  customBlsGui(QActor myActor, String device) {
+    
+    public customBlsGui(QActor myActor, String device) {
+    	this(myActor, device, Color.GREEN);
+    }
+    
+    public customBlsGui(QActor myActor, String device, Color color) {
     	this.myActor = myActor;
-    	if( device == "led") initLedGui();
+    	if( device == "led") initLedGui(color);
     	else if( device == "button") initButtonGui();
     }
     
     protected void initAll() {
     	initFrame("all");
-		initLedGui();
+		initLedGui(Color.RED);
 		initButtonGui();
       	System.out.println("CustomBlsGui initAll done   "    );
     }
@@ -123,9 +132,9 @@ private static BlinkingThread bt;
         });    	  
     }
     
-    protected void initLedGui() {
+    protected void initLedGui(Color color) {
        	initFrame("led");
-       	ledGui.setBackground(Color.GREEN);
+       	ledGui.setBackground(color);
        	ledGui.setPreferredSize(smallGui);
        	setLedGui(ledGuiOff); 	
     }

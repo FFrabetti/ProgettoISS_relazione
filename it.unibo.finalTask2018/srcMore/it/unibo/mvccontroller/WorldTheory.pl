@@ -153,11 +153,11 @@ changedModelAction( robot,R,h( X)):-changeModelItem( led,l1,noblink).
 changedModelAction( robot,R,a( X)):-changeModelItem( robot,R,h( X)).
 changedModelAction( robot,R,d( X)):-changeModelItem( robot,R,h( X)).
 changedModelAction( led,L,X):-emitevent( ctrlEvent,ctrlEvent( led,L,X)).
-changeRobotModel( X):-canMove,changeModelItem( robot,r1,X).
 timeBefore( H1,_,H2,_):-eval( lt,H1,H2), ! .
 timeBefore( H,M1,H,M2):-eval( lt,M1,M2).
 inTime( HC,MC):-timeInterval( h( H1,M1),h( H2,M2)),timeBefore( H1,M1,HC,MC),timeBefore( HC,MC,H2,M2).
 canMove:-limitTemperatureValue( MAX),getModelItem( sensor,temperature,t1,T),eval( lt,T,MAX),getModelItem( sensor,clock,c1,h( HC,MC)),inTime( HC,MC).
+changeRobotModel( CMD):-canMove,changeModelItem( robot,r1,CMD).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

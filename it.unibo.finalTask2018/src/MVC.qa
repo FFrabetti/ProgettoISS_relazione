@@ -1,19 +1,18 @@
 System mvc 
  
-Dispatch cmd : cmd (X)
+Dispatch cmd : cmd(X)
 Event temperature : temperature(T)	
 Event clock : clock(H,M) 
-Event frontSonar : sonar( DISTANCE )
-Event sonarSensor : sonar(NAME, DISTANCE)
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME,DISTANCE)
 Event moveRobot : moveRobot(C)
-Event ctrlEvent   : ctrlEvent( CATEG, NAME,CMD )
-Event inputCtrlEvent  : inputEvent( CATEG, NAME, VALUE )	 
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
+Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)	 
 
-Context ctxMvc ip [ host="localhost"  port=8019 ]  // -httpserver 
-EventHandler evadapter for temperature,clock  { //maps a temperature, clock into a inputCtrlEvent
-emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature, t1, T );
+Context ctxMvc ip [ host="localhost"  port=8019 ] 
+EventHandler evadapter for temperature,clock  { //maps temperature and clock into inputCtrlEvent
+emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature,t1,T );
 emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) )
-
 };
 
 QActor mvccontroller context ctxMvc {
@@ -26,8 +25,8 @@ Rules{ //The model is in the theory resourceModel.
 	//se cambia il modello della temperatura
 	changedModelAction( temperature, t1, V  ):-
 			limitTemperatureValue( MAX ), 
- 		    eval( ge, V , MAX ),   
- 		    changeModelItem(robot,r1,h(0)).		      			
+			eval( ge, V , MAX ),   
+			changeModelItem(robot,r1,h(0)).		      			
 
  	//se cambia il modello del clock
  	changedModelAction(clock,c1,h(HC,MC)):-
@@ -36,49 +35,49 @@ Rules{ //The model is in the theory resourceModel.
  			 	
  	//se cambia il modello del robot 	
  	changedModelAction(robot,R,CMD):-
- 			emitevent( ctrlEvent, ctrlEvent(robot,R,CMD)), fail.	
+ 			emitevent(ctrlEvent, ctrlEvent(robot,R,CMD)), fail.	
  	changedModelAction(robot,R, w(X)):-
  			changeModelItem(led,l1,blink).		
  	changedModelAction(robot,R, s(X)):-
  			changeModelItem(led,l1,blink).
  	changedModelAction(robot,R, h(X)):-
  			changeModelItem(led,l1,noblink).
+ 	//dopo una svolta il modello deve risultare fermo
  	changedModelAction(robot,R, a(X)):-
  			changeModelItem(robot,R,h(X)).		
  	changedModelAction(robot,R, d(X)):-
  			changeModelItem(robot,R,h(X)).
  	
- 	//Se cambia il modello del led		
+ 	//se cambia il modello del led		
  	changedModelAction(led,L,X):-
  			emitevent(ctrlEvent,ctrlEvent(led,L,X)).
  	
- 	//Per non cambiare il modello se il robot non puo' muoversi
- 	changeRobotModel(X):-
- 			canMove,
- 			changeModelItem(robot,r1,X).
- 	 	
  	//utility: restituisce vero se il primo tempo e' precedente al secondo		
  	timeBefore(H1,_,H2,_):-
  			eval(lt,H1,H2),!.
  	timeBefore(H,M1,H,M2):-
  			eval(lt,M1,M2).
  	
- 	//vero se HC,MC e' dentro all'intervallo		
+ 	//vero se HC,MC e' dentro all'intervallo di tempo consentito		
  	inTime(HC,MC):-
  			timeInterval(h(H1,M1),h(H2,M2)),
  			timeBefore(H1,M1,HC,MC),
  			timeBefore(HC,MC,H2,M2).
  			
- 	//Possibilita' di muovere il robot R-TempOk e R-TimeOk
+ 	//possibilita' di muovere il robot (R-TempOk e R-TimeOk)
  	canMove:-
- 			limitTemperatureValue( MAX ),
+ 			limitTemperatureValue(MAX),
  			getModelItem(sensor,temperature,t1,T),
  			eval(lt,T,MAX),
  			getModelItem(sensor,clock,c1,h(HC,MC)),
  			inTime(HC,MC).
  			
- 			
- }
+ 	//cambio il modello solo se il robot puo' muoversi
+ 	changeRobotModel(CMD):-
+ 			canMove,
+ 			changeModelItem(robot,r1,CMD).		
+}
+ 
 	Plan init normal [         
 		demo consult("./resourceModel.pl");  //contains the models and related rules
    		println( qacontrol(starts)  )   
@@ -86,21 +85,19 @@ Rules{ //The model is in the theory resourceModel.
    	switchTo waitForInputEvent      
  
     Plan waitForInputEvent[
-    	// print del modello del robot
     	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
 //    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE));
     	[ !? getModelItem(sensor, temperature, t1, VALUE) ] println(model(t1, VALUE));
     	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
-    	println("-----------------------------------------------------------------")
+    	println("---------------------------------------")
     ]  
     transition stopAfter 6000000 
      	whenEvent inputCtrlEvent -> handleInputEvent,
      	whenMsg cmd -> handleCmd
     finally repeatPlan	
        
-    Plan handleInputEvent resumeLastPlan [   
-//    	demo a;
-     	printCurrentEvent;  
+    Plan handleInputEvent resumeLastPlan [
+     	printCurrentEvent;
     	onEvent inputCtrlEvent : inputEvent( CATEG, NAME, VALUE ) ->  //change the model
     		demo changeModelItem( CATEG, NAME, VALUE )
     ]

@@ -110,7 +110,7 @@ public abstract class AbstractMvccontroller extends QActor {
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
-	    	temporaryStr = "\"-----------------------------------------------------------------\"";
+	    	temporaryStr = "\"---------------------------------------\"";
 	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"mvccontroller_"+myselfName,false,

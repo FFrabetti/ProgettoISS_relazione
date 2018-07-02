@@ -284,7 +284,6 @@ Moreover, the robot must stop its activity when one of the following conditions 
 %===========================================================================
 \section{Requirement analysis}
 \labelsec{ReqAnalysis}
-
 Dai requisiti emerge il fatto che il sistema sia distribuito e composto da due nodi di esecuzione: uno per il robot e uno che ospita la logica di controllo e la console per pilotare il robot (\code{R-Start} e \code{R-Stop}).\\
 
 \noindent Si delineano nello specifico 5 entità:
@@ -331,9 +330,6 @@ Si noti come la scelta di utilizzare l'evento \codescript{blinkCmd} consente di 
 \subsection{Sensors}
 
 \subsubsection{TemperatureSensor}
-\vspace{8px}
-\todo{Da sistemare}
-
 Poiché abbiamo a che fare con un servizio remoto che fornisce i dati sulla temperatura, ci viene naturale modellare un attore che funga da adapter per permettere la comunicazione di questi con il sistema.
 
 Nello specifico, l'applicazione può interagire con l'adapter mediante tre possibili approcci:
@@ -349,9 +345,6 @@ Anche in questo caso l'adapter del sensore, non conoscendo i componenti interess
 \lstinputlisting[style=style_qa, firstline=38, lastline=52, firstnumber=38]{../it.unibo.finalTask2018/src/reqAnalysisModel.qa}
 
 \subsubsection{Clock}
-\vspace{8px}
-\todo{Da sistemare}
-
 Poiché nei requisiti non viene specificata la natura del \texttt{Clock}, scegliamo di modellarlo come un attore a se stante -- separato dalla logica applicativa specifica del problema -- così che in futuro possa essere facilmente introdotto un qualsiasi meccanismo di sincronizzazione distribuito (es. orologio logico di Lamport
 \footnote{\url{https://en.wikipedia.org/wiki/Leslie_Lamport}}).
 
@@ -474,7 +467,7 @@ Poichè gli \emph{EventHandler} possono solo convertire eventi in messaggi con l
 \subsection{Real Robot with a mock object}
 Per quanto riguarda il robot fisico, al momento viene simulato tramite un attore che usa un oggetto Java, il quale si limita a stampare a video i comandi ricevuti. Tale attore deve anche gestire il lampeggiamento del led che sarà collocato sul robot fisico: nel rispetto delle considerazioni fatte durante l'analisi dei requisiti, questi viene visto attraverso l'interfaccia Java precedentemente definita (\xss{actuatorsRA}).
 
-Il modello di questo robot è quindi equivalente a quello per robot virtuale, discostandosi unicamente per l'implementazione dei metodi della classe Java utilizzati per realizzare le varie mosse.\\
+Il modello di questo robot è quindi equivalente a quello del robot virtuale, discostandosi unicamente per l'implementazione dei metodi della classe Java utilizzati per realizzare le varie mosse.\\
 
 \lstinputlisting[language=Java, firstline=7, lastline=36, firstnumber=7]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/robot/RealRobotMock.java}
 

@@ -222,7 +222,8 @@
 \setlength\textfloatsep{8mm\@plus 2\p@ \@minus 4\p@}
 \setlength\intextsep   {8mm\@plus 2\p@ \@minus 2\p@}
 
-\setcounter{secnumdepth}{2}
+% https://tex.stackexchange.com/questions/130795/how-can-i-number-sections-below-subsection-in-latex
+\setcounter{secnumdepth}{3} % EDIT (2) - subsubsection with numbers X.X.X 
 
 \newcounter {chapter}
 \renewcommand\thechapter      {\@arabic\c@chapter}
@@ -347,7 +348,9 @@
                         \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
 \renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
                        {-18\p@ \@plus -4\p@ \@minus -4\p@}%
-                       {-0.5em \@plus -0.22em \@minus -0.1em}%
+%                       {-0.5em \@plus -0.22em \@minus -0.1em}%
+% https://tex.stackexchange.com/questions/94095/new-line-after-subsubsection-with-llncs-class/94101
+						{4\p@ \@plus 2\p@ \@minus 2\p@}%
                        {\normalfont\normalsize\bfseries\boldmath}}
 \renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
                        {-12\p@ \@plus -4\p@ \@minus -4\p@}%

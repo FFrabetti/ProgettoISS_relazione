@@ -30,27 +30,27 @@ Rules{ //The model is in the theory resourceModel.
 	timeInterval(h(7,0),h(10,0)).
 	
 	//se cambia il modello della temperatura
-	//	R-TempOk: fermo il robot se temperatura >= limite
+	//	R-TempKo: fermo il robot se temperatura >= limite
 	changedModelAction( temperature, t1, V  ):-
 			limitTemperatureValue( MAX ), 
 			eval( ge, V , MAX ),   
 			changeModelItem(robot,r1,h(0)).		      			
 
  	//se cambia il modello del clock
- 	//	R-TimeOk: fermo il robot se il tempo non e' nell'intervallo
+ 	//	R-TimeKo: fermo il robot se il tempo non e' nell'intervallo
  	changedModelAction(clock,c1,h(HC,MC)):-
  			non(inTime(HC,MC)),
  			changeModelItem(robot,r1,h(0)).
  			 	
- 	//se cambia il modello del robot 	
+ 	//se cambia il modello del robot
  	changedModelAction(robot,R,CMD):-
  			emitevent(ctrlEvent, ctrlEvent(robot,R,CMD)), fail.	
  	changedModelAction(robot,R, w(X)):-
- 			changeModelItem(led,l1,blink).		
+ 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
  	changedModelAction(robot,R, s(X)):-
- 			changeModelItem(led,l1,blink).
+ 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
  	changedModelAction(robot,R, h(X)):-
- 			changeModelItem(led,l1,noblink).
+ 			changeModelItem(led,l1,noblink).	// R-BlinkLed/R-BlinkHue
  	//dopo una svolta il modello deve risultare fermo
  	changedModelAction(robot,R, a(X)):-
  			changeModelItem(robot,R,h(X)).		

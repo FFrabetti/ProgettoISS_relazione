@@ -18,7 +18,7 @@ public class clockAdapter {
 	public static void initGUI(QActor qa) {
 		new Thread(() -> {
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 				while (true) {
 					Thread.sleep(10000);
 					clockAdapter.emitTime(qa);

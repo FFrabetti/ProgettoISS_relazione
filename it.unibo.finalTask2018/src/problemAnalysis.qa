@@ -1,21 +1,28 @@
-System mvc 
+System finalTask2018 
  
 Dispatch cmd : cmd(X)
+Event usercmd : usercmd(X)
 Event temperature : temperature(T)	
 Event clock : clock(H,M) 
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
 Event moveRobot : moveRobot(C)
+Event blinkCmd : blinkCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
-Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)	 
+Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
 
-Context ctxMvc ip [ host="localhost"  port=8019 ]
+Context ctxApplPA ip [ host="localhost"  port=8018 ] -httpserver
 EventHandler evadapter for temperature,clock  { //maps temperature and clock into inputCtrlEvent
-emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature,t1,T );
-emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) )
+	emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature,t1,T );
+	emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) )
+};
+EventHandler evled for ctrlEvent  { // filter ctrlEvent by CATEGORY and NAME
+	emit blinkCmd fromContent ctrlEvent( led, l1, blink ) to blinkCmd(on);
+	emit blinkCmd fromContent ctrlEvent( led, l1, noblink ) to blinkCmd(off)
 };
 
-QActor mvccontroller context ctxMvc {
+// -------------------------- CONTROLLER --------------------------
+QActor controllerpa context ctxApplPA {
 Rules{ //The model is in the theory resourceModel. 
 
 	//fatti
@@ -109,8 +116,10 @@ Rules{ //The model is in the theory resourceModel.
     	onMsg cmd : cmd(X) -> demo changeRobotModel(X)
     ]
 }
+// -------------------------- CONTROLLER --------------------------
 
-QActor swag context ctxMvc {
+// -------------------------- SOFTWARE AGENT --------------------------
+QActor swagpa context ctxApplPA {
 	Rules{
 		// for testing
 		isClose :-
@@ -125,7 +134,7 @@ QActor swag context ctxMvc {
 	}	
 
 	Plan init normal [         
-   		println("start swag")
+   		println("swag start")
    	]
    	switchTo waitForSonar   // testing  
   
@@ -137,7 +146,7 @@ QActor swag context ctxMvc {
    	 
 	Plan handleFront resumeLastPlan[
   		printCurrentEvent;
-		onEvent frontSonar : sonar(D) -> forward mvccontroller -m cmd : cmd(h(0))
+		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0))
 	]
 	
 	Plan handleSensor resumeLastPlan[
@@ -145,18 +154,86 @@ QActor swag context ctxMvc {
   		// testing: robot close to sonars makes some moves
 		onEvent sonarSensor : sonar(N,D) -> addRule sonarDetect(N,D);
 		[ !? isClose ] {
-			forward mvccontroller -m cmd : cmd(d(0));
+			forward controllerpa -m cmd : cmd(d(0));
 			delay 250;
-			forward mvccontroller -m cmd : cmd(d(0));
+			forward controllerpa -m cmd : cmd(d(0));
 			delay 250;
-			forward mvccontroller -m cmd : cmd(d(0));
+			forward controllerpa -m cmd : cmd(d(0));
 			delay 250;
-			forward mvccontroller -m cmd : cmd(d(0));
+			forward controllerpa -m cmd : cmd(d(0));
 			delay 250;
-			forward mvccontroller -m cmd : cmd(s(0));
+			forward controllerpa -m cmd : cmd(s(0));
 			delay 250;
-			forward mvccontroller -m cmd : cmd(h(0))
+			forward controllerpa -m cmd : cmd(h(0))
 		};
 		[ ?? sonarDetect(N,D) ] println( removing(N,D) )
 	]
 }
+// -------------------------- SOFTWARE AGENT --------------------------
+
+// -------------------------- HUMAN OPERATOR --------------------------
+QActor humanoperatorpa context ctxApplPA {
+	
+	Plan init normal [
+		println("humanOperator start")
+	]
+	switchTo waitForUserCmd
+	
+	Plan waitForUserCmd [ ]
+	transition stopAfter 3600000
+		whenEvent usercmd -> sendCmd
+	finally repeatPlan
+
+	Plan sendCmd resumeLastPlan [
+		onEvent usercmd : usercmd( robotgui(CMD) ) -> println(robotgui(CMD));
+		onEvent usercmd : usercmd( robotgui(CMD) ) -> forward controllerpa -m cmd : cmd(CMD)
+	]
+}
+// -------------------------- HUMAN OPERATOR --------------------------
+
+// -------------------------- CLOCK AGENT --------------------------
+QActor clockagentpa context ctxApplPA {
+	Plan init normal [
+		println("clockAgent start");
+		
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.initGUI()
+	]
+}
+// -------------------------- CLOCK AGENT --------------------------
+
+// -------------------------- TEMPERATURE AGENT --------------------------
+QActor thermoagentpa context ctxApplPA {	
+	Plan init normal [
+		println("thermoAgent start");
+		
+		javaRun it.unibo.finalTask2018.adapter.thermoAdapter.initGUI()
+	]
+}
+// -------------------------- TEMPERATURE AGENT --------------------------
+
+// -------------------------- HUE LAMP AGENT --------------------------
+QActor huelampagentpa context ctxApplPA {
+	Plan init normal [         
+   		println("hueLampAgent start");
+
+   		javaRun it.unibo.custom.gui.customBlsGui.createCustomLedGui();
+   		//lampeggia per prova
+   		delay 1000;
+   		javaRun it.unibo.custom.gui.customBlsGui.setLed("on");
+   		delay 1000;
+   		javaRun it.unibo.custom.gui.customBlsGui.setLed("off")
+   	]
+   	switchTo waitForCommand     
+  
+    Plan waitForCommand[ ]
+    transition stopAfter 6000000 
+     	whenEvent blinkCmd -> handleCmd
+    finally repeatPlan	
+   	 
+	Plan handleCmd resumeLastPlan[
+ 		printCurrentEvent;
+		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
+		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+	]
+}
+// -------------------------- HUE LAMP AGENT --------------------------

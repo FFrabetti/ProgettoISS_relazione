@@ -1,19 +1,18 @@
 System finalTask2018            
 
-Dispatch moveRobot : moveRobot(CMD)
-
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
+Dispatch moveRobot : moveRobot(CMD)
 
 Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
 Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
 
 Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
-EventHandler evhnode for ctrlEvent /*-print*/ {
+EventHandler evhnode for ctrlEvent {
 	forwardEvent nodebroker -m ctrlMsg		// stesso payload
 };
 
-Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
+Context ctxApplPA ip [ host="localhost"  port=8018 ] -standalone 
 
 QActor robotnode context ctxVirtualRobotNode {
 	Rules {

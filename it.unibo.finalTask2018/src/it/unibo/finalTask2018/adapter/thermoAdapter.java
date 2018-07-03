@@ -7,6 +7,7 @@ public class thermoAdapter {
 	public static void initGUI(QActor qa) {
 		new Thread(() -> {
 			try {
+				Thread.sleep(10000);
 				while (true) {
 					Thread.sleep(10000);
 					thermoAdapter.emitTemp(qa);

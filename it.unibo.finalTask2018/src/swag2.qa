@@ -1,0 +1,87 @@
+System finalTask2018 
+ 
+Dispatch cmd : cmd(X)
+Event usercmd : usercmd(X)
+Event temperature : temperature(T)	
+Event clock : clock(H,M) 
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME,DISTANCE)
+Event moveRobot : moveRobot(C)
+Event blinkCmd : blinkCmd(STATE)
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
+Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
+
+Context ctxSwag2 ip [ host="localhost"  port=8016 ]
+
+// -------------------------- SOFTWARE AGENT 2 --------------------------
+QActor swag2pa context ctxSwag2 {
+	Rules{
+		// for testing
+		isClose :-
+			sonarDetect(_,D),
+			eval(gt,D,0),!,
+			eval(lt,D,5).
+		
+		isClose :-
+			sonarDetect(_,D),
+			eval(minus,0,D,R),
+			eval(lt,R,5).
+			
+		obstacleDetected(D) :-
+			foundObstacle(C), !,
+			C2 is C+1,
+			retract(foundObstacle(X)),
+			assert(foundObstacle(C2)).
+		
+		obstacleDetected(D) :-
+			assert(foundObstacle(1)).
+			
+		isFixObstacle :- foundObstacle(2).
+	}
+
+	Plan init normal [         
+   		println("swag2 start")
+   	]
+   	switchTo waitForSonar   // testing  
+  
+    Plan waitForSonar[  ]  
+    transition stopAfter 3600000 
+     	whenEvent frontSonar -> handleFront,
+     	whenEvent sonarSensor -> handleSensor
+    finally repeatPlan	
+   	 
+	Plan handleFront resumeLastPlan[
+  		printCurrentEvent;
+//		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0));
+		onEvent frontSonar : sonar(D) -> demo obstacleDetected(D);
+	
+		// se l'ostacolo non e' fisso, ritento
+		[ !? isFixObstacle ]
+			println("fix obstacle")
+		else
+			println("mobile obstacle")
+//			forward controllerpa -m cmd : cmd(w(0))
+			
+	]
+	switchTo [ !? isFixObstacle ] avoidFix
+	
+			
+	Plan handleSensor resumeLastPlan[
+  		printCurrentEvent
+  		// testing: robot close to sonars makes some moves
+	]
+	
+	Plan avoidFix resumeLastPlan[
+		println("avoidFix")
+	]
+}
+// -------------------------- SOFTWARE AGENT 2 --------------------------
+
+QActor swag2tester context ctxSwag2 {
+	Plan init normal [
+		delay 4000;
+		emit frontSonar : sonar(2);
+		delay 1000;
+		emit frontSonar : sonar(2)
+	]
+}

@@ -12,7 +12,7 @@ Context ctxReqAnalysis ip [host="localhost" port=8888] -httpserver
 Context ctxDdr ip [ host="localhost" port=8882 ] -standalone 
 
 // -------------------------- HUE LAMP AGENT --------------------------
-// Event blinkCmd : blinkCmd(STATE)
+// Event lightCmd : lightCmd(STATE)
 QActor huelampagentra context ctxReqAnalysis {
 	Plan init normal [ 
 		println("hueLampAgent start")

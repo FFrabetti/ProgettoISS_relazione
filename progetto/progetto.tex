@@ -323,9 +323,11 @@ L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committ
 
 Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp} remota: per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.\\
 
-\lstinputlisting[style=style_qa, firstline=16, lastline=34, firstnumber=16]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=15, lastline=34, firstnumber=15]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
-Si noti come la scelta di utilizzare l'evento \codescript{blinkCmd} consente di far \textit{lampeggiare} più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
+Si noti come la scelta di utilizzare l'evento \codescript{lightCmd} consenta di controllare più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
+
+Inoltre, poiché i comandi utilizzati nel payload dell'evento non si limitano solo a gestire il \textit{lampeggiamento}, il modello è generale e facilmente riutilizzabile. Ad esempio un cambiamento dei requisiti potrebbe stabilire che il led vada solo acceso durante il movimento del robot.
 
 \subsection{Sensors}
 
@@ -435,16 +437,18 @@ Tramite un \emph{EventHandler} ogni evento emesso dai sensori viene mappato in u
 
 Ad ogni modifica del Resource Model relativa allo stato di un attuatore, il \texttt{Controller} emette a sua volta degli eventi \codescript{ctrlEvent} per notificare il cambiamento ai vari attuatori fisici.\\
 
-\lstinputlisting[style=style_qa, firstline=25, lastline=118, firstnumber=25]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=26, lastline=118, firstnumber=26]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 Attualmente sono soddisfatti i requisiti \code{R-TempOk} e \code{R-TimeOk} in quanto il \texttt{Controller} blocca ogni modifica allo stato del robot al di fuori di un certo intervallo temporale o in presenza di temperature troppo elevate. Il robot viene inoltre fermato non appena queste condizioni non sono più verificate (\code{R-TempKo} e \code{R-TimeKo}).
 
 Oltre a questo, sono anche soddisfatti i requisiti relativi al lampeggiamento del \texttt{Led} e della \texttt{HueLamp} (\code{R-BlinkLed} e \code{R-BlinkHue}), dal momento che alla modifica del modello del robot segue l'emissione di un opportuno evento \codescript{ctrlEvent} ad uso degli attuatori della categoria \emph{''led''}.
 
 \subsection{Software Agent}
-Il \texttt{SoftwareAgent} realizza la logica applicativa in collaborazione col \texttt{Controller}, occupandosi di manorvare il robot secondo il vincolo \code{R-FloorClean}. Decidiamo quindi di modellarlo come un attore nel suo stesso contesto.
+Il \texttt{SoftwareAgent} realizza la logica applicativa in collaborazione col \texttt{Controller}, occupandosi di manovrare il robot secondo il vincolo \code{R-FloorClean}. Decidiamo quindi di modellarlo come un attore nel suo stesso contesto.
 
-In una fase preliminare, per motivi di testing, il \texttt{SoftwareAgent} fa solo ruotare il robot quando esso viene rilevato dai sonar a distanza ravvicinata.\\
+L'agent si mette in ascolto degli eventi provenienti dai vari sonar e invia opportuni messaggi \codescript{cmd} al controller, gli stessi utilizzati dallo \texttt{HumanOperator} per muovere il robot.\\
+
+In una fase preliminare, per motivi di testing, il \texttt{SoftwareAgent} fa semplicemente ruotare il robot quando esso viene rilevato dai sonar a distanza ravvicinata.\\
 
 \lstinputlisting[style=style_qa, firstline=122, lastline=171, firstnumber=122]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
@@ -478,9 +482,9 @@ Il modello di questo robot è quindi equivalente a quello del robot virtuale, di
 Da notare come entrambi i robot, reagendo agli stessi eventi \codescript{ctrlEvent} generati al cambiamento del modello del robot, possono eseguire in contemporanea le medesime mosse.
 
 \subsection{Changes to HueLampAgent}
-Come per il robot, anche il modello della \texttt{HueLamp} dev'essere aggiornato per poter lavorare con gli eventi \codescript{ctrlEvent} emessi dal controller. Analogamente a quanto fatto prima, abbiamo utilizzato un \emph{EventHandler} per convertire tali eventi in \codescript{blinkCmd}, ovvero nel formato degli eventi gestiti dalla lampada.\\
+Come per il robot, anche il modello della \texttt{HueLamp} dev'essere aggiornato per poter lavorare con gli eventi \codescript{ctrlEvent} emessi dal controller. Analogamente a quanto fatto prima, abbiamo utilizzato un \emph{EventHandler} per convertire tali eventi in \codescript{lightCmd}, ovvero nel formato degli eventi gestiti dalla lampada.\\
 
-\lstinputlisting[style=style_qa, firstline=19, lastline=22, firstnumber=19]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=19, lastline=23, firstnumber=19]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 Il resto del modello non ha subito variazioni rispetto a quello precedentemente mostrato. L'attuale implementazione della classe Java che viene utilizzata (tramite \codescript{javaRun}) non è altro che un oggetto mock che mostra un'interfaccia grafica in grado di ''lampeggiare''.
 

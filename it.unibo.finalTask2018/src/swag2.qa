@@ -7,9 +7,11 @@ Event clock : clock(H,M)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
 Event moveRobot : moveRobot(C)
-Event blinkCmd : blinkCmd(STATE)
+Event lightCmd : lightCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
+
+Dispatch swagmsg : msg(CMD)
 
 Context ctxSwag2 ip [ host="localhost"  port=8016 ]
 
@@ -17,13 +19,13 @@ Context ctxSwag2 ip [ host="localhost"  port=8016 ]
 QActor swag2pa context ctxSwag2 {
 	Rules{
 		// for testing
-		isClose :-
-			sonarDetect(_,D),
+		isCloseTo(S) :-
+			sonarDetect(S,D),
 			eval(gt,D,0),!,
 			eval(lt,D,5).
 		
-		isClose :-
-			sonarDetect(_,D),
+		isCloseTo(S) :-
+			sonarDetect(S,D),
 			eval(minus,0,D,R),
 			eval(lt,R,5).
 			
@@ -37,14 +39,55 @@ QActor swag2pa context ctxSwag2 {
 			assert(foundObstacle(1)).
 			
 		isFixObstacle :- foundObstacle(2).
+		
 	}
 
 	Plan init normal [         
-   		println("swag2 start")
+   		println("swag2 start: waiting for start command")
    	]
-   	switchTo waitForSonar   // testing  
+	transition stopAfter 3000000
+		whenEvent usercmd -> receivedCmd
+//	finally repeatPlan
+   	
+   	Plan receivedCmd resumeLastPlan [
+   		onEvent usercmd : usercmd(start) -> {
+   			println("ricevuto usercmd(start)");
+   			addRule startCmd
+   		}
+   	]
+   	transition whenTime 800 -> notInStartingPoint
+    	whenEvent [ ?? startCmd] sonarSensor -> detectedBySonar
   
-    Plan waitForSonar[  ]  
+  	Plan notInStartingPoint [
+  		println("not in starting point");
+  		removeRule startCmd
+  	]
+  	switchTo init
+  	
+  	Plan detectedBySonar [
+  		println("detected by sonar");
+//  		removeRule startCmd;
+  		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
+  		
+  		[ !? isCloseTo(sonar1) ] println("is close to sonar1")
+  		else
+  			println("not close to sonar1!");
+  		
+  		[ !? isCloseTo(sonar1) ]
+	  		selfMsg swagmsg : msg(clean);
+	  		
+	  	removeRule sonarDetect(sonar1, D)
+  	]
+//  	switchTo [ !? isCloseTo(sonar1) ] startCleaning
+   	transition whenTime 800 -> notInStartingPoint
+    	whenMsg swagmsg -> startCleaning
+
+	Plan startCleaning [
+		println("start cleaning")
+
+	]
+  
+    Plan waitForSonar[  ]
     transition stopAfter 3600000 
      	whenEvent frontSonar -> handleFront,
      	whenEvent sonarSensor -> handleSensor
@@ -53,35 +96,64 @@ QActor swag2pa context ctxSwag2 {
 	Plan handleFront resumeLastPlan[
   		printCurrentEvent;
 //		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0));
-		onEvent frontSonar : sonar(D) -> demo obstacleDetected(D);
+		onEvent frontSonar : sonar(D) -> demo obstacleDetected(D); // aumento contatore
 	
 		// se l'ostacolo non e' fisso, ritento
 		[ !? isFixObstacle ]
 			println("fix obstacle")
-		else
-			println("mobile obstacle")
-//			forward controllerpa -m cmd : cmd(w(0))
-			
+		else {
+			println("possible mobile obstacle");
+			println("DELAY, FORWARD di poco")
+			//forward controllerpa -m cmd : cmd(w(0))
+		}
 	]
-	switchTo [ !? isFixObstacle ] avoidFix
-	
-			
+    transition whenTime 800 -> avoidMobile
+     	whenEvent frontSonar -> avoidFix 
+//	switchTo [ !? isFixObstacle ] avoidFix
+				
 	Plan handleSensor resumeLastPlan[
   		printCurrentEvent
   		// testing: robot close to sonars makes some moves
 	]
 	
 	Plan avoidFix resumeLastPlan[
-		println("avoidFix")
+		println("avoidFix");
+		removeRule foundObstacle(X);
+		println("proviamo a girarci intorno")
 	]
+	
+	Plan avoidMobile resumeLastPlan[
+		println("avoidMobile");
+		removeRule foundObstacle(X);
+		println("ok, ostacolo superato")
+	]
+	switchTo waitForSonar
 }
 // -------------------------- SOFTWARE AGENT 2 --------------------------
 
 QActor swag2tester context ctxSwag2 {
 	Plan init normal [
+		// fail: timeout (not detected by a sonar)
 		delay 4000;
-		emit frontSonar : sonar(2);
+		emit usercmd : usercmd(start);
+		delay 5000;
+		
+		// fail: timeout (not close to sonar1)
+		emit usercmd : usercmd(start);
+		delay 200;
+		emit sonarSensor : sonar(sonar1, 20);
+		delay 5000;
+	
+		// fail: no start
+		emit usercmd : usercmd(robotgui(w(0)));
+		delay 5000;
+		
+		// ok
+		emit usercmd : usercmd(start);
+		delay 200;
+		emit sonarSensor : sonar(sonar1, 2);
 		delay 1000;
-		emit frontSonar : sonar(2)
+		println("test finito")
+//		emit frontSonar : sonar(2)
 	]
 }

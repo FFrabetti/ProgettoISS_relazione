@@ -487,8 +487,11 @@ Come per il robot, anche il modello della \texttt{HueLamp} dev'essere aggiornato
 \lstinputlisting[style=style_qa, firstline=19, lastline=23, firstnumber=19]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 Il resto del modello non ha subito variazioni rispetto a quello precedentemente mostrato. L'attuale implementazione della classe Java che viene utilizzata (tramite \codescript{javaRun}) non è altro che un oggetto mock che mostra un'interfaccia grafica in grado di ''lampeggiare''.
+%===========================================================================
 
-\subsection{Satisfied requirements}
+%===========================================================================
+\section{Project}
+\labelsec{Project}
 Al momento, l'applicazione è in grado di soddisfare i seguenti requisiti:
 \begin{itemize}
 \item \code{R-TempOk}, \code{R-TimeOk}, \code{R-TempKo} e \code{R-TimeKo} ad opera di opportune regole Prolog presenti nella base di conoscenza del \texttt{Controller}
@@ -505,12 +508,6 @@ Procederemo ad affrontare i restanti requisiti in maniera incrementale:
 \subsubsection{Obstacle avoidance}
 Il \texttt{SoftwareAgent} deve pilotare il robot in modo automatico all'interno della stanza cercando di evitare gli ostacoli sia fissi sia mobili, fermandolo nel caso ciò non sia possibile.
 
-
-%===========================================================================
-
-%===========================================================================
-\section{Project}
-\labelsec{Project}
 %===========================================================================
 
 %===========================================================================

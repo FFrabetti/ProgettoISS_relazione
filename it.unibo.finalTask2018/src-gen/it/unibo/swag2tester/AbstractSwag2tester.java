@@ -77,14 +77,44 @@ public abstract class AbstractSwag2tester extends QActor {
 	    	aar = delayReactive(4000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "sonar(DISTANCE)","sonar(2)", guardVars ).toString();
-	    	emit( "frontSonar", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "usercmd(X)","usercmd(start)", guardVars ).toString();
+	    	emit( "usercmd", temporaryStr );
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(5000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "usercmd(X)","usercmd(start)", guardVars ).toString();
+	    	emit( "usercmd", temporaryStr );
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(200,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "sonar(NAME,DISTANCE)","sonar(sonar1,20)", guardVars ).toString();
+	    	emit( "sonarSensor", temporaryStr );
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(5000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "usercmd(X)","usercmd(robotgui(w(0)))", guardVars ).toString();
+	    	emit( "usercmd", temporaryStr );
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(5000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "usercmd(X)","usercmd(start)", guardVars ).toString();
+	    	emit( "usercmd", temporaryStr );
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(200,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "sonar(NAME,DISTANCE)","sonar(sonar1,2)", guardVars ).toString();
+	    	emit( "sonarSensor", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(1000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "sonar(DISTANCE)","sonar(2)", guardVars ).toString();
-	    	emit( "frontSonar", temporaryStr );
+	    	temporaryStr = "\"test finito\"";
+	    	println( temporaryStr );  
 	    	repeatPlanNoTransition(pr,myselfName,"swag2tester_"+myselfName,false,false);
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );

@@ -142,8 +142,8 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %-------------------------------------------------
 %  User static rules about swag2pa
 %------------------------------------------------- 
-isClose:-sonarDetect( _,D),eval( gt,D,0), ! ,eval( lt,D,5).
-isClose:-sonarDetect( _,D),eval( minus,0,D,R),eval( lt,R,5).
+isCloseTo( S):-sonarDetect( S,D),eval( gt,D,0), ! ,eval( lt,D,5).
+isCloseTo( S):-sonarDetect( S,D),eval( minus,0,D,R),eval( lt,R,5).
 obstacleDetected( D):-foundObstacle( C), ! ,C2 is C + 1,retract( foundObstacle( X)),assert( foundObstacle( C2)).
 obstacleDetected( D):-assert( foundObstacle( 1)).
 isFixObstacle:-foundObstacle( 2).

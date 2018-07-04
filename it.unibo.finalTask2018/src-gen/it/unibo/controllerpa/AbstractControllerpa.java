@@ -100,6 +100,11 @@ public abstract class AbstractControllerpa extends QActor {
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(actuator,led,l1,VALUE)" )) != null ){
+	    	temporaryStr = "model(l1,VALUE)";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	println( temporaryStr );  
+	    	}
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(sensor,temperature,t1,VALUE)" )) != null ){
 	    	temporaryStr = "model(t1,VALUE)";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);

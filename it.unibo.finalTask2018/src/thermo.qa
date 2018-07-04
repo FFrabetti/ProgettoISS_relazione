@@ -1,0 +1,15 @@
+System thermo
+
+Event temperature : temperature(T)
+
+Context ctxThermo ip [host="localhost" port=3232]
+Context ctxApplPA ip [ host="localhost"  port=8018 ]  -standalone 
+
+QActor thermoqa context ctxThermo {
+	
+	Plan init normal [
+		println("thermoqa start");
+		javaRun it.unibo.finalTask2018.adapter.thermoAdapter.initGUI()
+	]
+	
+}

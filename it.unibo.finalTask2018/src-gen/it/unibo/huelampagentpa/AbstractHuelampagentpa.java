@@ -105,7 +105,7 @@ public abstract class AbstractHuelampagentpa extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"huelampagentpa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleCmd") }, 
-	          new String[]{"true","E","blinkCmd" },
+	          new String[]{"true","E","lightCmd" },
 	          6000000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForCommand){  
 	    	 println( getName() + " plan=waitForCommand WARNING:" + e_waitForCommand.getMessage() );
@@ -120,26 +120,38 @@ public abstract class AbstractHuelampagentpa extends QActor {
 	    	printCurrentEvent(false);
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("blinkCmd(on)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
-	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
+	    	curT = Term.createTerm("lightCmd(blink)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
-	    			String arg1 = "on" ;
+	    			String arg1 = "blink" ;
 	    			//end arg1
-	    			it.unibo.custom.gui.customBlsGui.blinkLed(this,arg1 );
+	    			it.unibo.custom.gui.customBlsGui.setLed(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("blinkCmd(off)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
-	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
+	    	curT = Term.createTerm("lightCmd(on)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			{/* JavaLikeMove */ 
+	    			String arg1 = "on" ;
+	    			//end arg1
+	    			it.unibo.custom.gui.customBlsGui.setLed(this,arg1 );
+	    			}
+	    	}
+	    	//onEvent 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("lightCmd(off)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;
 	    			//end arg1
-	    			it.unibo.custom.gui.customBlsGui.blinkLed(this,arg1 );
+	    			it.unibo.custom.gui.customBlsGui.setLed(this,arg1 );
 	    			}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"huelampagentpa_"+myselfName,false,true);

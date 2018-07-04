@@ -7,7 +7,7 @@ Event clock : clock(H,M)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
 Event moveRobot : moveRobot(C)
-Event blinkCmd : blinkCmd(STATE)
+Event lightCmd : lightCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
 
@@ -17,14 +17,14 @@ EventHandler evadapter for temperature,clock  { //maps temperature and clock int
 	emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) )
 };
 EventHandler evled for ctrlEvent  { // filter ctrlEvent by CATEGORY and NAME
-	emit blinkCmd fromContent ctrlEvent( led, l1, blink ) to blinkCmd(on);
-	emit blinkCmd fromContent ctrlEvent( led, l1, noblink ) to blinkCmd(off)
+	emit lightCmd fromContent ctrlEvent( led, l1, blink ) to lightCmd(blink);
+	emit lightCmd fromContent ctrlEvent( led, l1, on ) to lightCmd(on);
+	emit lightCmd fromContent ctrlEvent( led, l1, off ) to lightCmd(off)
 };
 
 // -------------------------- CONTROLLER --------------------------
 QActor controllerpa context ctxApplPA {
 Rules{ //The model is in the theory resourceModel. 
-
 	//fatti
 	limitTemperatureValue( 25 ).
 	timeInterval(h(7,0),h(10,0)).
@@ -50,7 +50,7 @@ Rules{ //The model is in the theory resourceModel.
  	changedModelAction(robot,R, s(X)):-
  			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
  	changedModelAction(robot,R, h(X)):-
- 			changeModelItem(led,l1,noblink).	// R-BlinkLed/R-BlinkHue
+ 			changeModelItem(led,l1,off).	// R-BlinkLed/R-BlinkHue
  	//dopo una svolta il modello deve risultare fermo
  	changedModelAction(robot,R, a(X)):-
  			changeModelItem(robot,R,h(X)).		
@@ -95,7 +95,7 @@ Rules{ //The model is in the theory resourceModel.
  
     Plan waitForInputEvent[
     	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
-//    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE));
+    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE));
     	[ !? getModelItem(sensor, temperature, t1, VALUE) ] println(model(t1, VALUE));
     	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
     	println("---------------------------------------")
@@ -204,9 +204,9 @@ QActor clockagentpa context ctxApplPA {
 // -------------------------- TEMPERATURE AGENT --------------------------
 QActor thermoagentpa context ctxApplPA {	
 	Plan init normal [
-		println("thermoAgent start");
-		
-		javaRun it.unibo.finalTask2018.adapter.thermoAdapter.initGUI()
+		println("thermoAgent start") // ;
+// thermo.qa esegue in un proprio contesto		
+//		javaRun it.unibo.finalTask2018.adapter.thermoAdapter.initGUI()
 	]
 }
 // -------------------------- TEMPERATURE AGENT --------------------------
@@ -227,13 +227,14 @@ QActor huelampagentpa context ctxApplPA {
   
     Plan waitForCommand[ ]
     transition stopAfter 6000000 
-     	whenEvent blinkCmd -> handleCmd
+     	whenEvent lightCmd -> handleCmd
     finally repeatPlan	
    	 
 	Plan handleCmd resumeLastPlan[
  		printCurrentEvent;
-		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
-		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+ 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("blink");
+		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("on");
+		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("off")
 	]
 }
 // -------------------------- HUE LAMP AGENT --------------------------

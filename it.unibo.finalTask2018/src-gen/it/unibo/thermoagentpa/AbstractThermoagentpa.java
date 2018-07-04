@@ -75,7 +75,6 @@ public abstract class AbstractThermoagentpa extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"thermoAgent start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.thermoAdapter.initGUI( myself  );
 	    	repeatPlanNoTransition(pr,myselfName,"thermoagentpa_"+myselfName,false,false);
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );

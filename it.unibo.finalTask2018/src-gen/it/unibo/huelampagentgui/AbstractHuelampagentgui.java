@@ -120,14 +120,14 @@ public abstract class AbstractHuelampagentgui extends QActor {
 	    	printCurrentEvent(false);
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("blinkCmd(on)");
+	    	curT = Term.createTerm("blinkCmd(blink)");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
 	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
-	    			String arg1 = "on" ;
+	    			String arg1 = "blink" ;
 	    			//end arg1
-	    			it.unibo.custom.gui.customBlsGui.blinkLed(this,arg1 );
+	    			it.unibo.custom.gui.customBlsGui.setLed(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
@@ -139,7 +139,7 @@ public abstract class AbstractHuelampagentgui extends QActor {
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;
 	    			//end arg1
-	    			it.unibo.custom.gui.customBlsGui.blinkLed(this,arg1 );
+	    			it.unibo.custom.gui.customBlsGui.setLed(this,arg1 );
 	    			}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"huelampagentgui_"+myselfName,false,true);

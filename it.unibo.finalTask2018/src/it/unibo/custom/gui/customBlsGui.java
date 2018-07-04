@@ -45,24 +45,21 @@ private static BlinkingThread bt;
     	if( curLBtnGui == null ) curLBtnGui =  new customBlsGui(myActor, "button", color);
     	return  curLBtnGui;
     }
-    public static void setLed(QActor myActor, String value) {
-      	curLedGui.setLedGui( value.equals("on") ? true : false );
-    }    
-    
-    public static void blinkLed(QActor qa,String blink) {
-    	if(blink.equals("on")) {
-    		if(bt== null || !bt.isAlive()) {
-    			bt=new BlinkingThread(qa);
+    public static void setLed(QActor qa, String value) {  	
+    	if(value.equals("blink")) {    		
+    		if(bt == null || !bt.isAlive()) {
+    			bt=new BlinkingThread(curLedGui);
     			bt.start();
     		}
     	}
-    	else {
-    		if(bt!= null) {
-	    		bt.interrupt();
-				setLed(qa,"off");
-    		}
+    	else if(bt != null) {
+	    	bt.interrupt();
+	    	bt = null;
     	}
+    	
+      	curLedGui.setLedGui( value.equals("on") ? true : false );
     }
+    
     /*
      * CONSTRUCTORS
      */

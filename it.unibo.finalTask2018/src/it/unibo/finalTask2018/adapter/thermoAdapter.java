@@ -7,14 +7,18 @@ public class thermoAdapter {
 	public static void initGUI(QActor qa) {
 		new Thread(() -> {
 			try {
-				Thread.sleep(10000);
 				while (true) {
 					Thread.sleep(10000);
-					thermoAdapter.emitTemp(qa);
+					try {
+						thermoAdapter.emitTemp(qa);
+					} catch(NullPointerException npe) {
+						// do nothing
+						System.out.println("still waiting for thermoGUI...");
+					}
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}
+			} 
 		}).start();
 
 		it.unibo.thermo.appl.Main.launch();
@@ -24,7 +28,6 @@ public class thermoAdapter {
 		double t = it.unibo.thermo.appl.Main.getT();
 
 		qa.emit("temperature", "temperature(" + t + ")");
-//		System.out.println("emitting: " + t);
 	}
 
 }

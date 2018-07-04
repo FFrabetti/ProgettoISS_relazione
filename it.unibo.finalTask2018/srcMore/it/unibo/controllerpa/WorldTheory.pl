@@ -149,7 +149,7 @@ changedModelAction( clock,c1,h( HC,MC)):-non( inTime( HC,MC)),changeModelItem( r
 changedModelAction( robot,R,CMD):-emitevent( ctrlEvent,ctrlEvent( robot,R,CMD)),fail.
 changedModelAction( robot,R,w( X)):-changeModelItem( led,l1,blink).
 changedModelAction( robot,R,s( X)):-changeModelItem( led,l1,blink).
-changedModelAction( robot,R,h( X)):-changeModelItem( led,l1,noblink).
+changedModelAction( robot,R,h( X)):-changeModelItem( led,l1,off).
 changedModelAction( robot,R,a( X)):-changeModelItem( robot,R,h( X)).
 changedModelAction( robot,R,d( X)):-changeModelItem( robot,R,h( X)).
 changedModelAction( led,L,X):-emitevent( ctrlEvent,ctrlEvent( led,L,X)).

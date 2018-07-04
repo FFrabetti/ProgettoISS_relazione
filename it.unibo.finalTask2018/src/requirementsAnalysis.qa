@@ -4,8 +4,7 @@ Event clock : clock(H,M)
 Event temperature : temperature(T)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME, DISTANCE)
-Event blinkCmd : blinkCmd(STATE)
-
+Event lightCmd : lightCmd(STATE)
 Dispatch cmd : cmd(X)
 Dispatch moveRobot : moveRobot(CMD)
 
@@ -24,11 +23,12 @@ QActor huelampagentra context ctxReqAnalysis {
 		println("hueLampAgent waiting for events")
 	]
 	transition stopAfter 3600000
-		whenEvent blinkCmd -> commandLed
+		whenEvent lightCmd -> commandLed
 	
 	Plan commandLed [
-		onEvent blinkCmd : blinkCmd( on ) 	-> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("on");
-		onEvent blinkCmd : blinkCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("off")
+		onEvent lightCmd : lightCmd( blink )-> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("blink");
+		onEvent lightCmd : lightCmd( on ) 	-> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("on");
+		onEvent lightCmd : lightCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("off")
 	]
 	switchTo waitForEvents
 }
@@ -105,9 +105,9 @@ QActor applra context ctxReqAnalysis {
 	finally repeatPlan
 	
 	Plan testHue resumeLastPlan [
-		emit blinkCmd : blinkCmd(on);
+		emit lightCmd : lightCmd(blink);
 		delay 1000;
-		emit blinkCmd : blinkCmd(off)
+		emit lightCmd : lightCmd(off)
 	]
 	
 	Plan msgReceived resumeLastPlan[

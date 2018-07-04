@@ -15,13 +15,13 @@ public class ledMockGui extends customBlsGui implements ILed {
 	
 	@Override
 	public void turnOn() {
-		blinkLed(null, "on");
+		setLed(null, "on");
 		on = true;
 	}
 
 	@Override
 	public void turnOff() {
-		blinkLed(null, "off");
+		setLed(null, "off");
 		on = false;
 	}
 

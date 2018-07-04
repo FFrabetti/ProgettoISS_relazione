@@ -15,6 +15,6 @@ digraph finite_state_machine {
 	
 	init -> waitForEvents [ label = "switch" ][ color = black ][ fontcolor = black ]
 	waitForEvents -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	waitForEvents -> commandLed [ label = "lightCmd" ][ color = black ][ fontcolor = black ]
 	commandLed -> waitForEvents [ label = "switch" ][ color = black ][ fontcolor = black ]
-	waitForEvents -> commandLed [ label = "blinkCmd" ][ color = black ][ fontcolor = black ]
 }

@@ -6,7 +6,8 @@ import it.unibo.qactors.akka.QActor;
 
 public class RealRobotMock implements DDRobot {
 
-	private static ILed led;
+	private ILed led;
+	private Thread blinkingT;
 
 	@Override
 	public void setUpEnvironment(QActor qa, String host, int port) {
@@ -24,35 +25,58 @@ public class RealRobotMock implements DDRobot {
 	@Override
 	public void stop(QActor qa) {
 		System.out.println("STOP");
-		if (led.isOn())
-			led.turnOff();
+		blinkLed(false);
 	}
 
 	@Override
 	public void forward(QActor qa) {
 		System.out.println("FORWARD");
-		if (!led.isOn())
-			led.turnOn();
+		blinkLed(true);
 	}
 
 	@Override
 	public void backward(QActor qa) {
 		System.out.println("BACKWARD");
-		if (!led.isOn())
-			led.turnOn();
+		blinkLed(true);
 	}
 
 	@Override
 	public void left(QActor qa) {
 		System.out.println("LEFT");
-		if (led.isOn())
-			led.turnOff();
+		blinkLed(false);
 	}
 
 	@Override
 	public void right(QActor qa) {
 		System.out.println("RIGHT");
-		if (led.isOn())
+		blinkLed(false);
+	}
+	
+	private void blinkLed(boolean on) {
+		if(on && (blinkingT==null || !blinkingT.isAlive())) {
+			blinkingT = new Thread(() -> {
+				try {
+					while(true) {
+						Thread.sleep(200);
+						if(led.isOn())
+							led.turnOff();
+						else
+							led.turnOn();
+					}
+				} catch(InterruptedException e) {
+//					e.printStackTrace();
+				}
+			});
+			blinkingT.start();
+		}
+		else if(!on && blinkingT!=null && blinkingT.isAlive()){
+			blinkingT.interrupt();
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				// waiting for the thread to stop
+			}
 			led.turnOff();
+		}
 	}
 }

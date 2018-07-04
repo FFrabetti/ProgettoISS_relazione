@@ -17,8 +17,8 @@ QActor huelampagent context ctxHueLampAgent {
 		whenEvent blinkCmd -> commandLed
 	
 	Plan commandLed [
-		onEvent blinkCmd : blinkCmd( on ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("on");
-		onEvent blinkCmd : blinkCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.blinking("off")
+		onEvent blinkCmd : blinkCmd( on ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("on");
+		onEvent blinkCmd : blinkCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("off")
 	]
 	switchTo waitForEvents
 }

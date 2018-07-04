@@ -95,7 +95,7 @@ public abstract class AbstractHuelampagentra extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"huelampagentra_"+myselfName,false,
 	          new StateFun[]{stateTab.get("commandLed") }, 
-	          new String[]{"true","E","blinkCmd" },
+	          new String[]{"true","E","lightCmd" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForEvents){  
 	    	 println( getName() + " plan=waitForEvents WARNING:" + e_waitForEvents.getMessage() );
@@ -109,26 +109,38 @@ public abstract class AbstractHuelampagentra extends QActor {
 	    	String myselfName = "commandLed";  
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("blinkCmd(on)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
-	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
+	    	curT = Term.createTerm("lightCmd(blink)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
-	    			String arg1 = "on" ;
+	    			String arg1 = "blink" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueAdapter.blinking(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("blinkCmd(off)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
-	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
+	    	curT = Term.createTerm("lightCmd(on)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			{/* JavaLikeMove */ 
+	    			String arg1 = "on" ;
+	    			//end arg1
+	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
+	    			}
+	    	}
+	    	//onEvent 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("lightCmd(off)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueAdapter.blinking(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
 	    			}
 	    	}
 	    	//switchTo waitForEvents

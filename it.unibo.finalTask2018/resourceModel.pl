@@ -3,7 +3,7 @@
 resourceModel.pl
 ===============================================================
 */
-model( type(actuator, led), name(l1), value(noblink) ).
+model( type(actuator, led), name(l1), value(off) ).
 model( type(sensor, temperature), name(t1),   value(20)  ).
 model( type(sensor, clock), name(c1),   value(h(8,0))  ).
 

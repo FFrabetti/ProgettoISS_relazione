@@ -1,4 +1,5 @@
 plan(1,init, sentence(true,move(print("hueLampAgent start")),'','' ))
 plan(1,waitForEvents, sentence(true,move(print("hueLampAgent waiting for events")),'','' ))
-plan(1,commandLed, sentence(true,eventswitch(blinkCmd, »blinkCmd( on), not here StateMoveNormal ),'','' ))
-plan(2,commandLed, sentence(true,eventswitch(blinkCmd, »blinkCmd( off), not here StateMoveNormal ),'','' ))
+plan(1,commandLed, sentence(true,eventswitch(lightCmd, »lightCmd( blink), not here StateMoveNormal ),'','' ))
+plan(2,commandLed, sentence(true,eventswitch(lightCmd, »lightCmd( on), not here StateMoveNormal ),'','' ))
+plan(3,commandLed, sentence(true,eventswitch(lightCmd, »lightCmd( off), not here StateMoveNormal ),'','' ))

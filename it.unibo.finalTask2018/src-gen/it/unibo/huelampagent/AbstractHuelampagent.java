@@ -116,7 +116,7 @@ public abstract class AbstractHuelampagent extends QActor {
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "on" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueAdapter.blinking(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
@@ -128,7 +128,7 @@ public abstract class AbstractHuelampagent extends QActor {
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueAdapter.blinking(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
 	    			}
 	    	}
 	    	//switchTo waitForEvents

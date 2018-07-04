@@ -1,2 +1,1 @@
 plan(1,init, sentence(true,move(print("thermoAgent start")),'','' ))
-plan(2,init, sentence(true,not here StateMoveNormal,'','' ))

@@ -135,14 +135,14 @@ public abstract class AbstractApplra extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("testHue",-1);
 	    	String myselfName = "testHue";  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "blinkCmd(STATE)","blinkCmd(on)", guardVars ).toString();
-	    	emit( "blinkCmd", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "lightCmd(STATE)","lightCmd(blink)", guardVars ).toString();
+	    	emit( "lightCmd", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(1000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "testHue";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "blinkCmd(STATE)","blinkCmd(off)", guardVars ).toString();
-	    	emit( "blinkCmd", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "lightCmd(STATE)","lightCmd(off)", guardVars ).toString();
+	    	emit( "lightCmd", temporaryStr );
 	    	repeatPlanNoTransition(pr,myselfName,"applra_"+myselfName,false,true);
 	    }catch(Exception e_testHue){  
 	    	 println( getName() + " plan=testHue WARNING:" + e_testHue.getMessage() );

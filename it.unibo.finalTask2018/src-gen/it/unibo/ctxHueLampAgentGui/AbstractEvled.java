@@ -28,8 +28,8 @@ protected IEventItem event;
 		}
 		//RaiseOtherEvent
 		{String newcontent = "blinkCmd(off)";
-		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,noblink)"), 
-			                Term.createTerm("ctrlEvent(led,l1,noblink)"), 
+		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,off)"), 
+			                Term.createTerm("ctrlEvent(led,l1,off)"), 
 			                Term.createTerm( event.getMsg() ), newcontent);
 		//println("newcontent="+newcontent);
 		if( newcontent != null ){ emit( "blinkCmd", newcontent ); }

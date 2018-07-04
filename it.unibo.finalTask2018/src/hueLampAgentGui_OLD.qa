@@ -6,7 +6,7 @@ Event blinkCmd : blinkCmd(STATE)
 Context ctxHueLampAgentGui ip [ host="localhost"   port=8039 ]
 EventHandler evled for ctrlEvent  { // filter ctrlEvent by CATEGORY and NAME
 	emit blinkCmd fromContent ctrlEvent( led, l1, blink ) to blinkCmd(on);
-	emit blinkCmd fromContent ctrlEvent( led, l1, noblink ) to blinkCmd(off)
+	emit blinkCmd fromContent ctrlEvent( led, l1, off ) to blinkCmd(off)
 };
 Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
 
@@ -29,8 +29,8 @@ QActor huelampagentgui context ctxHueLampAgentGui{
    	 
 	Plan handleCmd resumeLastPlan[
  		printCurrentEvent;
-		onEvent blinkCmd : blinkCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("on");
-		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.blinkLed("off")
+		onEvent blinkCmd : blinkCmd(blink) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("blink");
+		onEvent blinkCmd : blinkCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("off")
 	]
 }
 

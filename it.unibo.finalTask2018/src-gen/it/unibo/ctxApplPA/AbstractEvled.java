@@ -19,20 +19,28 @@ protected IEventItem event;
 		event = this.currentEvent; //AKKA getEventItem();
 		if( event == null ) return;
 		//RaiseOtherEvent
-		{String newcontent = "blinkCmd(on)";
+		{String newcontent = "lightCmd(blink)";
 		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,blink)"), 
 			                Term.createTerm("ctrlEvent(led,l1,blink)"), 
 			                Term.createTerm( event.getMsg() ), newcontent);
 		//println("newcontent="+newcontent);
-		if( newcontent != null ){ emit( "blinkCmd", newcontent ); }
+		if( newcontent != null ){ emit( "lightCmd", newcontent ); }
 		}
 		//RaiseOtherEvent
-		{String newcontent = "blinkCmd(off)";
-		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,noblink)"), 
-			                Term.createTerm("ctrlEvent(led,l1,noblink)"), 
+		{String newcontent = "lightCmd(on)";
+		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,on)"), 
+			                Term.createTerm("ctrlEvent(led,l1,on)"), 
 			                Term.createTerm( event.getMsg() ), newcontent);
 		//println("newcontent="+newcontent);
-		if( newcontent != null ){ emit( "blinkCmd", newcontent ); }
+		if( newcontent != null ){ emit( "lightCmd", newcontent ); }
+		}
+		//RaiseOtherEvent
+		{String newcontent = "lightCmd(off)";
+		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,off)"), 
+			                Term.createTerm("ctrlEvent(led,l1,off)"), 
+			                Term.createTerm( event.getMsg() ), newcontent);
+		//println("newcontent="+newcontent);
+		if( newcontent != null ){ emit( "lightCmd", newcontent ); }
 		}
 	}//handleCurrentEvent
 	

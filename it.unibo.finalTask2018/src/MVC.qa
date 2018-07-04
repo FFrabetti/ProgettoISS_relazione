@@ -43,7 +43,7 @@ Rules{ //The model is in the theory resourceModel.
  	changedModelAction(robot,R, s(X)):-
  			changeModelItem(led,l1,blink).
  	changedModelAction(robot,R, h(X)):-
- 			changeModelItem(led,l1,noblink).
+ 			changeModelItem(led,l1,off).
  	//dopo una svolta il modello deve risultare fermo
  	changedModelAction(robot,R, a(X)):-
  			changeModelItem(robot,R,h(X)).		

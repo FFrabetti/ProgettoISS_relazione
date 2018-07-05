@@ -60,11 +60,14 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	stateTab.put("notInStartingPoint",notInStartingPoint);
 	    	stateTab.put("detectedBySonar",detectedBySonar);
 	    	stateTab.put("startCleaning",startCleaning);
-	    	stateTab.put("waitForSonar",waitForSonar);
 	    	stateTab.put("handleFront",handleFront);
-	    	stateTab.put("handleSensor",handleSensor);
 	    	stateTab.put("avoidFix",avoidFix);
+	    	stateTab.put("givingUp",givingUp);
 	    	stateTab.put("avoidMobile",avoidMobile);
+	    	stateTab.put("checkDoor",checkDoor);
+	    	stateTab.put("doorFound",doorFound);
+	    	stateTab.put("goToPrevLevel",goToPrevLevel);
+	    	stateTab.put("failure",failure);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -80,14 +83,15 @@ public abstract class AbstractSwag2pa extends QActor {
 	    
 	    StateFun init = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_init",0);
+	     pr.incNumIter(); 	
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"swag2 start: waiting for start command\"";
 	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("receivedCmd") }, 
-	          new String[]{"true","E","usercmd" },
+	          new String[]{"true","M","swagmsg" },
 	          3000000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
@@ -99,19 +103,32 @@ public abstract class AbstractSwag2pa extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("receivedCmd",-1);
 	    	String myselfName = "receivedCmd";  
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("usercmd(start)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("usercmd") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			//println("WARNING: variable substitution not yet fully implemented " ); 
-	    			{//actionseq
-	    			temporaryStr = "\"ricevuto usercmd(start)\"";
-	    			println( temporaryStr );  
-	    			temporaryStr = "startCmd";
-	    			addRule( temporaryStr );  
-	    			};//actionseq
+	    	if( currentMessage != null && currentMessage.msgId().equals("swagmsg") && 
+	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		//println("WARNING: variable substitution not yet fully implemented " ); 
+	    		{//actionseq
+	    		temporaryStr = "\"ricevuto usercmd(start)\"";
+	    		println( temporaryStr );  
+	    		temporaryStr = "startCmd";
+	    		addRule( temporaryStr );  
+	    		};//actionseq
+	    	}
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("usercmd(halt)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("swagmsg") && 
+	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg = "\"ricevuto usercmd(halt)\"";
+	    		/* Print */
+	    		parg =  updateVars( Term.createTerm("usercmd(CMD)"), 
+	    		                    Term.createTerm("usercmd(halt)"), 
+	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) println( parg );
 	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,true,
@@ -168,11 +185,23 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " !?isCloseTo(sonar1)" )) != null ){
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"msg(CMD)","msg(clean)", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(clean)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	}
 	    	temporaryStr = "sonarDetect(sonar1,D)";
 	    	removeRule( temporaryStr );  
+	    	//onEvent 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("sonar(sonar2,D)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarSensor") && 
+	    		pengine.unify(curT, Term.createTerm("sonar(NAME,DISTANCE)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			String parg="sonarDetect(sonar2,D)";
+	    			/* AddRule */
+	    			parg = updateVars(Term.createTerm("sonar(NAME,DISTANCE)"),  Term.createTerm("sonar(sonar2,D)"), 
+	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
+	    			if( parg != null ) addRule(parg);	    		  					
+	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("startCleaning") }, 
@@ -186,37 +215,28 @@ public abstract class AbstractSwag2pa extends QActor {
 	    
 	    StateFun startCleaning = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("startCleaning",-1);
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_startCleaning",0);
+	     pr.incNumIter(); 	
 	    	String myselfName = "startCleaning";  
 	    	temporaryStr = "\"start cleaning\"";
 	    	println( temporaryStr );  
-	    	repeatPlanNoTransition(pr,myselfName,"swag2pa_"+myselfName,false,false);
+	    	//bbb
+	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
+	          new StateFun[]{stateTab.get("handleFront"), stateTab.get("receivedCmd") }, 
+	          new String[]{"true","E","frontSonar", "true","M","swagmsg" },
+	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_startCleaning){  
 	    	 println( getName() + " plan=startCleaning WARNING:" + e_startCleaning.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//startCleaning
 	    
-	    StateFun waitForSonar = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_waitForSonar",0);
-	     pr.incNumIter(); 	
-	    	String myselfName = "waitForSonar";  
-	    	//bbb
-	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
-	          new StateFun[]{stateTab.get("handleFront"), stateTab.get("handleSensor") }, 
-	          new String[]{"true","E","frontSonar", "true","E","sonarSensor" },
-	          3600000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_waitForSonar){  
-	    	 println( getName() + " plan=waitForSonar WARNING:" + e_waitForSonar.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//waitForSonar
-	    
 	    StateFun handleFront = () -> {	
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("handleFront",-1);
 	    	String myselfName = "handleFront";  
+	    	temporaryStr = "\"handleFront\"";
+	    	println( temporaryStr );  
 	    	printCurrentEvent(false);
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
@@ -250,7 +270,11 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	else{ {//actionseq
 	    	temporaryStr = "\"possible mobile obstacle\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = "\"DELAY, FORWARD di poco\"";
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(1000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "handleFront";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = "\"DELAY\"";
 	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
@@ -265,18 +289,6 @@ public abstract class AbstractSwag2pa extends QActor {
 	    }
 	    };//handleFront
 	    
-	    StateFun handleSensor = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("handleSensor",-1);
-	    	String myselfName = "handleSensor";  
-	    	printCurrentEvent(false);
-	    	repeatPlanNoTransition(pr,myselfName,"swag2pa_"+myselfName,false,true);
-	    }catch(Exception e_handleSensor){  
-	    	 println( getName() + " plan=handleSensor WARNING:" + e_handleSensor.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//handleSensor
-	    
 	    StateFun avoidFix = () -> {	
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("avoidFix",-1);
@@ -285,14 +297,49 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	println( temporaryStr );  
 	    	temporaryStr = "foundObstacle(X)";
 	    	removeRule( temporaryStr );  
+	    	parg = "avoidFixTry";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?avoidFixGiveUp" )) != null ){
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(giveup)", guardVars ).toString();
+	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
+	    	}
+	    	else{ {//actionseq
 	    	temporaryStr = "\"proviamo a girarci intorno\"";
 	    	println( temporaryStr );  
-	    	repeatPlanNoTransition(pr,myselfName,"swag2pa_"+myselfName,false,true);
+	    	temporaryStr = "\"turn right\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = "\"forward\"";
+	    	println( temporaryStr );  
+	    	};//actionseq
+	    	}
+	    	//bbb
+	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
+	          new StateFun[]{stateTab.get("failure"), stateTab.get("givingUp") }, 
+	          new String[]{"true","E","frontSonar", "true","M","swagmsg" },
+	          800, "checkDoor" );//msgTransition
 	    }catch(Exception e_avoidFix){  
 	    	 println( getName() + " plan=avoidFix WARNING:" + e_avoidFix.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//avoidFix
+	    
+	    StateFun givingUp = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("givingUp",-1);
+	    	String myselfName = "givingUp";  
+	    	temporaryStr = "\"givingUp\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = "foundFix(X)";
+	    	removeRule( temporaryStr );  
+	    	//switchTo init
+	        switchToPlanAsNextState(pr, myselfName, "swag2pa_"+myselfName, 
+	              "init",false, false, null); 
+	    }catch(Exception e_givingUp){  
+	    	 println( getName() + " plan=givingUp WARNING:" + e_givingUp.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//givingUp
 	    
 	    StateFun avoidMobile = () -> {	
 	    try{	
@@ -304,14 +351,92 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	removeRule( temporaryStr );  
 	    	temporaryStr = "\"ok, ostacolo superato\"";
 	    	println( temporaryStr );  
-	    	//switchTo waitForSonar
+	    	//switchTo startCleaning
 	        switchToPlanAsNextState(pr, myselfName, "swag2pa_"+myselfName, 
-	              "waitForSonar",false, true, null); 
+	              "startCleaning",false, false, null); 
 	    }catch(Exception e_avoidMobile){  
 	    	 println( getName() + " plan=avoidMobile WARNING:" + e_avoidMobile.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//avoidMobile
+	    
+	    StateFun checkDoor = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("checkDoor",-1);
+	    	String myselfName = "checkDoor";  
+	    	temporaryStr = "\"checkDoor\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = "\"stop\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = "\"turn left\"";
+	    	println( temporaryStr );  
+	    	//bbb
+	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
+	          new StateFun[]{stateTab.get("avoidFix") }, 
+	          new String[]{"true","E","frontSonar" },
+	          8000, "doorFound" );//msgTransition
+	    }catch(Exception e_checkDoor){  
+	    	 println( getName() + " plan=checkDoor WARNING:" + e_checkDoor.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//checkDoor
+	    
+	    StateFun doorFound = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("doorFound",-1);
+	    	String myselfName = "doorFound";  
+	    	temporaryStr = "\"doorFound\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = "foundFix(X)";
+	    	removeRule( temporaryStr );  
+	    	temporaryStr = "\"forward\"";
+	    	println( temporaryStr );  
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(400,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "doorFound";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = "\"stop\"";
+	    	println( temporaryStr );  
+	    	//switchTo goToPrevLevel
+	        switchToPlanAsNextState(pr, myselfName, "swag2pa_"+myselfName, 
+	              "goToPrevLevel",false, false, null); 
+	    }catch(Exception e_doorFound){  
+	    	 println( getName() + " plan=doorFound WARNING:" + e_doorFound.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//doorFound
+	    
+	    StateFun goToPrevLevel = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("goToPrevLevel",-1);
+	    	String myselfName = "goToPrevLevel";  
+	    	temporaryStr = "\"goToPrevLevel\"";
+	    	println( temporaryStr );  
+	    	repeatPlanNoTransition(pr,myselfName,"swag2pa_"+myselfName,false,false);
+	    }catch(Exception e_goToPrevLevel){  
+	    	 println( getName() + " plan=goToPrevLevel WARNING:" + e_goToPrevLevel.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//goToPrevLevel
+	    
+	    StateFun failure = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("failure",-1);
+	    	String myselfName = "failure";  
+	    	temporaryStr = "\"failure\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = "foundFix(X)";
+	    	removeRule( temporaryStr );  
+	    	temporaryStr = "\"stop\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = "\"prova a sinistra\"";
+	    	println( temporaryStr );  
+	    	repeatPlanNoTransition(pr,myselfName,"swag2pa_"+myselfName,false,false);
+	    }catch(Exception e_failure){  
+	    	 println( getName() + " plan=failure WARNING:" + e_failure.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//failure
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

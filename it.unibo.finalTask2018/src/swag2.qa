@@ -11,9 +11,12 @@ Event lightCmd : lightCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
 
-Dispatch swagmsg : msg(CMD)
+Dispatch swagmsg : usercmd(CMD)
 
 Context ctxSwag2 ip [ host="localhost"  port=8016 ]
+EventHandler evswag for usercmd  {
+	 forwardEvent swag2pa -m swagmsg // stesso payload
+};
 
 // -------------------------- SOFTWARE AGENT 2 --------------------------
 QActor swag2pa context ctxSwag2 {
@@ -55,23 +58,18 @@ QActor swag2pa context ctxSwag2 {
 
 	Plan init normal [         
    		println("swag2 start: waiting for start command")
-//   		
-//   		demo avoidFixTry;
-//   		[ !? foundFix(C) ] println(foundFix(C));
-//   		delay 500;
-//   		demo avoidFixTry;
-//   		[ !? foundFix(C) ] println(foundFix(C))
    	]
 	transition stopAfter 3000000
-		whenEvent usercmd -> receivedCmd
+		whenMsg swagmsg -> receivedCmd
 	finally repeatPlan
    	
    	// R-Start
    	Plan receivedCmd resumeLastPlan [
-   		onEvent usercmd : usercmd(start) -> {
+   		onMsg swagmsg : usercmd(start) -> {
    			println("ricevuto usercmd(start)");
    			addRule startCmd
-   		}
+   		};
+   		onMsg swagmsg : usercmd(halt) -> println("ricevuto usercmd(halt)")
    	]
    	transition whenTime 800 -> notInStartingPoint
     	whenEvent [ ?? startCmd] sonarSensor -> detectedBySonar
@@ -85,16 +83,20 @@ QActor swag2pa context ctxSwag2 {
   	Plan detectedBySonar [
   		println("detected by sonar");
 //  		removeRule startCmd;
+
+		//sonar1
   		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
-  		
   		[ !? isCloseTo(sonar1) ] println("is close to sonar1")
   		else
   			println("not close to sonar1!");
   		
   		[ !? isCloseTo(sonar1) ]
-	  		selfMsg swagmsg : msg(clean);
+	  		selfMsg swagmsg : usercmd(clean);
 	  		
-	  	removeRule sonarDetect(sonar1, D)
+	  	removeRule sonarDetect(sonar1, D);
+	  	
+	  	//sonar2
+	  	onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D)
   	]
 //  	switchTo [ !? isCloseTo(sonar1) ] startCleaning
    	transition whenTime 800 -> notInStartingPoint
@@ -102,11 +104,10 @@ QActor swag2pa context ctxSwag2 {
 
 	Plan startCleaning [
 		println("start cleaning")
-
 	]
     transition stopAfter 3600000 
-     	whenEvent frontSonar -> handleFront
-     	// msg di stop
+     	whenEvent frontSonar -> handleFront,
+     	whenMsg swagmsg -> receivedCmd
     finally repeatPlan
      	
 //    Plan waitForSonar[  ]
@@ -116,6 +117,7 @@ QActor swag2pa context ctxSwag2 {
 //    finally repeatPlan	
    	 
 	Plan handleFront resumeLastPlan [
+		println("handleFront");		
   		printCurrentEvent;
 //		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0));
 		// NO CONTATORE
@@ -143,13 +145,9 @@ QActor swag2pa context ctxSwag2 {
 	Plan avoidFix [
 		println("avoidFix");
 		removeRule foundObstacle(X); // inutile
-		
 		// aumento contatore di tentativi
-		[ !? foundFix(C) ] println(foundFix(C));
 		demo avoidFixTry;
-		[ !? foundFix(C) ] println(foundFix(C));
-		
-		[ !? avoidFixGiveUp ] selfMsg swagmsg : msg(giveup)
+		[ !? avoidFixGiveUp ] selfMsg swagmsg : usercmd(giveup)
 		else {
 			println("proviamo a girarci intorno");
 	//		forward controllerpa -m cmd : cmd(d(0));
@@ -161,7 +159,13 @@ QActor swag2pa context ctxSwag2 {
 	]
 	transition whenTime 800 -> checkDoor
 		whenEvent frontSonar -> failure,
-		whenMsg [ ?? foundFix(X) ] swagmsg -> init
+		whenMsg swagmsg -> givingUp
+		
+	Plan givingUp[
+		println("givingUp");
+		removeRule foundFix(X)
+	]
+	switchTo init
 		
 	Plan avoidMobile [
 		println("avoidMobile");
@@ -229,16 +233,20 @@ QActor swag2tester context ctxSwag2 {
 		emit sonarSensor : sonar(sonar1, 2);
 		delay 1000;
 		
-		// ostacolo mobile
-		emit frontSonar : sonar(2);
-		delay 2000;
+		// test stop
 		
-		// ostacolo fisso
-		emit frontSonar : sonar(2);
-		delay 400;
-		emit frontSonar : sonar(2);
-		delay 2000;
-		emit frontSonar : sonar(2);
+		emit usercmd : usercmd(halt);		
+
+//		// ostacolo mobile
+//		emit frontSonar : sonar(2);
+//		delay 2000;
+//		
+//		// ostacolo fisso
+//		emit frontSonar : sonar(2);
+//		delay 400;
+//		emit frontSonar : sonar(2);
+//		delay 2000;
+//		emit frontSonar : sonar(2);
 		
 		println("")
 

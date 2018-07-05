@@ -147,6 +147,9 @@ isCloseTo( S):-sonarDetect( S,D),eval( minus,0,D,R),eval( lt,R,5).
 obstacleDetected( D):-foundObstacle( C), ! ,C2 is C + 1,retract( foundObstacle( X)),assert( foundObstacle( C2)).
 obstacleDetected( D):-assert( foundObstacle( 1)).
 isFixObstacle:-foundObstacle( 2).
+avoidFixTry:-foundFix( C), ! ,C2 is C + 1,retract( foundFix( C)),assert( foundFix( C2)).
+avoidFixTry:-assert( foundFix( 1)).
+avoidFixGiveUp:-foundFix( 2).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

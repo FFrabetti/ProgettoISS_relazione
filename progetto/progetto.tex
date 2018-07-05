@@ -494,20 +494,33 @@ Il resto del modello non ha subito variazioni rispetto a quello precedentemente 
 \labelsec{Project}
 Al momento, l'applicazione è in grado di soddisfare i seguenti requisiti:
 \begin{itemize}
-\item \code{R-TempOk}, \code{R-TimeOk}, \code{R-TempKo} e \code{R-TimeKo} ad opera di opportune regole Prolog presenti nella base di conoscenza del \texttt{Controller}
-\item \code{R-BlinkLed} e \code{R-BlinkHue} mediante l'emissione di eventi \codescript{ctrlEvent : ctrlEvent(led,l1,CMD)} a seguito della modifica del modello in base allo stato di movimento del robot
+\item \code{R-TempOk}, \code{R-TimeOk}, \code{R-TempKo} e \code{R-TimeKo}, ad opera di opportune regole Prolog presenti nella base di conoscenza del \texttt{Controller}
+\item \code{R-BlinkLed} e \code{R-BlinkHue}, mediante l'emissione da parte del controller di eventi \codescript{ctrlEvent : ctrlEvent(led,l1,CMD)} a seguito della modifica del modello del led \codescript{l1} in base allo stato di movimento del robot
 \end{itemize}
 
-Procederemo ad affrontare i restanti requisiti in maniera incrementale:
+Rimangono da affrontare i restanti requisiti relativi al movimento autonomo del robot (pilotato da \texttt{SoftwareAgent}):
 \begin{enumerate}
-\item \code{R-AvoidMobile}, \code{R-AvoidFix} e \code{R-Obstacle}
-\item \code{R-FloorClean} e \code{R-End}
-\item \code{R-Start} e \code{R-Stop}
+\item \code{R-Start} e \code{R-Stop}: la pulizia della stanza inizia e termina preventivamente a seguito di un comando \texttt{start/stop} inviato da un \emph{utente autorizzato}
+\item \code{R-AvoidMobile}, \code{R-AvoidFix} e \code{R-Obstacle}: il robot deve essere in grado di rilevare ed evitare gli ostacoli sia fissi sia mobili, eventualmente fermandosi nel caso ciò non sia possibile
+\item \code{R-FloorClean} e \code{R-End}: il robot deve pulire l'intera superficie della stanza (da \code{sonar1} a \code{sonar2}), fermandosi al termine del lavoro
 \end{enumerate}
- 
-\subsubsection{Obstacle avoidance}
-Il \texttt{SoftwareAgent} deve pilotare il robot in modo automatico all'interno della stanza cercando di evitare gli ostacoli sia fissi sia mobili, fermandolo nel caso ciò non sia possibile.
 
+\subsection{Starting and stopping the agent}
+Al momento è presente una \emph{web GUI} fornita automaticamente dall'infrastruttura \qa grazie alla presenza del flag \codescript{-htthserver} presente nel contesto dell'applicazione principale. Questa è in grado di emettere eventi \codescript{usercmd : usercmd(CMD)} alla pressione dei vari pulsanti da parte dell'utilizzatore umano.
+
+Oltre ai bottoni che corrispondono ai movimenti elementari del robot, è possibile introdurne altri due per gestire l'avvio e la terminazione della pulizia della stanza ad opera di \texttt{SoftwareAgent}, con l'idea di gestire in seguito la problematica relativa all'autenticazione degli utenti.\\
+
+Poiché non vogliamo che questi comandi vadano persi, introduciamo un componente event-driven (\emph{EventHandler}) che effettui un mapping tra gli eventi usercmd e dei messaggi swagmsg diretti all'agent.
+
+\subsubsection{R-Start}
+Alla pressione del pulsante di start, il robot deve trovarsi vicino a \code{sonar1} per poter partire con la pulizia.
+
+\subsection{Obstacle avoidance}
+Il \texttt{SoftwareAgent} deve mettersi in ascolto degli eventi \codescript{frontSonar} generati dal sonar frontale del robot quando questi rileva un ostacolo davanti a sé. Quando ciò avviene, deve capire se si tratta di un ostacolo fisso (una parete) o mobile, e cercare di evitarlo.
+
+Nel primo caso deve provare ad aggirare l'ostacolo prima da una direzione e, in caso di fallimento, dall'altra. Il fallimento è determinato dalla presenza di un nuovo ostacolo che impedisce di proseguire oltre in quella direzione -- se fallisce in entrambe le direzioni, la pulizia termina (\code{R-Obstacle}). Se invece trova un passaggio, dopo averlo superato deve tornare alla stessa altezza a cui si trovava prima dell'ostacolo.
+
+Nel secondo caso si assume che, essendo l'ostacolo mobile, questi si sposti dopo un certo tempo. Il robot può quindi limitarsi ad attendere momentaneamente prima di ritentare il passaggio.
 %===========================================================================
 
 %===========================================================================

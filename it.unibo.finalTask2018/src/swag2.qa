@@ -40,15 +40,33 @@ QActor swag2pa context ctxSwag2 {
 			
 		isFixObstacle :- foundObstacle(2).
 		
+		avoidFixTry :-
+			foundFix(C), !,
+			C2 is C+1,
+			retract(foundFix(C)),
+			assert(foundFix(C2)).
+			
+		avoidFixTry :-
+			assert(foundFix(1)).
+			
+		avoidFixGiveUp :-
+			foundFix(2).
 	}
 
 	Plan init normal [         
    		println("swag2 start: waiting for start command")
+//   		
+//   		demo avoidFixTry;
+//   		[ !? foundFix(C) ] println(foundFix(C));
+//   		delay 500;
+//   		demo avoidFixTry;
+//   		[ !? foundFix(C) ] println(foundFix(C))
    	]
 	transition stopAfter 3000000
 		whenEvent usercmd -> receivedCmd
-//	finally repeatPlan
+	finally repeatPlan
    	
+   	// R-Start
    	Plan receivedCmd resumeLastPlan [
    		onEvent usercmd : usercmd(start) -> {
    			println("ricevuto usercmd(start)");
@@ -86,16 +104,21 @@ QActor swag2pa context ctxSwag2 {
 		println("start cleaning")
 
 	]
-  
-    Plan waitForSonar[  ]
     transition stopAfter 3600000 
-     	whenEvent frontSonar -> handleFront,
-     	whenEvent sonarSensor -> handleSensor
-    finally repeatPlan	
+     	whenEvent frontSonar -> handleFront
+     	// msg di stop
+    finally repeatPlan
+     	
+//    Plan waitForSonar[  ]
+//    transition stopAfter 3600000 
+//     	whenEvent frontSonar -> handleFront,
+//     	whenEvent sonarSensor -> handleSensor
+//    finally repeatPlan	
    	 
-	Plan handleFront resumeLastPlan[
+	Plan handleFront resumeLastPlan [
   		printCurrentEvent;
 //		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0));
+		// NO CONTATORE
 		onEvent frontSonar : sonar(D) -> demo obstacleDetected(D); // aumento contatore
 	
 		// se l'ostacolo non e' fisso, ritento
@@ -103,57 +126,121 @@ QActor swag2pa context ctxSwag2 {
 			println("fix obstacle")
 		else {
 			println("possible mobile obstacle");
-			println("DELAY, FORWARD di poco")
+			delay 1000;
+			println("DELAY")
 			//forward controllerpa -m cmd : cmd(w(0))
 		}
 	]
     transition whenTime 800 -> avoidMobile
-     	whenEvent frontSonar -> avoidFix 
+     	whenEvent frontSonar -> avoidFix
 //	switchTo [ !? isFixObstacle ] avoidFix
 				
-	Plan handleSensor resumeLastPlan[
-  		printCurrentEvent
-  		// testing: robot close to sonars makes some moves
-	]
+//	Plan handleSensor resumeLastPlan[
+//  		printCurrentEvent
+//  		// testing: robot close to sonars makes some moves
+//	]
 	
-	Plan avoidFix resumeLastPlan[
+	Plan avoidFix [
 		println("avoidFix");
-		removeRule foundObstacle(X);
-		println("proviamo a girarci intorno")
+		removeRule foundObstacle(X); // inutile
+		
+		// aumento contatore di tentativi
+		[ !? foundFix(C) ] println(foundFix(C));
+		demo avoidFixTry;
+		[ !? foundFix(C) ] println(foundFix(C));
+		
+		[ !? avoidFixGiveUp ] selfMsg swagmsg : msg(giveup)
+		else {
+			println("proviamo a girarci intorno");
+	//		forward controllerpa -m cmd : cmd(d(0));
+			println("turn right");
+	//		forward controllerpa -m cmd : cmd(w(0));
+	//		delay 500;
+			println("forward")	
+		}
 	]
-	
-	Plan avoidMobile resumeLastPlan[
+	transition whenTime 800 -> checkDoor
+		whenEvent frontSonar -> failure,
+		whenMsg [ ?? foundFix(X) ] swagmsg -> init
+		
+	Plan avoidMobile [
 		println("avoidMobile");
-		removeRule foundObstacle(X);
+		removeRule foundObstacle(X); // inutile
 		println("ok, ostacolo superato")
 	]
-	switchTo waitForSonar
+	switchTo startCleaning
+	
+	Plan checkDoor [
+		println("checkDoor");
+//		forward controllerpa -m cmd : cmd(h(0));
+		println("stop");
+//		forward controllerpa -m cmd : cmd(a(0));
+		println("turn left")
+	]
+	transition whenTime 8000 -> doorFound // 800
+		whenEvent frontSonar -> avoidFix
+	
+	Plan doorFound [
+		println("doorFound");
+		removeRule foundFix(X);
+//		forward controllerpa -m cmd : cmd(w(0));
+		println("forward");
+		delay 400;
+//		forward controllerpa -m cmd : cmd(h(0));
+		println("stop")
+	]
+	switchTo goToPrevLevel
+	
+	Plan goToPrevLevel [
+		println("goToPrevLevel")
+	]
+	
+	Plan failure [
+		println("failure");
+		removeRule foundFix(X);
+		println("stop");
+		println("prova a sinistra")
+	]
+	
 }
 // -------------------------- SOFTWARE AGENT 2 --------------------------
 
 QActor swag2tester context ctxSwag2 {
 	Plan init normal [
-		// fail: timeout (not detected by a sonar)
-		delay 4000;
-		emit usercmd : usercmd(start);
-		delay 5000;
-		
-		// fail: timeout (not close to sonar1)
-		emit usercmd : usercmd(start);
-		delay 200;
-		emit sonarSensor : sonar(sonar1, 20);
-		delay 5000;
-	
-		// fail: no start
-		emit usercmd : usercmd(robotgui(w(0)));
-		delay 5000;
-		
+//		// fail: timeout (not detected by a sonar)
+//		delay 4000;
+//		emit usercmd : usercmd(start);
+//		delay 5000;
+//		
+//		// fail: timeout (not close to sonar1)
+//		emit usercmd : usercmd(start);
+//		delay 200;
+//		emit sonarSensor : sonar(sonar1, 20);
+//		delay 5000;
+//	
+//		// fail: no start
+//		emit usercmd : usercmd(robotgui(w(0)));
+//		delay 5000;
+//		
 		// ok
+		delay 2000;
 		emit usercmd : usercmd(start);
 		delay 200;
 		emit sonarSensor : sonar(sonar1, 2);
 		delay 1000;
-		println("test finito")
-//		emit frontSonar : sonar(2)
+		
+		// ostacolo mobile
+		emit frontSonar : sonar(2);
+		delay 2000;
+		
+		// ostacolo fisso
+		emit frontSonar : sonar(2);
+		delay 400;
+		emit frontSonar : sonar(2);
+		delay 2000;
+		emit frontSonar : sonar(2);
+		
+		println("")
+
 	]
 }

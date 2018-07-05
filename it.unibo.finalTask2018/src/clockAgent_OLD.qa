@@ -11,14 +11,15 @@ QActor clockagent context ctxClockAgent {
 		
 		javaRun it.unibo.finalTask2018.adapter.clockAdapter.initGUI()
 	]
-//	switchTo checkTime
+	switchTo checkTime
 	
 	Plan checkTime [
 		delay 5000; // for testing
 		// delay 60000;
-		println("clockAgent checking time");
-		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
-		[?? currentTime(H,M)] emit clock : clock(H,M)
+//		println("clockAgent checking time");
+//		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
+//		[?? currentTime(H,M)] emit clock : clock(H,M)
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.emitTime()
 	]
 	finally repeatPlan
 }
@@ -26,10 +27,6 @@ QActor clockagent context ctxClockAgent {
 //QActor testertime context ctxClockAgent {
 //	Plan init normal [ ]
 //	transition stopAfter 3600000
-//		whenEvent clock -> printTime
-//	
-//	Plan printTime [
-//		printCurrentEvent
-//	]
-//	switchTo init
+//		whenEvent clock : clock(H,M) do printCurrentEvent
+//	finally repeatPlan
 //}

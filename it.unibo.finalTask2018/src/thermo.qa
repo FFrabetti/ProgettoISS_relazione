@@ -11,5 +11,18 @@ QActor thermoqa context ctxThermo {
 		println("thermoqa start");
 		javaRun it.unibo.finalTask2018.adapter.thermoAdapter.initGUI()
 	]
+	switchTo emitTemperature
 	
+	Plan emitTemperature [
+		delay 6000;
+		javaRun it.unibo.finalTask2018.adapter.thermoAdapter.emitTemp()
+	]
+	finally repeatPlan
 }
+
+//QActor thermotest context ctxThermo {
+//	Plan init normal [	]
+//	transition stopAfter 3600000
+//		whenEvent temperature : temperature(T) do printCurrentEvent
+//	finally repeatPlan
+//}

@@ -195,20 +195,20 @@ QActor humanoperatorpa context ctxApplPA {
 QActor clockagentpa context ctxApplPA {
 	Plan init normal [
 		println("clockAgent start");
-		
 		javaRun it.unibo.finalTask2018.adapter.clockAdapter.initGUI()
 	]
+	switchTo emitTime
+	
+	Plan emitTime [
+		delay 6000;
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.emitTime()
+	]
+	finally repeatPlan
 }
 // -------------------------- CLOCK AGENT --------------------------
 
 // -------------------------- TEMPERATURE AGENT --------------------------
-QActor thermoagentpa context ctxApplPA {	
-	Plan init normal [
-		println("thermoAgent start") // ;
-// thermo.qa esegue in un proprio contesto		
-//		javaRun it.unibo.finalTask2018.adapter.thermoAdapter.initGUI()
-	]
-}
+// thermo.qa: esegue in un proprio contesto
 // -------------------------- TEMPERATURE AGENT --------------------------
 
 // -------------------------- HUE LAMP AGENT --------------------------

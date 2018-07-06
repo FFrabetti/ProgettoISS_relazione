@@ -1,0 +1,25 @@
+digraph finite_state_machine {
+	rankdir=LR
+	size="8,5"
+	
+	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	cleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	notInStartingPoint [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedByFinal [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedBySonar [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	receivedCmd [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	
+	notInStartingPoint -> init [ label = "switch" ][ color = black ][ fontcolor = black ]
+	cleaning -> receivedCmd [ label = "swagmsg : usercmd(halt)" ][ color = black ][ fontcolor = black ]
+	detectedBySonar -> cleaning [ label = "swagmsg : usercmd(clean)" ][ color = black ][ fontcolor = black ]
+	cleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
+	detectedByFinal -> init [ label = "swagmsg : usercmd(halt)" ][ color = black ][ fontcolor = black ]
+	receivedCmd -> detectedBySonar [ label = "[ ?? startCmd ], sonarSensor" ][ color = black ][ fontcolor = black ]
+	init -> receivedCmd [ label = "swagmsg : usercmd(start)" ][ color = black ][ fontcolor = black ]
+	detectedBySonar -> notInStartingPoint [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	init -> init [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
+	detectedByFinal -> cleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	cleaning -> cleaning [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
+	receivedCmd -> notInStartingPoint [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+}
+4

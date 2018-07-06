@@ -11,8 +11,6 @@ qactor( humanoperatorpa , ctxapplpa, "it.unibo.humanoperatorpa.MsgHandle_Humanop
 qactor( humanoperatorpa_ctrl , ctxapplpa, "it.unibo.humanoperatorpa.Humanoperatorpa"   ). %%control-driven 
 qactor( clockagentpa , ctxapplpa, "it.unibo.clockagentpa.MsgHandle_Clockagentpa"   ). %%store msgs 
 qactor( clockagentpa_ctrl , ctxapplpa, "it.unibo.clockagentpa.Clockagentpa"   ). %%control-driven 
-qactor( thermoagentpa , ctxapplpa, "it.unibo.thermoagentpa.MsgHandle_Thermoagentpa"   ). %%store msgs 
-qactor( thermoagentpa_ctrl , ctxapplpa, "it.unibo.thermoagentpa.Thermoagentpa"   ). %%control-driven 
 qactor( huelampagentpa , ctxapplpa, "it.unibo.huelampagentpa.MsgHandle_Huelampagentpa"   ). %%store msgs 
 qactor( huelampagentpa_ctrl , ctxapplpa, "it.unibo.huelampagentpa.Huelampagentpa"   ). %%control-driven 
 %%% -------------------------------------------

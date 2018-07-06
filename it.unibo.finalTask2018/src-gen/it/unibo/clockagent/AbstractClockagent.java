@@ -76,6 +76,7 @@ public abstract class AbstractClockagent extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"clockAgent start\"";
 	    	println( temporaryStr );  
+	    	it.unibo.finalTask2018.adapter.clockAdapter.initGUI( myself  );
 	    	//switchTo checkTime
 	        switchToPlanAsNextState(pr, myselfName, "clockagent_"+myselfName, 
 	              "checkTime",false, false, null); 
@@ -94,13 +95,7 @@ public abstract class AbstractClockagent extends QActor {
 	    	aar = delayReactive(5000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "checkTime";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = "\"clockAgent checking time\"";
-	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.clockAdapter.getTime( myself  );
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??currentTime(H,M)" )) != null ){
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "clock(H,M)","clock(H,M)", guardVars ).toString();
-	    	emit( "clock", temporaryStr );
-	    	}
+	    	it.unibo.finalTask2018.adapter.clockAdapter.emitTime( myself  );
 	    	repeatPlanNoTransition(pr,myselfName,"clockagent_"+myselfName,true,false);
 	    }catch(Exception e_checkTime){  
 	    	 println( getName() + " plan=checkTime WARNING:" + e_checkTime.getMessage() );

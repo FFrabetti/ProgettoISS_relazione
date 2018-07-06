@@ -56,6 +56,7 @@ public abstract class AbstractClockagentpa extends QActor {
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
+	    	stateTab.put("emitTime",emitTime);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -76,12 +77,31 @@ public abstract class AbstractClockagentpa extends QActor {
 	    	temporaryStr = "\"clockAgent start\"";
 	    	println( temporaryStr );  
 	    	it.unibo.finalTask2018.adapter.clockAdapter.initGUI( myself  );
-	    	repeatPlanNoTransition(pr,myselfName,"clockagentpa_"+myselfName,false,false);
+	    	//switchTo emitTime
+	        switchToPlanAsNextState(pr, myselfName, "clockagentpa_"+myselfName, 
+	              "emitTime",false, false, null); 
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//init
+	    
+	    StateFun emitTime = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_emitTime",0);
+	     pr.incNumIter(); 	
+	    	String myselfName = "emitTime";  
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(6000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "emitTime";
+	    	if( ! aar.getGoon() ) return ;
+	    	it.unibo.finalTask2018.adapter.clockAdapter.emitTime( myself  );
+	    	repeatPlanNoTransition(pr,myselfName,"clockagentpa_"+myselfName,true,false);
+	    }catch(Exception e_emitTime){  
+	    	 println( getName() + " plan=emitTime WARNING:" + e_emitTime.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//emitTime
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

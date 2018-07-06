@@ -1,2 +1,4 @@
 plan(1,init, sentence(true,move(print("thermoqa start")),'','' ))
 plan(2,init, sentence(true,not here StateMoveNormal,'','' ))
+plan(1,emitTemperature, sentence(true,delay( 6000) ,'','' ))
+plan(2,emitTemperature, sentence(true,not here StateMoveNormal,'','' ))

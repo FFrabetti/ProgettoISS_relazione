@@ -59,7 +59,8 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	stateTab.put("receivedCmd",receivedCmd);
 	    	stateTab.put("notInStartingPoint",notInStartingPoint);
 	    	stateTab.put("detectedBySonar",detectedBySonar);
-	    	stateTab.put("startCleaning",startCleaning);
+	    	stateTab.put("cleaning",cleaning);
+	    	stateTab.put("detectedByFinal",detectedByFinal);
 	    	stateTab.put("handleFront",handleFront);
 	    	stateTab.put("avoidFix",avoidFix);
 	    	stateTab.put("givingUp",givingUp);
@@ -92,7 +93,7 @@ public abstract class AbstractSwag2pa extends QActor {
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("receivedCmd") }, 
 	          new String[]{"true","M","swagmsg" },
-	          3000000, "handleToutBuiltIn" );//msgTransition
+	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -131,7 +132,7 @@ public abstract class AbstractSwag2pa extends QActor {
 	    		if( parg != null ) println( parg );
 	    	}
 	    	//bbb
-	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,true,
+	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("detectedBySonar") }, 
 	          new String[]{" ??startCmd" ,"E","sonarSensor" },
 	          800, "notInStartingPoint" );//msgTransition
@@ -162,7 +163,7 @@ public abstract class AbstractSwag2pa extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("detectedBySonar",-1);
 	    	String myselfName = "detectedBySonar";  
-	    	temporaryStr = "\"detected by sonar\"";
+	    	temporaryStr = "\"detected by a sonar\"";
 	    	println( temporaryStr );  
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
@@ -177,19 +178,52 @@ public abstract class AbstractSwag2pa extends QActor {
 	    			if( parg != null ) addRule(parg);	    		  					
 	    	}
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?isCloseTo(sonar1)" )) != null ){
-	    	temporaryStr = "\"is close to sonar1\"";
-	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	{//actionseq
+	    	temporaryStr = "\"close to sonar1\"";
 	    	println( temporaryStr );  
-	    	}
-	    	else{ temporaryStr = "\"not close to sonar1!\"";
-	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
-	    	println( temporaryStr );  
-	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " !?isCloseTo(sonar1)" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(clean)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
+	    	};//actionseq
 	    	}
-	    	temporaryStr = "sonarDetect(sonar1,D)";
+	    	else{ temporaryStr = "\"NOT close to sonar1!\"";
+	    	println( temporaryStr );  
+	    	}temporaryStr = "sonarDetect(sonar1,D)";
 	    	removeRule( temporaryStr );  
+	    	//bbb
+	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
+	          new StateFun[]{stateTab.get("cleaning") }, 
+	          new String[]{"true","M","swagmsg" },
+	          800, "notInStartingPoint" );//msgTransition
+	    }catch(Exception e_detectedBySonar){  
+	    	 println( getName() + " plan=detectedBySonar WARNING:" + e_detectedBySonar.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//detectedBySonar
+	    
+	    StateFun cleaning = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_cleaning",0);
+	     pr.incNumIter(); 	
+	    	String myselfName = "cleaning";  
+	    	temporaryStr = "\"cleaning\"";
+	    	println( temporaryStr );  
+	    	//bbb
+	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
+	          new StateFun[]{stateTab.get("handleFront"), stateTab.get("detectedByFinal"), stateTab.get("receivedCmd") }, 
+	          new String[]{"true","E","frontSonar", "true","E","sonarSensor", "true","M","swagmsg" },
+	          3600000, "handleToutBuiltIn" );//msgTransition
+	    }catch(Exception e_cleaning){  
+	    	 println( getName() + " plan=cleaning WARNING:" + e_cleaning.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//cleaning
+	    
+	    StateFun detectedByFinal = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("detectedByFinal",-1);
+	    	String myselfName = "detectedByFinal";  
+	    	temporaryStr = "\"detected by a sonar\"";
+	    	println( temporaryStr );  
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("sonar(sonar2,D)");
@@ -202,34 +236,28 @@ public abstract class AbstractSwag2pa extends QActor {
 	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
 	    			if( parg != null ) addRule(parg);	    		  					
 	    	}
-	    	//bbb
-	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
-	          new StateFun[]{stateTab.get("startCleaning") }, 
-	          new String[]{"true","M","swagmsg" },
-	          800, "notInStartingPoint" );//msgTransition
-	    }catch(Exception e_detectedBySonar){  
-	    	 println( getName() + " plan=detectedBySonar WARNING:" + e_detectedBySonar.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//detectedBySonar
-	    
-	    StateFun startCleaning = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_startCleaning",0);
-	     pr.incNumIter(); 	
-	    	String myselfName = "startCleaning";  
-	    	temporaryStr = "\"start cleaning\"";
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?isCloseTo(sonar2)" )) != null ){
+	    	{//actionseq
+	    	temporaryStr = "\"close to sonar2\"";
 	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(halt)", guardVars ).toString();
+	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
+	    	};//actionseq
+	    	}
+	    	else{ temporaryStr = "\"NOT close to sonar2!\"";
+	    	println( temporaryStr );  
+	    	}temporaryStr = "sonarDetect(sonar2,D)";
+	    	removeRule( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
-	          new StateFun[]{stateTab.get("handleFront"), stateTab.get("receivedCmd") }, 
-	          new String[]{"true","E","frontSonar", "true","M","swagmsg" },
-	          3600000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_startCleaning){  
-	    	 println( getName() + " plan=startCleaning WARNING:" + e_startCleaning.getMessage() );
+	          new StateFun[]{stateTab.get("init") }, 
+	          new String[]{"true","M","swagmsg" },
+	          800, "cleaning" );//msgTransition
+	    }catch(Exception e_detectedByFinal){  
+	    	 println( getName() + " plan=detectedByFinal WARNING:" + e_detectedByFinal.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//startCleaning
+	    };//detectedByFinal
 	    
 	    StateFun handleFront = () -> {	
 	    try{	
@@ -351,9 +379,9 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	removeRule( temporaryStr );  
 	    	temporaryStr = "\"ok, ostacolo superato\"";
 	    	println( temporaryStr );  
-	    	//switchTo startCleaning
+	    	//switchTo cleaning
 	        switchToPlanAsNextState(pr, myselfName, "swag2pa_"+myselfName, 
-	              "startCleaning",false, false, null); 
+	              "cleaning",false, false, null); 
 	    }catch(Exception e_avoidMobile){  
 	    	 println( getName() + " plan=avoidMobile WARNING:" + e_avoidMobile.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

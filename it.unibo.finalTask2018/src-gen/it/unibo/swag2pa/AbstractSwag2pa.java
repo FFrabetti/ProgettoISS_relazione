@@ -57,7 +57,6 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
 	    	stateTab.put("receivedCmd",receivedCmd);
-	    	stateTab.put("notInStartingPoint",notInStartingPoint);
 	    	stateTab.put("detectedBySonar",detectedBySonar);
 	    	stateTab.put("cleaning",cleaning);
 	    	stateTab.put("detectedByFinal",detectedByFinal);
@@ -135,29 +134,12 @@ public abstract class AbstractSwag2pa extends QActor {
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("detectedBySonar") }, 
 	          new String[]{" ??startCmd" ,"E","sonarSensor" },
-	          800, "notInStartingPoint" );//msgTransition
+	          800, "init" );//msgTransition
 	    }catch(Exception e_receivedCmd){  
 	    	 println( getName() + " plan=receivedCmd WARNING:" + e_receivedCmd.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//receivedCmd
-	    
-	    StateFun notInStartingPoint = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("notInStartingPoint",-1);
-	    	String myselfName = "notInStartingPoint";  
-	    	temporaryStr = "\"not in starting point\"";
-	    	println( temporaryStr );  
-	    	temporaryStr = "startCmd";
-	    	removeRule( temporaryStr );  
-	    	//switchTo init
-	        switchToPlanAsNextState(pr, myselfName, "swag2pa_"+myselfName, 
-	              "init",false, false, null); 
-	    }catch(Exception e_notInStartingPoint){  
-	    	 println( getName() + " plan=notInStartingPoint WARNING:" + e_notInStartingPoint.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//notInStartingPoint
 	    
 	    StateFun detectedBySonar = () -> {	
 	    try{	
@@ -193,7 +175,7 @@ public abstract class AbstractSwag2pa extends QActor {
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleaning") }, 
 	          new String[]{"true","M","swagmsg" },
-	          800, "notInStartingPoint" );//msgTransition
+	          800, "init" );//msgTransition
 	    }catch(Exception e_detectedBySonar){  
 	    	 println( getName() + " plan=detectedBySonar WARNING:" + e_detectedBySonar.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

@@ -63,37 +63,32 @@ QActor swag2pa context ctxSwag2 {
 		whenMsg swagmsg -> receivedCmd
 	finally repeatPlan
    	
-   	// R-Start
    	Plan receivedCmd [
+		// R-Start
    		onMsg swagmsg : usercmd(start) -> {
    			println("ricevuto usercmd(start)");
    			addRule startCmd
    		};
+   		// R-Stop
    		onMsg swagmsg : usercmd(halt) -> println("ricevuto usercmd(halt)")
    	]
-   	transition whenTime 800 -> notInStartingPoint
+   	transition whenTime 800 -> init
     	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
-  
-  	Plan notInStartingPoint [
-  		println("not in starting point");
-  		removeRule startCmd
-  	]
-  	switchTo init
-  	
+    	
   	Plan detectedBySonar [
 		println("detected by a sonar");
 		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
 	
 		[ !? isCloseTo(sonar1) ] {
 			println("close to sonar1");
-			selfMsg swagmsg : usercmd(clean)
+			selfMsg swagmsg : usercmd(clean) // R-Start
 		}
 		else
 			println("NOT close to sonar1!");
 			
 		removeRule sonarDetect(sonar1, D)
 	]
-	transition whenTime 800 -> notInStartingPoint
+	transition whenTime 800 -> init
 		whenMsg swagmsg -> cleaning
 
 	Plan cleaning [
@@ -106,13 +101,14 @@ QActor swag2pa context ctxSwag2 {
      	whenMsg swagmsg -> receivedCmd
     finally repeatPlan
     
+    // R-End
     Plan detectedByFinal [
 		println("detected by a sonar");
 		onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);
 	
 		[ !? isCloseTo(sonar2) ] {
 			println("close to sonar2");
-			selfMsg swagmsg : usercmd(halt)
+			selfMsg swagmsg : usercmd(halt) // R-End
 		}
 		else
 			println("NOT close to sonar2!");

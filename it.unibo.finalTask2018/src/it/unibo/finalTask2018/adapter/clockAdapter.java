@@ -1,5 +1,7 @@
 package it.unibo.finalTask2018.adapter;
 
+import java.time.LocalTime;
+
 import it.unibo.qactors.akka.QActor;
 
 public class clockAdapter {
@@ -15,7 +17,8 @@ public class clockAdapter {
 	// -----------------------------------------------------
 	
 	public static void initGUI(QActor qa) {
-		it.unibo.clock.appl.Main.launch(9,30);
+		LocalTime lt = LocalTime.now();
+		it.unibo.clock.appl.Main.launch(lt.getHour(), lt.getMinute());
 	}
 
 	public static void emitTime(QActor qa) {

@@ -105,7 +105,7 @@
 \newcommand{\code}[1]{{\color{blue}\small{\texttt{#1}}}}
 \newcommand{\fname}[1]{{\small{\color{magenta}\texttt{#1}}}}
 \newcommand{\node}{\textsf{NodeJs}}
-\newcommand{\qa}{\textsf{\textit{QActor}}}
+\newcommand{\qa}{\textsf{\textit{QActor}}\xspace}
 
 % Cross-referencing
 \newcommand{\labelsec}[1]{\label{sec:#1}}
@@ -506,14 +506,118 @@ Rimangono da affrontare i restanti requisiti relativi al movimento autonomo del 
 \end{enumerate}
 
 \subsection{Starting and stopping the agent}
-Al momento è presente una \emph{web GUI} fornita automaticamente dall'infrastruttura \qa grazie alla presenza del flag \codescript{-htthserver} presente nel contesto dell'applicazione principale. Questa è in grado di emettere eventi \codescript{usercmd : usercmd(CMD)} alla pressione dei vari pulsanti da parte dell'utilizzatore umano.
+Al momento è presente una \emph{web GUI} fornita dall'infrastruttura \qa grazie alla presenza del flag \codescript{-htthserver} presente nel contesto dell'applicazione. Questa è in grado di emettere eventi \codescript{usercmd : usercmd(CMD)} alla pressione dei vari pulsanti da parte dell'utilizzatore umano.
 
 Oltre ai bottoni che corrispondono ai movimenti elementari del robot, è possibile introdurne altri due per gestire l'avvio e la terminazione della pulizia della stanza ad opera di \texttt{SoftwareAgent}, con l'idea di gestire in seguito la problematica relativa all'autenticazione degli utenti.\\
 
-Poiché non vogliamo che questi comandi vadano persi, introduciamo un componente event-driven (\emph{EventHandler}) che effettui un mapping tra gli eventi usercmd e dei messaggi swagmsg diretti all'agent.
+Poiché non vogliamo che questi comandi vadano persi, introduciamo un componente event-driven (\emph{EventHandler}) che effettui un mapping tra gli eventi \codescript{usercmd} e dei messaggi \codescript{swagmsg} diretti all'agent e con lo stesso payload.
 
-\subsubsection{R-Start}
-Alla pressione del pulsante di start, il robot deve trovarsi vicino a \code{sonar1} per poter partire con la pulizia.
+\subsubsection{R-Start e R-Stop}
+Alla pressione del pulsante di start, il robot deve trovarsi vicino a \code{sonar1} per poter partire con la pulizia, in caso contrario il comando viene ignorato. Se invece viene ricevuto un messaggio di stop (\codescript{usercmd(halt)}) durante il movimento del robot, questi deve fermarsi e l'agent deve ritornare nello stato iniziale.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt1}]
+Plan init normal [         
+   	println("swAgent start: waiting for start command")
+]
+transition stopAfter 3600000
+	whenMsg swagmsg -> receivedCmd
+finally repeatPlan
+
+Plan receivedCmd [
+	// R-Start
+	onMsg swagmsg : usercmd(start) -> {
+   		println("ricevuto usercmd(start)");
+   		addRule startCmd
+	};
+	// R-Stop
+   	onMsg swagmsg : usercmd(halt) -> println("ricevuto usercmd(halt)")
+]
+transition whenTime 800 -> init
+	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
+\end{qacode}
+
+Se la posizione corrente è in prossimità di \code{sonar1}, ci aspettiamo di ricevere da questi un evento \codescript{sonarSensor} con una distanza inferiore ad una certa soglia. Nel caso invece nessun evento venga rilevato entro un timeout, assumiamo di non essere allineati con un sonar, e quindi sicuramente non nella posizione iniziale.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt2}]
+Plan detectedBySonar [
+	println("detected by a sonar");
+	onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
+	
+	[ !? isCloseTo(sonar1) ] {
+		println("close to sonar1");
+		selfMsg swagmsg : usercmd(clean) // R-Start
+	}
+	else
+		println("NOT close to sonar1!");
+		
+	removeRule sonarDetect(sonar1, D)
+]
+transition whenTime 800 -> init
+	whenMsg swagmsg -> cleaning
+\end{qacode}
+
+La vicinanza ad un sonar viene valutata grazie alle seguenti regole Prolog presenti nella base di conoscenza dell'agent:\\
+
+\begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={SoftwareAgent, Rules - pt1}]
+isCloseTo(S) :-
+		sonarDetect(S,D),
+		eval(gt,D,0),!,
+		eval(lt,D,5).
+	
+isCloseTo(S) :-
+		sonarDetect(S,D),
+		eval(minus,0,D,R),
+		eval(lt,R,5).
+\end{lstlisting}
+
+Se durante la pulizia arriva il comando \codescript{swagmsg : usercmd(halt)}, l'agent transita prima in \codescript{receivedCmd} e successivamente nello stato iniziale.
+
+Ciò avviene anche quando l'utente preme un qualsiasi altro bottone della GUI, riprendendo il controllo manuale del robot.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt3}]
+Plan cleaning [
+	println("cleaning")
+	// do something
+]
+transition stopAfter 3600000 
+	whenEvent frontSonar -> handleFront,
+	whenEvent sonarSensor -> detectedByFinal,
+	whenMsg swagmsg -> receivedCmd
+finally repeatPlan
+\end{qacode}
+
+\subsubsection{R-End}
+Se durante il suo lavoro il robot viene rilevato in prossimità di \code{sonar2}, possiamo assumere che abbia terminato la pulizia della stanza e che pertanto debba essere fermato. Ciò è possibile reagendo, nello stato di \emph{cleaning}, agli eventi generati dai sonar e transitando in un nuovo stato (\codescript{detectedByFinal}) il cui compito è quello di accertarsi che il robot si trovi effettivamente vicino al secondo sonar, similmente a quanto accade in \codescript{detectedBySonar} per \code{sonar1}.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt4}]
+// R-End
+Plan detectedByFinal [
+	println("detected by a sonar");
+	onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);
+
+	[ !? isCloseTo(sonar2) ] {
+		println("close to sonar2");
+		selfMsg swagmsg : usercmd(halt) // R-End
+	}
+	else
+		println("NOT close to sonar2!");
+		
+	removeRule sonarDetect(sonar2, D)
+]
+transition whenTime 800 -> cleaning
+	whenMsg swagmsg -> init
+\end{qacode}
+
+\vspace{16px}
+
+Il comportamento di \texttt{SoftwareAgent}, per quanto riguarda il soddisfacimento dei vincoli \code{R-Start}, \code{R-Stop} e \code{R-End}, può essere quindi schematizzato dal diagramma degli stati della \xf{fsmStartStopEnd}.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.5]{img/stateDiagramStartStopEnd.png}
+\caption{Diagramma parziale degli stati di \texttt{SoftwareAgent}}\labelfig{fsmStartStopEnd}
+\end{figure}
+
 
 \subsection{Obstacle avoidance}
 Il \texttt{SoftwareAgent} deve mettersi in ascolto degli eventi \codescript{frontSonar} generati dal sonar frontale del robot quando questi rileva un ostacolo davanti a sé. Quando ciò avviene, deve capire se si tratta di un ostacolo fisso (una parete) o mobile, e cercare di evitarlo.

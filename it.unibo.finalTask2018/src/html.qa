@@ -1,0 +1,22 @@
+System acazzo
+
+Event cd : cd(X)
+Event cmd : swag(X)
+Event usercmd : usercmd(X)
+Event inputcmd: usercmd(X)
+Event alarm : alarm(X)
+Event obstacle : obstacle(X)
+
+Context ctx ip [ host="localhost" port=8888 ] -httpserver
+EventHandler evhtml for usercmd,cmd,inputcmd,alarm,obstacle -print {
+	emit cd fromContent cmd( T ) to inputEvent( temperature,t1,T )
+};
+
+
+QActor html context ctx {
+	Plan init normal[
+		
+	]
+	transition stopAfter 3600000
+	finally repeatPlan
+}

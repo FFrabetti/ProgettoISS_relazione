@@ -1,0 +1,6 @@
+on
+./gpio_ledon.py 12
+off
+./gpio_ledoff.py 12
+blink
+./gpio_ledblink.py 12

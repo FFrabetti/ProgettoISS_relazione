@@ -6,7 +6,7 @@ const config = {
         //position: { x: 0.5, y: 0.5 },		//CENTER
         position: { x: 0.15, y: 0.3 },		//INIT
         //position: { x: 0.8, y: 0.85 },		//END
-        speed: 0.2
+        speed: 0.1 // 0.2
     },
     sonars: [
         {

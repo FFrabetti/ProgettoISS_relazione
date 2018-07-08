@@ -1,0 +1,2 @@
+plan(1,handle, sentence(true,printCurrentEvent(false),'','' ))
+plan(2,handle, sentence(true,move(resumeplan),'','' ))

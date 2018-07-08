@@ -1,11 +1,11 @@
 %==============================================
-% WorldTheory.pl for actor swag2pa
+% WorldTheory.pl for actor html
 %==============================================
 /*
 For a QActor as a singleton statically degined in the model
 */
-myname(qatuswag2pa).	%%old version (deprecated)
-actorobj(qatuswag2pa).	%% see registerActorInProlog18 in QActor
+myname(qatuhtml).	%%old version (deprecated)
+actorobj(qatuhtml).	%% see registerActorInProlog18 in QActor
 
 /*
 For a QActor instance of name=Name dynamically created
@@ -81,7 +81,7 @@ evalGuard( G ) :-
 
 output( M ):-stdout <- println( M ).
 %-------------------------------------------------
-%  TuProlo FEATURES of the QActor swag2pa
+%  TuProlo FEATURES of the QActor html
 %-------------------------------------------------
 dialog( FileName ) :-  
 	java_object('javax.swing.JFileChooser', [], Dialog),
@@ -89,7 +89,7 @@ dialog( FileName ) :-
 	Dialog <- getSelectedFile returns File,
 	File <- getName returns FileName. 		 
 
-%% :- stdout <- println(  "hello from world theory of swag2pa" ). 
+%% :- stdout <- println(  "hello from world theory of html" ). 
 
 %-------------------------------------------------
 %  UTILITIES for TuProlog computations
@@ -140,18 +140,8 @@ inc(I,K,N):-
 actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 
 %-------------------------------------------------
-%  User static rules about swag2pa
+%  User static rules about html
 %------------------------------------------------- 
-isCloseTo( S):-sonarDetect( S,D),eval( gt,D,0), ! ,eval( lt,D,5).
-isCloseTo( S):-sonarDetect( S,D),eval( minus,0,D,R),eval( lt,R,5).
-obstacleDetected( D):-foundObstacle( C), ! ,C2 is C + 1,retract( foundObstacle( X)),assert( foundObstacle( C2)).
-obstacleDetected( D):-assert( foundObstacle( 1)).
-isFixObstacle:-foundObstacle( 2).
-avoidFixTry:-foundFix( C), ! ,C2 is C + 1,retract( foundFix( C)),assert( foundFix( C2)).
-avoidFixTry:-assert( foundFix( 1)).
-avoidFixGiveUp:-foundFix( 2).
-decremFoundFix:-foundFix( 1), ! ,retract( foundFix( 1)).
-decremFoundFix:-foundFix( C), ! ,eval( minus,C,1,R),retract( foundFix( C)),assert( foundFix( R)).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

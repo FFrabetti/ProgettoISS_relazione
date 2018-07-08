@@ -8,6 +8,6 @@ qactor( swag2pa_ctrl , ctxswag2, "it.unibo.swag2pa.Swag2pa"   ). %%control-drive
 qactor( swag2tester , ctxswag2, "it.unibo.swag2tester.MsgHandle_Swag2tester"   ). %%store msgs 
 qactor( swag2tester_ctrl , ctxswag2, "it.unibo.swag2tester.Swag2tester"   ). %%control-driven 
 %%% -------------------------------------------
-eventhandler(evswag,ctxswag2,"it.unibo.ctxSwag2.Evswag","usercmd").  
+eventhandler(evhswag2pa,ctxswag2,"it.unibo.ctxSwag2.Evhswag2pa","usercmd").  
 %%% -------------------------------------------
 

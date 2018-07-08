@@ -1,23 +1,21 @@
 System finalTask2018 
- 
-Dispatch cmd : cmd(X)
+
 Event usercmd : usercmd(X)
-Event temperature : temperature(T)	
-Event clock : clock(H,M) 
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
-Event moveRobot : moveRobot(C)
-Event lightCmd : lightCmd(STATE)
-Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
-Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
-
-Dispatch swagmsg : usercmd(CMD)
+Dispatch swagmsg : cmd(CMD)
+Dispatch externalcmd : usercmd(CMD)
+/* 
+ * externalcmd viene usato per gestire uniformemente sia i click dell'utente per muovere il robot (usercmd)
+ * che quelli per avviare terminare la pulizia (cmd)
+ * nel controller ci vuole un eventhandler che faccia forwardevent per gli eventi alarm
+ * (ossia l'evento alarm : usercmd(X) in cui si trasformano gli eventi cmd quando gli cambi nome)
+ */
 
 Context ctxSwag2 ip [ host="localhost"  port=8016 ]
-EventHandler evswag for usercmd  {
-	 forwardEvent swag2pa -m swagmsg // stesso payload
+EventHandler evhswag2pa for usercmd {
+	forwardEvent swag2pa -m externalcmd
 };
-
 // -------------------------- SOFTWARE AGENT 2 --------------------------
 QActor swag2pa context ctxSwag2 {
 	Rules{
@@ -54,23 +52,39 @@ QActor swag2pa context ctxSwag2 {
 			
 		avoidFixGiveUp :-
 			foundFix(2).
+		
+		decremFoundFix :-
+			foundFix(1), !,
+			retract(foundFix(1)).
+			
+		decremFoundFix :-
+			foundFix(C), !,
+			eval(minus,C,1,R),
+			retract(foundFix(C)),
+			assert(foundFix(R)).
 	}
 
 	Plan init normal [         
    		println("swag2 start: waiting for start command")
    	]
 	transition stopAfter 3600000
-		whenMsg swagmsg -> receivedCmd
+//		whenMsg swagmsg -> receivedCmd
+		whenMsg externalcmd -> receivedCmd
 	finally repeatPlan
    	
    	Plan receivedCmd [
 		// R-Start
-   		onMsg swagmsg : usercmd(start) -> {
-   			println("ricevuto usercmd(start)");
+//   		onMsg swagmsg : cmd(start) -> {
+//   			println("ricevuto cmd(start)");
+//   			addRule startCmd
+//   		};
+		onMsg externalcmd : usercmd(start) -> {
+   			println("ricevuto start");
    			addRule startCmd
    		};
    		// R-Stop
-   		onMsg swagmsg : usercmd(halt) -> println("ricevuto usercmd(halt)")
+//   	onMsg swagmsg : cmd(halt) -> println("ricevuto cmd(halt)")
+   		onMsg externalcmd : usercmd(halt) -> println("ricevuto halt")
    	]
    	transition whenTime 800 -> init
     	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
@@ -81,7 +95,7 @@ QActor swag2pa context ctxSwag2 {
 	
 		[ !? isCloseTo(sonar1) ] {
 			println("close to sonar1");
-			selfMsg swagmsg : usercmd(clean) // R-Start
+			selfMsg swagmsg : cmd(clean) // R-Start
 		}
 		else
 			println("NOT close to sonar1!");
@@ -98,7 +112,7 @@ QActor swag2pa context ctxSwag2 {
     transition stopAfter 3600000 
      	whenEvent frontSonar -> handleFront,
      	whenEvent sonarSensor -> detectedByFinal,
-     	whenMsg swagmsg -> receivedCmd
+     	whenMsg externalcmd -> receivedCmd
     finally repeatPlan
     
     // R-End
@@ -107,8 +121,8 @@ QActor swag2pa context ctxSwag2 {
 		onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);
 	
 		[ !? isCloseTo(sonar2) ] {
-			println("close to sonar2");
-			selfMsg swagmsg : usercmd(halt) // R-End
+			println("close to sonar2, end of cleaning");
+			selfMsg externalcmd : usercmd(halt) // R-End
 		}
 		else
 			println("NOT close to sonar2!");
@@ -116,124 +130,228 @@ QActor swag2pa context ctxSwag2 {
 		removeRule sonarDetect(sonar2, D)
 	]
 	transition whenTime 800 -> cleaning
-		whenMsg swagmsg -> init
-    
-//    Plan waitForSonar[  ]
-//    transition stopAfter 3600000 
-//     	whenEvent frontSonar -> handleFront,
-//     	whenEvent sonarSensor -> handleSensor
-//    finally repeatPlan	
-   	 
+		whenMsg externalcmd -> init
+   
 	Plan handleFront resumeLastPlan [
-		println("handleFront");		
-  		printCurrentEvent;
+		println("handleFront");
 //		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0));
-		// NO CONTATORE
-		onEvent frontSonar : sonar(D) -> demo obstacleDetected(D); // aumento contatore
-	
-		// se l'ostacolo non e' fisso, ritento
-		[ !? isFixObstacle ]
-			println("fix obstacle")
-		else {
-			println("possible mobile obstacle");
-			delay 1000;
-			println("DELAY")
-			//forward controllerpa -m cmd : cmd(w(0))
-		}
+		println("possible mobile obstacle");
+		delay 1000;
+		//forward controllerpa -m cmd : cmd(w(0));
+		println("provo ad avanzare")
 	]
-    transition whenTime 800 -> avoidMobile
-     	whenEvent frontSonar -> avoidFix
-//	switchTo [ !? isFixObstacle ] avoidFix
-				
-//	Plan handleSensor resumeLastPlan[
-//  		printCurrentEvent
-//  		// testing: robot close to sonars makes some moves
-//	]
-	
-	Plan avoidFix [
-		println("avoidFix");
-		removeRule foundObstacle(X); // inutile
-		// aumento contatore di tentativi
-		demo avoidFixTry;
-		[ !? avoidFixGiveUp ] selfMsg swagmsg : usercmd(giveup)
-		else {
-			println("proviamo a girarci intorno");
-	//		forward controllerpa -m cmd : cmd(d(0));
-			println("turn right");
-	//		forward controllerpa -m cmd : cmd(w(0));
-	//		delay 500;
-			println("forward")	
-		}
-	]
-	transition whenTime 800 -> checkDoor
-		whenEvent frontSonar -> failure,
-		whenMsg swagmsg -> givingUp
-		
-	Plan givingUp[
-		println("givingUp");
-		removeRule foundFix(X)
-	]
-	switchTo init
-		
-	Plan avoidMobile [
+    transition whenTime 8000 -> avoidMobile // TODO 800
+   		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+     	whenEvent frontSonar -> avoidFixRight
+     	
+     Plan avoidMobile [
 		println("avoidMobile");
 		removeRule foundObstacle(X); // inutile
 		println("ok, ostacolo superato")
 	]
 	switchTo cleaning
 	
-	Plan checkDoor [
+// ------------------------- DODGE RIGHT -------------------------
+
+	Plan avoidFixRight [
+		println("avoidFixRight");
+		// aumento contatore di tentativi
+		demo avoidFixTry;
+		[ !? avoidFixGiveUp ] {
+			selfMsg swagmsg : cmd(giveUpRight);
+			println("Raggiunti max tentativi a destra")
+		} else {
+			println("proviamo a girarci intorno");
+	//		forward controllerpa -m cmd : cmd(d(0));
+			println("turn right");
+	//		forward controllerpa -m cmd : cmd(w(0));
+	//		delay 500; TODO --> forse possiamo ometterlo ed usare il timout per la transition al suo posto
+			println("forward")
+		}
+	]
+	transition whenTime 200 -> checkDoorRight // TODO 800
+		whenEvent frontSonar -> failure,
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> switchDirection
+	
+	Plan checkDoorRight [
 		println("checkDoor");
 //		forward controllerpa -m cmd : cmd(h(0));
 		println("stop");
 //		forward controllerpa -m cmd : cmd(a(0));
 		println("turn left")
 	]
-	transition whenTime 8000 -> doorFound // 800
-		whenEvent frontSonar -> avoidFix
+	transition whenTime 8000 -> doorFoundRight // TODO 800
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenEvent frontSonar -> avoidFixRight
 	
-	Plan doorFound [
-		println("doorFound");
-		removeRule foundFix(X);
+	Plan doorFoundRight [
+		println("doorFoundRight");
 //		forward controllerpa -m cmd : cmd(w(0));
 		println("forward");
-		delay 400;
+//		delay 500;
 //		forward controllerpa -m cmd : cmd(h(0));
-		println("stop")
+		println("stop");
+//		forward controllerpa -m cmd : cmd(a(0));
+		println("left")
 	]
-	switchTo goToPrevLevel
+	switchTo goToPrevLevelRight
 	
-	Plan goToPrevLevel [
-		println("goToPrevLevel")
+	Plan goToPrevLevelRight [
+		println("goToPrevLevelRight");
+		[ !? foundFix(C) ] {
+			demo decremFoundFix;
+//			forward controllerpa -m cmd : cmd(w(0));
+			println("forward");
+//			delay 500;
+//			forward controllerpa -m cmd : cmd(h(0));
+			println("stop")
+		}
+		else {
+			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+//			forward controllerpa -m cmd : cmd(d(0));
+			println("riprendo la direzione di marcia (RIGHT)")
+		}
 	]
+	transition whenTime 200 -> goToPrevLevelRight // TODO 800
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> cleaning // riprendo a pulire la stanza
 	
+
+// ------------------------- DODGE RIGHT -------------------------
+
+	Plan resumeLastPosition [
+		println("resume last position");
+		[ !? foundFix(C) ] {
+			demo decremFoundFix;
+//			forward controllerpa -m cmd : cmd(w(0));
+			println("forward");
+			delay 500;
+//			forward controllerpa -m cmd : cmd(h(0));
+			println("stop")
+		}
+		else {
+			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+//			forward controllerpa -m cmd : cmd(d(0));
+			println("fronteggio l'invalicabile muro")
+		}
+	]
+	transition whenTime 800 -> resumeLastPosition
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> avoidFixLeft
+
+// ------------------------- DODGE LEFT -------------------------
+		
+	Plan avoidFixLeft [
+		println("avoidFixLeft");
+		// aumento contatore di tentativi
+		demo avoidFixTry;
+		[ !? avoidFixGiveUp ] selfMsg swagmsg : cmd(giveUpLeft)
+		else {
+			println("proviamo a girarci intorno");
+	//		forward controllerpa -m cmd : cmd(a(0));
+			println("turn left");
+	//		forward controllerpa -m cmd : cmd(w(0));
+	//		delay 500; TODO --> forse possiamo ometterlo ed usare il timout per la transition al suo posto
+			println("forward")
+		}
+	]
+	transition whenTime 200 -> checkDoorLeft // TODO 800
+		whenEvent frontSonar -> givingUp, // se pure a sinistra c'è una parete, la do su!
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> givingUp // tentativi massimi raggiunti
+		
+	Plan checkDoorLeft [
+		println("checkDoorLeft");
+//		forward controllerpa -m cmd : cmd(h(0));
+		println("stop");
+//		forward controllerpa -m cmd : cmd(d(0));
+		println("turn right")
+	]
+	transition whenTime 8000 -> doorFoundLeft // TODO 800
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenEvent frontSonar -> avoidFixLeft
+		
+	Plan doorFoundLeft [
+		println("doorFoundLeft");
+//		forward controllerpa -m cmd : cmd(w(0));
+		println("forward");
+		delay 500;
+//		forward controllerpa -m cmd : cmd(h(0));
+		println("stop");
+//		forward controllerpa -m cmd : cmd(d(0));
+		println("right")
+	]
+	switchTo goToPrevLevelLeft
+	
+	Plan goToPrevLevelLeft [
+		println("goToPrevLevelLeft");
+		[ !? foundFix(C) ] {
+			demo decremFoundFix;
+//			forward controllerpa -m cmd : cmd(w(0));
+			println("forward");
+			delay 500;
+//			forward controllerpa -m cmd : cmd(h(0));
+			println("stop")
+		}
+		else {
+			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+//			forward controllerpa -m cmd : cmd(a(0));
+			println("riprendo la direzione di marcia (LEFT)")
+		}
+	]
+	transition whenTime 800 -> goToPrevLevelLeft
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> cleaning // riprendo a pulire la stanza
+		
+// ------------------------- DODGE LEFT -------------------------
+
+	// trovo un'altro muro mentre cerco la porta
 	Plan failure [
 		println("failure");
-		removeRule foundFix(X);
-		println("stop");
-		println("prova a sinistra")
+//		forward controllerpa -m cmd : cmd(a(0));
+//		forward controllerpa -m cmd : cmd(a(0));
+		println("ruoto di 180")
 	]
-	
+	switchTo resumeLastPosition // torno alla posizione iniziale e tento di aggirare l'ostacolo da sinistra
+
+	// ho raggiunto i max tentativi
+	Plan switchDirection [
+		println("switchDirection");
+		demo decremFoundFix; // elimino l'ultimo incremento, quello che ha fatto raggiungere la soglia
+//		forward controllerpa -m cmd : cmd(a(0));
+		println("ruoto di 90")
+	]
+	switchTo resumeLastPosition // torno alla posizione iniziale e tento di aggirare l'ostacolo da sinistra
+
+	// tentativi massimi raggiunti
+	// R-Obstacle
+	Plan givingUp [
+		println("givingUp");
+		removeRule foundFix(X)
+	]
+	switchTo init
+
 }
 // -------------------------- SOFTWARE AGENT 2 --------------------------
 
 QActor swag2tester context ctxSwag2 {
 	Plan init normal [
-//		// fail: timeout (not detected by a sonar)
-//		delay 4000;
-//		emit usercmd : usercmd(start);
-//		delay 5000;
-//		
-//		// fail: timeout (not close to sonar1)
-//		emit usercmd : usercmd(start);
-//		delay 200;
-//		emit sonarSensor : sonar(sonar1, 20);
-//		delay 5000;
-//	
-//		// fail: no start
-//		emit usercmd : usercmd(robotgui(w(0)));
-//		delay 5000;
-//		
+		// fail: timeout (not detected by a sonar)
+		delay 4000;
+		emit usercmd : usercmd(start);
+		delay 5000;
+		
+		// fail: timeout (not close to sonar1)
+		emit usercmd : usercmd(start);
+		delay 200;
+		emit sonarSensor : sonar(sonar1, 20);
+		delay 5000;
+	
+		// fail: no start
+		emit usercmd : usercmd(robotgui(w(0)));
+		delay 5000;
+		
 		// ok
 		delay 2000;
 		emit usercmd : usercmd(start);
@@ -243,18 +361,25 @@ QActor swag2tester context ctxSwag2 {
 		
 		// test stop
 		
-		emit usercmd : usercmd(halt);		
+		emit usercmd : usercmd(halt);
 
 //		// ostacolo mobile
 //		emit frontSonar : sonar(2);
 //		delay 2000;
-//		
-//		// ostacolo fisso
+		
+		// ostacolo fisso, lo schivera' andando a sinistra
 //		emit frontSonar : sonar(2);
 //		delay 400;
 //		emit frontSonar : sonar(2);
 //		delay 2000;
 //		emit frontSonar : sonar(2);
+//		delay 2000;
+//		emit frontSonar : sonar(2);
+//
+//		// fallisce anche a sinistra
+//		delay 200;
+//		emit frontSonar : sonar(2);
+
 		
 		println("")
 

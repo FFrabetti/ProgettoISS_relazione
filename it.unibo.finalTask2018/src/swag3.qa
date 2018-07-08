@@ -1,0 +1,120 @@
+System finalTask2018
+
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
+Dispatch moveRobot : moveRobot(CMD)
+
+Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
+
+Dispatch swagmsg : usercmd(CMD) // internal
+
+Context ctxSwag3 ip [ host="localhost"  port=8066 ]
+Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ] -standalone 
+
+QActor swag3 context ctxSwag3 {
+	Rules{
+		isCloseTo(S) :-
+			sonarDetect(S,D),
+			eval(gt,D,0),!,
+			eval(lt,D,5).
+		
+		isCloseTo(S) :-
+			sonarDetect(S,D),
+			eval(minus,0,D,R),
+			eval(lt,R,5).
+			
+		obstacleDetected(D) :-
+			foundObstacle(C), !,
+			C2 is C+1,
+			retract(foundObstacle(X)),
+			assert(foundObstacle(C2)).
+		
+		obstacleDetected(D) :-
+			assert(foundObstacle(1)).
+			
+		isFixObstacle :- foundObstacle(2).
+		
+		avoidFixTry :-
+			foundFix(C), !,
+			C2 is C+1,
+			retract(foundFix(C)),
+			assert(foundFix(C2)).
+			
+		avoidFixTry :-
+			assert(foundFix(1)).
+			
+		avoidFixGiveUp :-
+			foundFix(2).
+	}
+
+	Plan init normal [         
+   		println("swag3 start");
+   		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
+   	]
+	transition stopAfter 3600000
+		// non fermarti per sonar1
+		whenEvent frontSonar -> leftTurn
+	
+	Plan cleaning [
+		println("cleaning forward");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
+	]
+	transition stopAfter 3600000
+		// la parete di fondo e' segnalata da sonar2
+		whenEvent sonarSensor -> detectedByFinal
+	
+    Plan detectedByFinal [
+		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);
+	
+		[ !? isCloseTo(sonar2) ] {
+			println("close to sonar2");
+			selfMsg swagmsg : usercmd(halt) // R-End
+		}
+		else
+			println("NOT close to sonar2");
+			
+		removeRule sonarDetect(sonar2, D)
+	]
+	transition
+		whenTime 800 -> leftTurn
+		whenMsg swagmsg -> end
+	
+	Plan leftTurn [
+		println("left turn");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(1) );
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
+		delay 400;
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) )
+	]
+	transition
+		// tutto ok, no ostacoli a sinistra
+		whenTime 800 -> backCleaning
+	
+	Plan backCleaning [
+		println("cleaning back");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(1) );
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
+	]
+	transition stopAfter 3600000
+		whenEvent frontSonar -> rightTurn
+	
+	Plan rightTurn [
+		println("right turn");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
+		delay 400;
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) )
+	]
+	transition
+		// tutto ok, no ostacoli a destra
+		whenTime 800 -> cleaning
+		
+	Plan end [
+		println("end");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) )
+	]
+}

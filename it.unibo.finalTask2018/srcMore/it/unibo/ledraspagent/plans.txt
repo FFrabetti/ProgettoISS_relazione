@@ -1,0 +1,7 @@
+plan(1,init, sentence(true,move(print("ledRaspAgent start")),'','' ))
+plan(2,init, sentence(true,not here StateMoveNormal,'','' ))
+plan(1,handleCmd, sentence(true,printCurrentEvent(false),'','' ))
+plan(2,handleCmd, sentence(true,eventswitch(lightCmd, »lightCmd( blink), not here StateMoveNormal ),'','' ))
+plan(3,handleCmd, sentence(true,eventswitch(lightCmd, »lightCmd( on), not here StateMoveNormal ),'','' ))
+plan(4,handleCmd, sentence(true,eventswitch(lightCmd, »lightCmd( off), not here StateMoveNormal ),'','' ))
+plan(5,handleCmd, sentence(true,move(resumeplan),'','' ))

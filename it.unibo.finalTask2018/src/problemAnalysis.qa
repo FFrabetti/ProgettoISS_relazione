@@ -14,12 +14,12 @@ Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
 Context ctxApplPA ip [ host="localhost"  port=8018 ] -httpserver
 EventHandler evadapter for temperature,clock  { //maps temperature and clock into inputCtrlEvent
 	emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature,t1,T );
-	emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock, c1, h(H,M) )
+	emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock,c1,h(H,M) )
 };
 EventHandler evled for ctrlEvent  { // filter ctrlEvent by CATEGORY and NAME
-	emit lightCmd fromContent ctrlEvent( led, l1, blink ) to lightCmd(blink);
-	emit lightCmd fromContent ctrlEvent( led, l1, on ) to lightCmd(on);
-	emit lightCmd fromContent ctrlEvent( led, l1, off ) to lightCmd(off)
+	emit lightCmd fromContent ctrlEvent( led,l1,blink ) to lightCmd(blink);
+	emit lightCmd fromContent ctrlEvent( led,l1,on ) to lightCmd(on);
+	emit lightCmd fromContent ctrlEvent( led,l1,off ) to lightCmd(off)
 };
 
 // -------------------------- CONTROLLER --------------------------
@@ -208,7 +208,20 @@ QActor clockagentpa context ctxApplPA {
 // -------------------------- CLOCK AGENT --------------------------
 
 // -------------------------- TEMPERATURE AGENT --------------------------
-// thermo.qa: esegue in un proprio contesto
+QActor temperatureagentpa context ctxApplPA {
+	Plan init normal [
+		println("temperatureAgent start")
+	]
+	switchTo checkTemperature 
+	
+	Plan checkTemperature [
+		delay 5000;
+		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
+		[ !? currentTemp(T) ] println(currentTemperature(T));
+		[ ?? currentTemp(T) ] emit temperature : temperature(T)
+	]
+	finally repeatPlan
+}
 // -------------------------- TEMPERATURE AGENT --------------------------
 
 // -------------------------- HUE LAMP AGENT --------------------------
@@ -216,25 +229,25 @@ QActor huelampagentpa context ctxApplPA {
 	Plan init normal [         
    		println("hueLampAgent start");
 
-   		javaRun it.unibo.custom.gui.customBlsGui.createCustomLedGui();
+   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.init();
    		//lampeggia per prova
    		delay 1000;
-   		javaRun it.unibo.custom.gui.customBlsGui.setLed("on");
+   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
    		delay 1000;
-   		javaRun it.unibo.custom.gui.customBlsGui.setLed("off")
+   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
    	]
    	switchTo waitForCommand     
   
     Plan waitForCommand[ ]
-    transition stopAfter 6000000 
+    transition stopAfter 3600000 
      	whenEvent lightCmd -> handleCmd
     finally repeatPlan	
    	 
 	Plan handleCmd resumeLastPlan[
  		printCurrentEvent;
- 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("blink");
-		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("on");
-		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.custom.gui.customBlsGui.setLed("off")
+ 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("blink");
+		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
+		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
 	]
 }
 // -------------------------- HUE LAMP AGENT --------------------------

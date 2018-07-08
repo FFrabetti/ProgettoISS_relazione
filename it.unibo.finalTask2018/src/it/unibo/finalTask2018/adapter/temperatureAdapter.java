@@ -5,11 +5,19 @@ import scala.util.Random;
 
 public class temperatureAdapter {
 	
-	static int cont = 100;
+	static int cont = 0;
 	
 	public static void getTemperature(QActor qa) {
-		cont++;
-		qa.addRule("currentTemp(" + (22+(cont/10)%5) + ")");
+		double t;
+		try {
+			t = it.unibo.thermo.appl.Main.getT();
+		} catch(Exception e) {
+			cont++;
+			t = 20+(cont%10); // 20-29
+		}
+		
+		qa.addRule("currentTemp(" + t + ")");
+
 //		Random r=new Random();
 //		qa.addRule("currentTemp(" + r.nextInt(36) +")");
 	}

@@ -1,0 +1,26 @@
+System ledRasp
+
+Event lightCmd : lightCmd(STATE)
+
+Context ctxLedRasp ip [ host="localhost"  port=8038 ]
+Context ctxApplPA ip [ host="localhost"  port=8018 ] -standalone 
+
+QActor ledraspagent context ctxLedRasp {
+	Plan init normal [         
+   		println("ledRaspAgent start");
+   		javaRun it.unibo.finalTask2018.adapter.ledRaspAdapter.init()
+   	]
+   	switchTo waitForCommand     
+  
+    Plan waitForCommand[ ]
+    transition stopAfter 3600000 
+     	whenEvent lightCmd -> handleCmd
+    finally repeatPlan	
+   	 
+	Plan handleCmd resumeLastPlan[
+ 		printCurrentEvent;
+ 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.finalTask2018.adapter.ledRaspAdapter.setLamp("blink");
+		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.finalTask2018.adapter.ledRaspAdapter.setLamp("on");
+		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.finalTask2018.adapter.ledRaspAdapter.setLamp("off")
+	]
+}

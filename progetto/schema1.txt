@@ -1,0 +1,25 @@
+digraph finite_state_machine {
+	rankdir=LR
+	size="8,5"
+	
+	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	cleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	handleFront [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedByFinal [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedBySonar [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	receivedCmd [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	
+	detectedBySonar -> init [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	detectedByFinal -> init [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	detectedBySonar -> cleaning [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	receivedCmd -> init [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	cleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
+	receivedCmd -> detectedBySonar [ label = "[ ?? startCmd ], sonarSensor" ][ color = black ][ fontcolor = black ]
+	handleFront -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	cleaning -> handleFront [ label = "frontSonar" ][ color = red ][ fontcolor = red ][ dir = both ]
+	init -> init [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
+	cleaning -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	detectedByFinal -> cleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	init -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	cleaning -> cleaning [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
+}

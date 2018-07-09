@@ -34,7 +34,7 @@ public abstract class AbstractSwag3 extends QActor {
 		public AbstractSwag3(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
 			super(actorId, myCtx,  
 			"./srcMore/it/unibo/swag3/WorldTheory.pl",
-			setTheEnv( outEnvView )  , "init");
+			setTheEnv( outEnvView )  , "startCleaning");
 			this.planFilePath = "./srcMore/it/unibo/swag3/plans.txt";
 	  	}
 		@Override
@@ -43,7 +43,7 @@ public abstract class AbstractSwag3 extends QActor {
 			mysupport = (IMsgQueue) QActorUtils.getQActor( name ); 
 			initStateTable(); 
 	 		initSensorSystem();
-	 		history.push(stateTab.get( "init" ));
+	 		history.push(stateTab.get( "startCleaning" ));
 	  	 	autoSendStateExecMsg();
 	  		//QActorContext.terminateQActorSystem(this);//todo
 		} 	
@@ -55,8 +55,8 @@ public abstract class AbstractSwag3 extends QActor {
 	    //genAkkaMshHandleStructure
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
-	    	stateTab.put("init",init);
-	    	stateTab.put("cleaning",cleaning);
+	    	stateTab.put("startCleaning",startCleaning);
+	    	stateTab.put("forwardCleaning",forwardCleaning);
 	    	stateTab.put("detectedByFinal",detectedByFinal);
 	    	stateTab.put("leftTurn",leftTurn);
 	    	stateTab.put("backCleaning",backCleaning);
@@ -75,11 +75,11 @@ public abstract class AbstractSwag3 extends QActor {
 	    	}
 	    };//handleToutBuiltIn
 	    
-	    StateFun init = () -> {	
+	    StateFun startCleaning = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
-	    	String myselfName = "init";  
-	    	temporaryStr = "\"swag3 start\"";
+	     PlanRepeat pr = PlanRepeat.setUp("startCleaning",-1);
+	    	String myselfName = "startCleaning";  
+	    	temporaryStr = "\"swag3 start cleaning\"";
 	    	println( temporaryStr );  
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
 	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
@@ -88,16 +88,16 @@ public abstract class AbstractSwag3 extends QActor {
 	          new StateFun[]{stateTab.get("leftTurn") }, 
 	          new String[]{"true","E","frontSonar" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_init){  
-	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
+	    }catch(Exception e_startCleaning){  
+	    	 println( getName() + " plan=startCleaning WARNING:" + e_startCleaning.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//init
+	    };//startCleaning
 	    
-	    StateFun cleaning = () -> {	
+	    StateFun forwardCleaning = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("cleaning",-1);
-	    	String myselfName = "cleaning";  
+	     PlanRepeat pr = PlanRepeat.setUp("forwardCleaning",-1);
+	    	String myselfName = "forwardCleaning";  
 	    	temporaryStr = "\"cleaning forward\"";
 	    	println( temporaryStr );  
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(1))", guardVars ).toString();
@@ -109,11 +109,11 @@ public abstract class AbstractSwag3 extends QActor {
 	          new StateFun[]{stateTab.get("detectedByFinal") }, 
 	          new String[]{"true","E","sonarSensor" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_cleaning){  
-	    	 println( getName() + " plan=cleaning WARNING:" + e_cleaning.getMessage() );
+	    }catch(Exception e_forwardCleaning){  
+	    	 println( getName() + " plan=forwardCleaning WARNING:" + e_forwardCleaning.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//cleaning
+	    };//forwardCleaning
 	    
 	    StateFun detectedByFinal = () -> {	
 	    try{	
@@ -228,7 +228,7 @@ public abstract class AbstractSwag3 extends QActor {
 	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
 	          new StateFun[]{}, 
 	          new String[]{},
-	          800, "cleaning" );//msgTransition
+	          800, "forwardCleaning" );//msgTransition
 	    }catch(Exception e_rightTurn){  
 	    	 println( getName() + " plan=rightTurn WARNING:" + e_rightTurn.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

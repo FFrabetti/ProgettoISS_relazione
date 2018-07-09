@@ -9,22 +9,22 @@ digraph finite_state_machine {
 	rankdir=LR
 	size="8,5"
 	
-	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
-	cleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	startCleaning [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	forwardCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	rightTurn [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	detectedByFinal [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	leftTurn [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	backCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	end [ color = blue ][ fontcolor = blue ][ penwidth = 3 ]
 	
-	init -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
-	init -> leftTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
-	cleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
 	detectedByFinal -> end [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
 	leftTurn -> backCleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	startCleaning -> leftTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	backCleaning -> rightTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
+	rightTurn -> forwardCleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	startCleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	forwardCleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
 	detectedByFinal -> leftTurn [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
-	rightTurn -> cleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
-	cleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
+	forwardCleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
 	backCleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
 }

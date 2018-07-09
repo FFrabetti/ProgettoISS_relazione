@@ -9,9 +9,10 @@ digraph finite_state_machine {
 	rankdir=LR
 	size="8,5"
 	
-	startCleaning [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
 	forwardCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	rightTurn [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	startCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	detectedByFinal [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	leftTurn [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	backCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
@@ -22,7 +23,8 @@ digraph finite_state_machine {
 	startCleaning -> leftTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	backCleaning -> rightTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	rightTurn -> forwardCleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
-	startCleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	startCleaning -> startCleaning [ label = "timeout(200)" ][ color = green ][ fontcolor = green ]
+	init -> startCleaning [ label = "switch" ][ color = black ][ fontcolor = black ]
 	forwardCleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
 	detectedByFinal -> leftTurn [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
 	forwardCleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]

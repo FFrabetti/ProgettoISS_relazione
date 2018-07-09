@@ -38,7 +38,6 @@ digraph finite_state_machine {
 	avoidMobile -> cleaning [ label = "switch" ][ color = black ][ fontcolor = black ]
 	avoidFixRight -> failure [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	checkDoorRight -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
-	detectedByFinal -> init [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
 	goToPrevLevelLeft -> cleaning [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
 	detectedBySonar -> cleaning [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
 	doorFoundLeft -> goToPrevLevelLeft [ label = "switch" ][ color = black ][ fontcolor = black ]
@@ -51,6 +50,7 @@ digraph finite_state_machine {
 	goToPrevLevelLeft -> goToPrevLevelLeft [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
 	resumeLastPosition -> resumeLastPosition [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
 	checkDoorLeft -> avoidFixLeft [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
+	detectedByFinal -> init [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
 	goToPrevLevelRight -> cleaning [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
 	switchDirection -> resumeLastPosition [ label = "switch" ][ color = black ][ fontcolor = black ]
 	resumeLastPosition -> avoidFixLeft [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
@@ -72,7 +72,6 @@ digraph finite_state_machine {
 	cleaning -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
 	detectedByFinal -> cleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
 	init -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
-	cleaning -> cleaning [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
 	avoidFixRight -> checkDoorRight [ label = "timeout(200)" ][ color = green ][ fontcolor = green ]
 	handleFront -> avoidMobile [ label = "timeout(8000)" ][ color = green ][ fontcolor = green ]
 }

@@ -190,8 +190,7 @@ public abstract class AbstractSwag2pa extends QActor {
 	    
 	    StateFun cleaning = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_cleaning",0);
-	     pr.incNumIter(); 	
+	     PlanRepeat pr = PlanRepeat.setUp("cleaning",-1);
 	    	String myselfName = "cleaning";  
 	    	temporaryStr = "\"cleaning\"";
 	    	println( temporaryStr );  
@@ -228,8 +227,8 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	{//actionseq
 	    	temporaryStr = "\"close to sonar2, end of cleaning\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(halt)", guardVars ).toString();
-	    	sendMsg("externalcmd",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(halt)", guardVars ).toString();
+	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	};//actionseq
 	    	}
 	    	else{ temporaryStr = "\"NOT close to sonar2!\"";
@@ -239,7 +238,7 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("init") }, 
-	          new String[]{"true","M","externalcmd" },
+	          new String[]{"true","M","swagmsg" },
 	          800, "cleaning" );//msgTransition
 	    }catch(Exception e_detectedByFinal){  
 	    	 println( getName() + " plan=detectedByFinal WARNING:" + e_detectedByFinal.getMessage() );

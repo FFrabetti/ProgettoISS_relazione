@@ -150,6 +150,8 @@ isFixObstacle:-foundObstacle( 2).
 avoidFixTry:-foundFix( C), ! ,C2 is C + 1,retract( foundFix( C)),assert( foundFix( C2)).
 avoidFixTry:-assert( foundFix( 1)).
 avoidFixGiveUp:-foundFix( 2).
+incrementCount:-countHeight( C), ! ,C2 is C + 1,retract( countHeight( C)),assert( countHeight( C2)).
+incrementCount:-assert( countHeight( 0)).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

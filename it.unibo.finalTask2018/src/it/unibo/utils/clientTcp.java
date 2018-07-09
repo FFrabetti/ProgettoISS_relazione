@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalTime;
+
 import org.json.JSONObject;
 import it.unibo.qactors.akka.QActor;
 
@@ -19,6 +21,8 @@ public class clientTcp {
 	protected static PrintWriter outToServer;
 	protected static BufferedReader inFromServer;
 	protected static Thread rdThread;
+	
+	private static LocalTime lastEmittedFront;
 
 	public static void initClientConn(QActor qa) throws Exception {
 		initClientConn(qa, HOST, PORT);
@@ -120,7 +124,13 @@ public class clientTcp {
 		 */
 		// Event frontSonar : sonar( DISTANCE )
 		private void collision(String obstacle) {
-			qa.emit("frontSonar", "sonar(2)");
+			if(lastEmittedFront == null || LocalTime.now().isAfter(lastEmittedFront.plusSeconds(1))) {
+				qa.emit("frontSonar", "sonar(2)");
+				System.out.println("NodeEnv: emitting frontSonar : sonar(2)");
+				lastEmittedFront = LocalTime.now();
+			}
+//			else
+//				System.out.println("NodeEnv: frontSonar not emitted");
 		}
 
 		@Override

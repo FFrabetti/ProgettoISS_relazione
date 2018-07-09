@@ -45,16 +45,32 @@ QActor swag3 context ctxSwag3 {
 			
 		avoidFixGiveUp :-
 			foundFix(2).
+			
+		incrementCount :-
+			countHeight(C), !,
+			C2 is C+1,
+			retract(countHeight(C)),
+			assert(countHeight(C2)).
+			
+		incrementCount :-
+			assert(countHeight(0)).
 	}
 
-	Plan startCleaning normal [         
+	Plan init normal [         
    		println("swag3 start cleaning");
    		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
    	]
-	transition stopAfter 3600000
-		// non fermarti per sonar1
-		whenEvent frontSonar -> leftTurn
+   	switchTo startCleaning
+//	transition stopAfter 3600000 // non fermarti per sonar1
+//		whenEvent frontSonar -> leftTurn
 	
+	Plan startCleaning [
+		demo incrementCount
+	]
+	transition 		// non fermarti per sonar1
+		whenTime 200 -> startCleaning
+		whenEvent frontSonar -> leftTurn
+		
 	Plan forwardCleaning [
 		println("cleaning forward");
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );

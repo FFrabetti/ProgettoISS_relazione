@@ -19,41 +19,24 @@ QActor swag3 context ctxSwag3 {
 			eval(lt,D,5).
 		
 		isCloseTo(S) :-
-			sonarDetect(S,D),
-			eval(minus,0,D,R),
+			sonarDetect(S,D), 	// D<=0
+			eval(minus,0,D,R),	// -> R>=0
 			eval(lt,R,5).
-			
-		obstacleDetected(D) :-
-			foundObstacle(C), !,
-			C2 is C+1,
-			retract(foundObstacle(X)),
-			assert(foundObstacle(C2)).
 		
-		obstacleDetected(D) :-
-			assert(foundObstacle(1)).
+		increment(C) :-
+			counter(C,N), !,
+			N2 is N+1,
+			retract(counter(C,N)),
+			assert(counter(C,N2)).
 			
-		isFixObstacle :- foundObstacle(2).
+		increment(C) :-
+			assert(counter(C,1)).
+			
+		isFixObstacle :-
+			counter(obstacle, 2).
 		
-		avoidFixTry :-
-			foundFix(C), !,
-			C2 is C+1,
-			retract(foundFix(C)),
-			assert(foundFix(C2)).
-			
-		avoidFixTry :-
-			assert(foundFix(1)).
-			
 		avoidFixGiveUp :-
-			foundFix(2).
-			
-		incrementCount :-
-			countHeight(C), !,
-			C2 is C+1,
-			retract(countHeight(C)),
-			assert(countHeight(C2)).
-			
-		incrementCount :-
-			assert(countHeight(0)).
+			counter(foundFix, 2).
 	}
 
 	Plan init normal [         
@@ -65,7 +48,7 @@ QActor swag3 context ctxSwag3 {
 //		whenEvent frontSonar -> leftTurn
 	
 	Plan startCleaning [
-		demo incrementCount
+		demo increment(roomLen) // counter(roomLen, C++)
 	]
 	transition 		// non fermarti per sonar1
 		whenTime 200 -> startCleaning
@@ -99,6 +82,7 @@ QActor swag3 context ctxSwag3 {
 	
 	Plan leftTurn [
 		println("left turn");
+//		printCurrentEvent;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
@@ -107,7 +91,18 @@ QActor swag3 context ctxSwag3 {
 	]
 	transition
 		// tutto ok, no ostacoli a sinistra
-		whenTime 800 -> backCleaning
+		whenTime 800 -> waitForGodot // backCleaning
+
+	// "consumo" eventuali eventi frontSonar residui...		
+	Plan waitForGodot [
+		println("waiting for Godot...");
+		// debug
+		[ !? counter(roomLen, C) ] println(roomLen(C));
+		delay 2000
+	]
+	transition
+		whenTime 4000 -> backCleaning // tutto ok, procedi
+		whenEvent frontSonar -> waitForGodot
 	
 	Plan backCleaning [
 		println("cleaning back");
@@ -119,6 +114,7 @@ QActor swag3 context ctxSwag3 {
 	
 	Plan rightTurn [
 		println("right turn");
+//		printCurrentEvent;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );

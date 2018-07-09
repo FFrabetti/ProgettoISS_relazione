@@ -60,6 +60,7 @@ public abstract class AbstractSwag3 extends QActor {
 	    	stateTab.put("forwardCleaning",forwardCleaning);
 	    	stateTab.put("detectedByFinal",detectedByFinal);
 	    	stateTab.put("leftTurn",leftTurn);
+	    	stateTab.put("waitForGodot",waitForGodot);
 	    	stateTab.put("backCleaning",backCleaning);
 	    	stateTab.put("rightTurn",rightTurn);
 	    	stateTab.put("end",end);
@@ -97,7 +98,7 @@ public abstract class AbstractSwag3 extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("startCleaning",-1);
 	    	String myselfName = "startCleaning";  
-	    	parg = "incrementCount";
+	    	parg = "increment(roomLen)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	//bbb
@@ -195,12 +196,38 @@ public abstract class AbstractSwag3 extends QActor {
 	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
 	          new StateFun[]{}, 
 	          new String[]{},
-	          800, "backCleaning" );//msgTransition
+	          800, "waitForGodot" );//msgTransition
 	    }catch(Exception e_leftTurn){  
 	    	 println( getName() + " plan=leftTurn WARNING:" + e_leftTurn.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//leftTurn
+	    
+	    StateFun waitForGodot = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("waitForGodot",-1);
+	    	String myselfName = "waitForGodot";  
+	    	temporaryStr = "\"waiting for Godot...\"";
+	    	println( temporaryStr );  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?counter(roomLen,C)" )) != null ){
+	    	temporaryStr = "roomLen(C)";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	println( temporaryStr );  
+	    	}
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(2000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "waitForGodot";
+	    	if( ! aar.getGoon() ) return ;
+	    	//bbb
+	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
+	          new StateFun[]{stateTab.get("waitForGodot") }, 
+	          new String[]{"true","E","frontSonar" },
+	          4000, "backCleaning" );//msgTransition
+	    }catch(Exception e_waitForGodot){  
+	    	 println( getName() + " plan=waitForGodot WARNING:" + e_waitForGodot.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//waitForGodot
 	    
 	    StateFun backCleaning = () -> {	
 	    try{	

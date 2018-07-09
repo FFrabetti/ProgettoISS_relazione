@@ -144,14 +144,10 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %------------------------------------------------- 
 isCloseTo( S):-sonarDetect( S,D),eval( gt,D,0), ! ,eval( lt,D,5).
 isCloseTo( S):-sonarDetect( S,D),eval( minus,0,D,R),eval( lt,R,5).
-obstacleDetected( D):-foundObstacle( C), ! ,C2 is C + 1,retract( foundObstacle( X)),assert( foundObstacle( C2)).
-obstacleDetected( D):-assert( foundObstacle( 1)).
-isFixObstacle:-foundObstacle( 2).
-avoidFixTry:-foundFix( C), ! ,C2 is C + 1,retract( foundFix( C)),assert( foundFix( C2)).
-avoidFixTry:-assert( foundFix( 1)).
-avoidFixGiveUp:-foundFix( 2).
-incrementCount:-countHeight( C), ! ,C2 is C + 1,retract( countHeight( C)),assert( countHeight( C2)).
-incrementCount:-assert( countHeight( 0)).
+increment( C):-counter( C,N), ! ,N2 is N + 1,retract( counter( C,N)),assert( counter( C,N2)).
+increment( C):-assert( counter( C,1)).
+isFixObstacle:-counter( obstacle,2).
+avoidFixGiveUp:-counter( foundFix,2).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

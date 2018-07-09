@@ -100,7 +100,7 @@ QActor swag2pa context ctxSwag2 {
 		else
 			println("NOT close to sonar1!");
 			
-		removeRule sonarDetect(sonar1, D)
+		removeRule sonarDetect(sonar1,D)
 	]
 	transition whenTime 800 -> init
 		whenMsg swagmsg -> cleaning
@@ -113,7 +113,6 @@ QActor swag2pa context ctxSwag2 {
      	whenEvent frontSonar -> handleFront,
      	whenEvent sonarSensor -> detectedByFinal,
      	whenMsg externalcmd -> receivedCmd
-    finally repeatPlan
     
     // R-End
     Plan detectedByFinal [
@@ -122,15 +121,15 @@ QActor swag2pa context ctxSwag2 {
 	
 		[ !? isCloseTo(sonar2) ] {
 			println("close to sonar2, end of cleaning");
-			selfMsg externalcmd : usercmd(halt) // R-End
+			selfMsg swagmsg : cmd(halt) // R-End
 		}
 		else
 			println("NOT close to sonar2!");
 			
-		removeRule sonarDetect(sonar2, D)
+		removeRule sonarDetect(sonar2,D)
 	]
 	transition whenTime 800 -> cleaning
-		whenMsg externalcmd -> init
+		whenMsg swagmsg -> init
    
 	Plan handleFront resumeLastPlan [
 		println("handleFront");

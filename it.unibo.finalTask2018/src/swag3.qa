@@ -82,7 +82,6 @@ QActor swag3 context ctxSwag3 {
 	
 	Plan leftTurn [
 		println("left turn");
-//		printCurrentEvent;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
@@ -97,12 +96,11 @@ QActor swag3 context ctxSwag3 {
 	Plan waitForGodot [
 		println("waiting for Godot...");
 		// debug
-		[ !? counter(roomLen, C) ] println(roomLen(C));
-		delay 2000
+		[ !? counter(roomLen, C) ] println(roomLen(C))
 	]
 	transition
-		whenTime 4000 -> backCleaning // tutto ok, procedi
-		whenEvent frontSonar -> waitForGodot
+		whenTime 2000 -> backCleaning // tutto ok, procedi
+		whenEvent frontSonar -> backCleaning // waitForGodot
 	
 	Plan backCleaning [
 		println("cleaning back");
@@ -114,7 +112,6 @@ QActor swag3 context ctxSwag3 {
 	
 	Plan rightTurn [
 		println("right turn");
-//		printCurrentEvent;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );

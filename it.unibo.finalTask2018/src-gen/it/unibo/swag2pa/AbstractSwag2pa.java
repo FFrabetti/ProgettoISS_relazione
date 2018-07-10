@@ -261,7 +261,7 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	temporaryStr = "\"provo ad avanzare\"";
 	    	println( temporaryStr );  
 	    	//bbb
-	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,true,
+	     msgTransition( pr,myselfName,"swag2pa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("receivedCmd"), stateTab.get("avoidFixRight") }, 
 	          new String[]{"true","M","externalcmd", "true","E","frontSonar" },
 	          8000, "avoidMobile" );//msgTransition
@@ -277,8 +277,6 @@ public abstract class AbstractSwag2pa extends QActor {
 	    	String myselfName = "avoidMobile";  
 	    	temporaryStr = "\"avoidMobile\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = "foundObstacle(X)";
-	    	removeRule( temporaryStr );  
 	    	temporaryStr = "\"ok, ostacolo superato\"";
 	    	println( temporaryStr );  
 	    	//switchTo cleaning

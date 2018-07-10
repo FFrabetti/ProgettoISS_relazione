@@ -1,0 +1,60 @@
+/*
+*
+* A GraphViz DOT FSM description 
+* Please use a GraphViz visualizer (like http://www.webgraphviz.com)
+*  
+*/
+
+digraph finite_state_machine {
+	rankdir=LR
+	size="8,5"
+	
+	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	cleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	handleFront [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedByFinal [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	checkDoor [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	giveUp [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	avoidFix [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	failure [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	goToPrevLevel [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	resumeLastPosition [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	doorFound [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedBySonar [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	receivedCmd [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	avoidMobile [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	
+	cleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	goToPrevLevel -> goToPrevLevel [ label = "timeout(200)" ][ color = green ][ fontcolor = green ]
+	checkDoor -> avoidFix [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
+	avoidFix -> failure [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
+	detectedBySonar -> init [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	avoidMobile -> cleaning [ label = "switch" ][ color = black ][ fontcolor = black ]
+	avoidFix -> checkDoor [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	avoidFix -> giveUp [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	checkDoor -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	giveUp -> resumeLastPosition [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	detectedBySonar -> cleaning [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	failure -> giveUp [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	receivedCmd -> init [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	doorFound -> goToPrevLevel [ label = "switch" ][ color = black ][ fontcolor = black ]
+	avoidFix -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	cleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
+	resumeLastPosition -> resumeLastPosition [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	handleFront -> avoidMobile [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	init -> cleaning [ label = "[ ?? test ], switch" ][ color = black ][ fontcolor = black ]
+	detectedByFinal -> init [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	handleFront -> avoidFix [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
+	goToPrevLevel -> cleaning [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	resumeLastPosition -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	receivedCmd -> detectedBySonar [ label = "[ ?? startCmd ], sonarSensor" ][ color = black ][ fontcolor = black ]
+	cleaning -> handleFront [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
+	handleFront -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	checkDoor -> doorFound [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	giveUp -> init [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	failure -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	cleaning -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	detectedByFinal -> cleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	resumeLastPosition -> avoidFix [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	goToPrevLevel -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+}

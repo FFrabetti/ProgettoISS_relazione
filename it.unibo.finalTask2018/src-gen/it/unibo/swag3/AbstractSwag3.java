@@ -214,15 +214,11 @@ public abstract class AbstractSwag3 extends QActor {
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(2000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "waitForGodot";
-	    	if( ! aar.getGoon() ) return ;
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
-	          new StateFun[]{stateTab.get("waitForGodot") }, 
+	          new StateFun[]{stateTab.get("backCleaning") }, 
 	          new String[]{"true","E","frontSonar" },
-	          4000, "backCleaning" );//msgTransition
+	          2000, "backCleaning" );//msgTransition
 	    }catch(Exception e_waitForGodot){  
 	    	 println( getName() + " plan=waitForGodot WARNING:" + e_waitForGodot.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

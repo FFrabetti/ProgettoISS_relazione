@@ -1,0 +1,315 @@
+System finalTask2018
+
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
+Dispatch moveRobot : moveRobot(CMD)
+
+Event usercmd : usercmd(X)
+Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
+
+Dispatch swagmsg : cmd(CMD) // internal
+Dispatch externalcmd : usercmd(CMD)
+
+Context ctxSwag4 ip [ host="localhost"  port=8066 ]
+EventHandler evhswag4 for usercmd {
+	forwardEvent swag4 -m externalcmd
+};
+Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ] -standalone 
+
+QActor swag4 context ctxSwag4 {
+	Rules{
+		isCloseTo(S) :-
+			sonarDetect(S,D),
+			eval(gt,D,0),!,
+			eval(lt,D,5).
+		
+		isCloseTo(S) :-
+			sonarDetect(S,D), 	// D<=0
+			eval(minus,0,D,R),	// -> R>=0
+			eval(lt,R,5).
+		
+		increment(C) :-
+			counter(C,N), !,
+			N2 is N+1,
+			retract(counter(C,N)),
+			assert(counter(C,N2)).
+			
+		increment(C) :-
+			assert(counter(C,1)).
+		
+		decrement(C) :-
+			counter(C, 1), !,
+			retract(counter(C, 1)).
+		
+		decrement(C) :-
+			counter(C,N), !,
+			eval(minus, N, 1, N2),
+			retract(counter(C,N)),
+			assert(counter(C,N2)).
+		
+		avoidFixTry :-
+			increment(foundFix).
+		
+		avoidFixGiveUp :-
+			counter(foundFix, 3).
+		
+		decremFoundFix :-
+			decrement(foundFix).
+			
+//		exploring(r).
+//		exploring(l).
+
+		switchExplorationDir :-
+			exploring(r), avoidFixGiveUp, !,
+			retract(exploring(r)),
+			assert(exploring(l)).
+		
+		switchExplorationDir :-
+			exploring(_), !.
+		
+		switchExplorationDir :- // nessuno dei due
+			assert(exploring(r)).
+			
+		test.
+	}
+
+	Plan init normal [         
+   		println("swag4 start: waiting for start command")
+   	]
+   	switchTo [ ?? test ] cleaning
+//	transition stopAfter 3600000
+//		whenMsg externalcmd -> receivedCmd
+//	finally repeatPlan
+   	
+   	Plan receivedCmd [
+		// R-Start
+		onMsg externalcmd : usercmd(start) -> {
+   			println("ricevuto start");
+   			addRule startCmd
+   		};
+   		// R-Stop
+   		onMsg externalcmd : usercmd(halt) -> println("ricevuto halt")
+   	]
+   	transition
+   		whenTime 800 -> init
+    	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
+    	
+  	Plan detectedBySonar [
+		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
+	
+		[ !? isCloseTo(sonar1) ] {
+			println("close to sonar1");
+			selfMsg swagmsg : cmd(clean) // R-Start
+		}
+		else
+			println("NOT close to sonar1");
+			
+		removeRule sonarDetect(sonar1,D)
+	]
+	transition
+		whenTime 800 -> init
+		whenMsg swagmsg -> cleaning
+
+	Plan cleaning [
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
+		println("cleaning")
+		// do something
+	]
+    transition stopAfter 3600000 
+     	whenEvent frontSonar -> handleFront,
+     	whenEvent sonarSensor -> detectedByFinal,
+     	whenMsg externalcmd -> receivedCmd
+    
+    // R-End
+    Plan detectedByFinal [
+		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);
+	
+		[ !? isCloseTo(sonar2) ] {
+			println("close to sonar2, end of cleaning");
+			selfMsg swagmsg : cmd(halt) // R-End
+		}
+		else
+			println("NOT close to sonar2");
+			
+		removeRule sonarDetect(sonar2,D)
+	]
+	transition
+		whenTime 800 -> cleaning
+		whenMsg swagmsg -> init
+   
+	Plan handleFront [
+		println("handleFront");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
+		println("possible mobile obstacle");
+		delay 1000;
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
+		println("provo ad avanzare")
+	]
+    transition whenTime 800 -> avoidMobile // TODO 800
+   		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+     	whenEvent frontSonar -> avoidFix // avoidFixRight
+     
+     Plan avoidMobile [
+		println("avoidMobile");
+		println("ok, ostacolo superato")
+	]
+	switchTo cleaning
+	
+//	Plan avoidFix [
+//		println("avoidFix");
+//		demo switchExplorationDir;
+//		[ !? exploring(r) ] selfMsg swagmsg : cmd(exploreR)
+//	]
+	
+// ------------------------- DODGE RIGHT -------------------------
+
+	Plan avoidFix [
+		println("avoidFix");
+		// aumento contatore di tentativi
+		demo avoidFixTry;
+		[ !? avoidFixGiveUp ] {
+			[ !? exploring(l) ] selfMsg swagmsg : cmd(giveUpLeft)
+			else selfMsg swagmsg : cmd(giveUpRight);
+			println("Raggiunti max tentativi")
+		} else {
+			delay 800;
+			println("proviamo a girarci intorno");
+			[ !? exploring(l) ] {
+				sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(0) );
+				println("da sinistra")
+			}
+			else {
+				sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(0) );
+				println("da destra")
+			};
+
+			delay 2000;
+			
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
+			delay 600;
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
+			println("forward + stop");
+			
+			delay 2000
+		};
+		demo switchExplorationDir
+	]
+	transition whenTime 800 -> checkDoor // TODO 800
+		whenEvent frontSonar -> failure,
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> giveUp // esaminare il payload
+	
+	Plan checkDoor [
+		println("checkDoor");
+		[ !? exploring(r) ] sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(0) )
+		else sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(0) );
+
+		delay 800;
+
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
+		println("forward");
+		delay 400;
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
+		println("stop")
+	]
+	transition whenTime 800 -> doorFound // TODO 800
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenEvent frontSonar -> avoidFix
+	
+	Plan doorFound [
+		println("doorFound");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
+		println("forward");
+		delay 300;
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
+		println("stop");
+
+		delay 2000;
+
+		[ !? exploring(r) ] sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(0) )
+		else sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(0) );
+		
+		delay 800
+	]
+	switchTo goToPrevLevel
+	
+	Plan goToPrevLevel [
+		println("goToPrevLevel");
+		[ !? counter(foundFix, C) ] {
+			demo decremFoundFix;
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
+			delay 600;
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
+			println("forward + stop")
+		}
+		else {
+			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+			[ !? exploring(r) ] sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(0) )
+			else sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(0) );
+			
+			delay 800;
+			println("riprendo la direzione di marcia")
+		}
+	]
+	transition whenTime 200 -> goToPrevLevel // TODO 800
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> cleaning // riprendo a pulire la stanza
+	
+	Plan resumeLastPosition [
+		println("resume last position");
+		[ !? counter(foundFix, C) ] {
+			demo decremFoundFix;
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
+			println("forward");
+			delay 600;
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
+			
+			delay 2000;
+			
+			println("stop")
+		}
+		else {
+			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(0) );
+			println("fronteggio l'invalicabile muro")
+		}
+	]
+	transition whenTime 800 -> resumeLastPosition
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> avoidFix
+	
+	// trovo un altro muro mentre cerco la porta
+	Plan failure [
+		println("failure");
+		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(0) );
+		[ !? exploring(r) ] selfMsg swagmsg : cmd(giveUpRight)
+		else selfMsg swagmsg : cmd(giveUpLeft)
+	]
+	transition stopAfter 3600000
+		whenMsg swagmsg -> giveUp
+
+	// ho raggiunto i max tentativi
+	Plan giveUp [
+		println("giveUp");
+		demo decremFoundFix; // elimino l'ultimo incremento, quello che ha fatto raggiungere la soglia
+		
+		onMsg swagmsg : cmd(giveUpRight) -> {
+			sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(0) );
+			selfMsg swagmsg : cmd(resumeLastPos);
+			println("ruoto di 90")
+		};
+		onMsg swagmsg : cmd(giveUpLeft) -> { // R-Obstacle
+			removeRule foundFix(X);
+			removeRule exploring(l);
+			println("tentativi massimi raggiunti")
+		};
+		
+		delay 2000
+	]
+	transition
+		whenTime 800 -> init
+		whenMsg swagmsg -> resumeLastPosition // torno alla posizione iniziale e tento di aggirare l'ostacolo da sinistra
+
+}

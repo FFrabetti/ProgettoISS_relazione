@@ -3,8 +3,8 @@ const config = {
         size: { x: 25, y: 20 }
     },
     player: {
-        //position: { x: 0.5, y: 0.5 },		//CENTER
-        position: { x: 0.15, y: 0.3 },		//INIT
+        position: { x: 0.5, y: 0.7 },		//CENTER
+        //position: { x: 0.15, y: 0.3 },		//INIT
         //position: { x: 0.8, y: 0.85 },		//END
         speed: 0.1 // 0.2
     },
@@ -37,11 +37,11 @@ const config = {
 //        }
     ],
     staticObstacles: [
-//        {
-//            name: "wall",
-//            centerPosition: { x: 0.5, y: 0.9},
-//            size: { x: 0.01, y: 0.01}
-//        },
+       {
+           name: "wall",
+           centerPosition: { x: 0.5, y: 0.6},
+           size: { x: 0.2, y: 0.01}
+       },
         {
         name: "wallUp",
         centerPosition: { x: 0.58, y: 0.98},

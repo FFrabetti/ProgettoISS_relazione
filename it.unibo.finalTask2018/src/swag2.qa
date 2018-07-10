@@ -131,7 +131,7 @@ QActor swag2pa context ctxSwag2 {
 	transition whenTime 800 -> cleaning
 		whenMsg swagmsg -> init
    
-	Plan handleFront resumeLastPlan [
+	Plan handleFront [
 		println("handleFront");
 //		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0));
 		println("possible mobile obstacle");
@@ -145,7 +145,6 @@ QActor swag2pa context ctxSwag2 {
      	
      Plan avoidMobile [
 		println("avoidMobile");
-		removeRule foundObstacle(X); // inutile
 		println("ok, ostacolo superato")
 	]
 	switchTo cleaning

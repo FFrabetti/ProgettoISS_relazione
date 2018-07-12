@@ -155,7 +155,7 @@ public abstract class AbstractSwag3 extends QActor {
 	    	{//actionseq
 	    	temporaryStr = "\"close to sonar2\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(halt)", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(halt)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	};//actionseq
 	    	}

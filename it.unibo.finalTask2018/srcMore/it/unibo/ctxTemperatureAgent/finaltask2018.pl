@@ -2,7 +2,6 @@
 % Context ctxTemperatureAgent  SYSTEM-configuration: file it.unibo.ctxTemperatureAgent.finalTask2018.pl 
 %====================================================================================
 context(ctxtemperatureagent, "localhost",  "TCP", "8886" ).  		 
-context(ctxmvc, "localhost",  "TCP", "8019" ).  		 
 %%% -------------------------------------------
 qactor( temperatureagent , ctxtemperatureagent, "it.unibo.temperatureagent.MsgHandle_Temperatureagent"   ). %%store msgs 
 qactor( temperatureagent_ctrl , ctxtemperatureagent, "it.unibo.temperatureagent.Temperatureagent"   ). %%control-driven 

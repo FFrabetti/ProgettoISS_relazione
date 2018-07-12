@@ -1,0 +1,6 @@
+plan(1,init, sentence(true,delay( 8000) ,'','' ))
+plan(2,init, sentence(true,raise( frontSonar , sonar( 10) )'),'','' ))
+plan(3,init, sentence(true,delay( 5000) ,'','' ))
+plan(4,init, sentence(true,raise( frontSonar , sonar( 10) )'),'','' ))
+plan(5,init, sentence(true,delay( 500) ,'','' ))
+plan(6,init, sentence(true,raise( frontSonar , sonar( 10) )'),'','' ))

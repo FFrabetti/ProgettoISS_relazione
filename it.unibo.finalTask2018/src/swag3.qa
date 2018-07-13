@@ -39,19 +39,19 @@ QActor swag3 context ctxSwag3 {
 			counter(foundFix, 2).
 	}
 
-	Plan init normal [         
+	Plan startCleaning normal [         
    		println("swag3 start cleaning");
    		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
    	]
-   	switchTo startCleaning
+   	switchTo countRoomLen
 //	transition stopAfter 3600000 // non fermarti per sonar1
 //		whenEvent frontSonar -> leftTurn
 	
-	Plan startCleaning [
+	Plan countRoomLen [
 		demo increment(roomLen) // counter(roomLen, C++)
 	]
 	transition 		// non fermarti per sonar1
-		whenTime 200 -> startCleaning
+		whenTime 200 -> countRoomLen
 		whenEvent frontSonar -> leftTurn
 		
 	Plan forwardCleaning [

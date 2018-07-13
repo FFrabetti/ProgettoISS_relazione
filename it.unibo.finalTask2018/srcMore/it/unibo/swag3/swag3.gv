@@ -9,23 +9,23 @@ digraph finite_state_machine {
 	rankdir=LR
 	size="8,5"
 	
-	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	startCleaning [ color = red ][ fontcolor = red ][ penwidth = 3 ]
 	forwardCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	rightTurn [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	waitForGodot [ color = black ][ fontcolor = black ][ penwidth = 3 ]
-	startCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	detectedByFinal [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	leftTurn [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	backCleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	countRoomLen [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	end [ color = blue ][ fontcolor = blue ][ penwidth = 3 ]
 	
 	waitForGodot -> backCleaning [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	detectedByFinal -> end [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
 	backCleaning -> rightTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
-	startCleaning -> startCleaning [ label = "timeout(200)" ][ color = green ][ fontcolor = green ]
-	init -> startCleaning [ label = "switch" ][ color = black ][ fontcolor = black ]
+	countRoomLen -> leftTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	leftTurn -> waitForGodot [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
-	startCleaning -> leftTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
+	startCleaning -> countRoomLen [ label = "switch" ][ color = black ][ fontcolor = black ]
+	countRoomLen -> countRoomLen [ label = "timeout(200)" ][ color = green ][ fontcolor = green ]
 	rightTurn -> forwardCleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
 	forwardCleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
 	detectedByFinal -> leftTurn [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]

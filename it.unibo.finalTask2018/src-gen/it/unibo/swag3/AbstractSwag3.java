@@ -34,7 +34,7 @@ public abstract class AbstractSwag3 extends QActor {
 		public AbstractSwag3(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
 			super(actorId, myCtx,  
 			"./srcMore/it/unibo/swag3/WorldTheory.pl",
-			setTheEnv( outEnvView )  , "init");
+			setTheEnv( outEnvView )  , "startCleaning");
 			this.planFilePath = "./srcMore/it/unibo/swag3/plans.txt";
 	  	}
 		@Override
@@ -43,7 +43,7 @@ public abstract class AbstractSwag3 extends QActor {
 			mysupport = (IMsgQueue) QActorUtils.getQActor( name ); 
 			initStateTable(); 
 	 		initSensorSystem();
-	 		history.push(stateTab.get( "init" ));
+	 		history.push(stateTab.get( "startCleaning" ));
 	  	 	autoSendStateExecMsg();
 	  		//QActorContext.terminateQActorSystem(this);//todo
 		} 	
@@ -55,8 +55,8 @@ public abstract class AbstractSwag3 extends QActor {
 	    //genAkkaMshHandleStructure
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
-	    	stateTab.put("init",init);
 	    	stateTab.put("startCleaning",startCleaning);
+	    	stateTab.put("countRoomLen",countRoomLen);
 	    	stateTab.put("forwardCleaning",forwardCleaning);
 	    	stateTab.put("detectedByFinal",detectedByFinal);
 	    	stateTab.put("leftTurn",leftTurn);
@@ -77,27 +77,27 @@ public abstract class AbstractSwag3 extends QActor {
 	    	}
 	    };//handleToutBuiltIn
 	    
-	    StateFun init = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
-	    	String myselfName = "init";  
-	    	temporaryStr = "\"swag3 start cleaning\"";
-	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	//switchTo startCleaning
-	        switchToPlanAsNextState(pr, myselfName, "swag3_"+myselfName, 
-	              "startCleaning",false, false, null); 
-	    }catch(Exception e_init){  
-	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//init
-	    
 	    StateFun startCleaning = () -> {	
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("startCleaning",-1);
 	    	String myselfName = "startCleaning";  
+	    	temporaryStr = "\"swag3 start cleaning\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
+	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	//switchTo countRoomLen
+	        switchToPlanAsNextState(pr, myselfName, "swag3_"+myselfName, 
+	              "countRoomLen",false, false, null); 
+	    }catch(Exception e_startCleaning){  
+	    	 println( getName() + " plan=startCleaning WARNING:" + e_startCleaning.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//startCleaning
+	    
+	    StateFun countRoomLen = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("countRoomLen",-1);
+	    	String myselfName = "countRoomLen";  
 	    	parg = "increment(roomLen)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
@@ -105,12 +105,12 @@ public abstract class AbstractSwag3 extends QActor {
 	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
 	          new StateFun[]{stateTab.get("leftTurn") }, 
 	          new String[]{"true","E","frontSonar" },
-	          200, "startCleaning" );//msgTransition
-	    }catch(Exception e_startCleaning){  
-	    	 println( getName() + " plan=startCleaning WARNING:" + e_startCleaning.getMessage() );
+	          200, "countRoomLen" );//msgTransition
+	    }catch(Exception e_countRoomLen){  
+	    	 println( getName() + " plan=countRoomLen WARNING:" + e_countRoomLen.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//startCleaning
+	    };//countRoomLen
 	    
 	    StateFun forwardCleaning = () -> {	
 	    try{	
@@ -155,7 +155,7 @@ public abstract class AbstractSwag3 extends QActor {
 	    	{//actionseq
 	    	temporaryStr = "\"close to sonar2\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(halt)", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(halt)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	};//actionseq
 	    	}

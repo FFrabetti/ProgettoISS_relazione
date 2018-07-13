@@ -151,10 +151,8 @@ decrement( C):-counter( C,N), ! ,eval( minus,N,1,N2),retract( counter( C,N)),ass
 avoidFixTry:-increment( foundFix).
 avoidFixGiveUp:-counter( foundFix,3).
 decremFoundFix:-decrement( foundFix).
-switchExplorationDir:-exploring( r),avoidFixGiveUp, ! ,retract( exploring( r)),assert( exploring( l)).
-switchExplorationDir:-exploring( _), ! .
-switchExplorationDir:-assert( exploring( r)).
-isInWallProximity:-counter( steps,N),roomLen( M),eval( minus,M,N,R),eval( lt,R,3).
+switchExplorationDir:-exploring( r), ! ,retract( exploring( r)),assert( exploring( l)).
+isInWallProximity:-counter( steps,N),counter( roomLen,M),eval( minus,M,N,R),eval( lt,R,3).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

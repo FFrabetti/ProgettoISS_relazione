@@ -452,7 +452,7 @@ Plan startCleaning [
 		delay 2000
 	]
 	transition
-		whenTime 800 -> init
+		whenTime 800 -> end
 		whenMsg swagmsg -> resumeLastPosition // torno alla posizione iniziale e tento di aggirare l'ostacolo da sinistra
 
 // ############################ O B S T A C L E   A V O I D A N C E ############################ \\

@@ -57,19 +57,13 @@ QActor swagff context ctxSwagFinalForm {
 			decrement(foundFix).
 
 		switchExplorationDir :-
-			exploring(r), avoidFixGiveUp, !,
+			exploring(r), !,
 			retract(exploring(r)),
 			assert(exploring(l)).
-		
-		switchExplorationDir :-
-			exploring(_), !.
-		
-		switchExplorationDir :- // nessuno dei due
-			assert(exploring(r)).
-					
+
 		isInWallProximity :- // se sono a due passi o meno dalla presunta parete
 			counter(steps,N),
-			roomLen(M),
+			counter(roomLen,M),
 			eval(minus,M,N,R),
 			eval(lt,R,3).
 	}
@@ -114,7 +108,7 @@ QActor swagff context ctxSwagFinalForm {
 	]
 	transition
 		whenTime 800 -> init
-		whenMsg swagmsg -> cleaning
+		whenMsg swagmsg -> startCleaning
 
 //	Plan cleaning [
 //		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
@@ -146,17 +140,17 @@ QActor swagff context ctxSwagFinalForm {
 
 // ############################ C L E A N I N G  R O U T I N E ############################ \\
 
-Plan cleaning [         
+Plan startCleaning [         
    		println("swagff start cleaning");
    		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
    	]
-   	switchTo startCleaning
+   	switchTo countRoomLen
 	
-	Plan startCleaning [
+	Plan countRoomLen [
 		demo increment(roomLen) // counter(roomLen, C++)
 	]
 	transition
-		whenTime 300 -> startCleaning
+		whenTime 300 -> countRoomLen
 		whenEvent frontSonar -> leftTurn
 		
 	Plan forwardCleaning [
@@ -167,20 +161,20 @@ Plan cleaning [
 			addRule direction(f);
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
 	]
-	switchTo conta
-//	transition stopAfter 3600000
-//		// la parete di fondo e' segnalata da sonar2
-//		whenEvent sonarSensor -> detectedByFinal
+	transition stopAfter 3600000
+		// la parete di fondo e' segnalata da sonar2
+		whenEvent sonarSensor -> detectedByFinal,
+		whenEvent frontSonar -> handleFront
 		
 	Plan leftTurn [
 		println("left turn");
 		// resetto le informazioni per l'obstacle avoidance
-		removeRule counter(step,X);
+		removeRule counter(steps,X);
 		removeRule direction(D);
 		
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(1) );
-		delay 600;
+		delay 1000;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
 		delay 400;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
@@ -208,19 +202,19 @@ Plan cleaning [
 			addRule direction(b);
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
 	]
-	switchTo conta
+	switchTo countSteps
 //	transition stopAfter 3600000
 //		whenEvent frontSonar -> rightTurn
 	
 	Plan rightTurn [
 		println("right turn");
 		// resetto le informazioni per l'obstacle avoidance
-		removeRule counter(step,X);
+		removeRule counter(steps,X);
 		removeRule direction(D);
 		
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );
-		delay 600;
+		delay 1000;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
 		delay 400;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
@@ -238,20 +232,23 @@ Plan cleaning [
 	]
 	switchTo init
 	
-	Plan conta [
+	Plan countSteps [
 		println("Sto contando...");
-		demo increment(step)
+		demo increment(steps)
 	]
 	transition
-		whenTime 300 -> conta
-		whenEvent sonarSensor -> detectedByFinal,
-		whenEvent frontSonar -> tunc
+		whenTime 300 -> countSteps
+//		whenEvent sonarSensor -> detectedByFinal,
+		whenEvent frontSonar -> frontSonarDetected
 		
-	Plan tunc [
-		println("tunc");
+	Plan frontSonarDetected [
+		println("frontSonarDetected");
+		[ !? counter(roomLen,C)] println(roomLen(C));
+		[ !? counter(steps,N)] println(steps(N));
+		
 		[ !? isInWallProximity ] {
 			println("parete");
-			[ !? direction(f) ] selfMsg swagmsg : cmd(l);
+//			[ !? direction(f) ] selfMsg swagmsg : cmd(l);
 			[ !? direction(b) ] selfMsg swagmsg : cmd(r)
 		}
 		else
@@ -259,19 +256,21 @@ Plan cleaning [
 	]
 	transition
 		whenTime 800 -> handleFront // obstacle avoidance
-		whenMsg swagmsg -> selectTurn
+//		whenMsg swagmsg -> selectTurn
+		whenMsg swagmsg -> rightTurn
 		
-		Plan selectTurn [
-			println("selectTurn");
-			onMsg swagmsg : cmd(l) -> { println("cmd(l)"); selfMsg swagmsg : cmd(l) };
-			onMsg swagmsg : cmd(r) -> println("cmd(r)") // debug
-		]
-		transition
-			whenTime 800 -> rightTurn
-			whenMsg swagmsg -> leftTurn
+//		Plan selectTurn [
+//			println("selectTurn");
+//			onMsg swagmsg : cmd(l) -> { println("cmd(l)"); selfMsg swagmsg : cmd(l) };
+//			onMsg swagmsg : cmd(r) -> println("cmd(r)") // debug
+//		]
+//		transition
+//			whenTime 800 -> rightTurn
+//			whenMsg swagmsg -> leftTurn
 			
 	Plan selectDirection [
 		println("selectDirection");
+		removeRule exploring(X);
 		[ !? direction(f) ] println("f");
 		[ !? direction(b) ] { println("b"); selfMsg swagmsg : cmd(b) }
 	]
@@ -303,15 +302,17 @@ Plan cleaning [
 //	switchTo cleaning
 	switchTo selectDirection
 	
-// ------------------------- DODGE RIGHT -------------------------
-
 	Plan avoidFix [
 		println("avoidFix");
+		[ !? exploring(DIR) ] println(explorng(DIR))
+		else addRule exploring(r);
+		
 		// aumento contatore di tentativi
 		demo avoidFixTry;
 		[ !? avoidFixGiveUp ] {
 			[ !? exploring(l) ] selfMsg swagmsg : cmd(giveUpLeft)
 			else selfMsg swagmsg : cmd(giveUpRight);
+			demo switchExplorationDir;
 			println("Raggiunti max tentativi")
 		} else {
 			delay 800;
@@ -333,8 +334,7 @@ Plan cleaning [
 			println("forward + stop");
 			
 			delay 2000
-		};
-		demo switchExplorationDir
+		}
 	]
 	transition whenTime 800 -> checkDoor
 		whenEvent frontSonar -> failure,
@@ -350,7 +350,7 @@ Plan cleaning [
 
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
 		println("forward");
-		delay 400;
+		delay 1200;
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
 		println("stop")
 	]
@@ -362,7 +362,8 @@ Plan cleaning [
 		println("doorFound");
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(0) );
 		println("forward");
-		delay 300;
+		delay 1000;
+		demo increment(steps);
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(0) );
 		println("stop");
 
@@ -426,7 +427,8 @@ Plan cleaning [
 		println("failure");
 		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(0) );
 		[ !? exploring(r) ] selfMsg swagmsg : cmd(giveUpRight)
-		else selfMsg swagmsg : cmd(giveUpLeft)
+		else selfMsg swagmsg : cmd(giveUpLeft);
+		demo switchExplorationDir
 	]
 	transition stopAfter 3600000
 		whenMsg swagmsg -> giveUp
@@ -456,8 +458,8 @@ Plan cleaning [
 // ############################ O B S T A C L E   A V O I D A N C E ############################ \\
 }
 
-QActor testertest context ctxSwagFinalForm {
-	Plan init normal [
+//QActor testertest context ctxSwagFinalForm {
+//	Plan init normal [
 //		// parete
 //		delay 8000;
 //		emit frontSonar : sonar(10);
@@ -469,13 +471,13 @@ QActor testertest context ctxSwagFinalForm {
 //		emit frontSonar : sonar(10);
 //		delay 5000;
 //		emit frontSonar : sonar(10)
-
-		// ostacolo fisso
-		delay 8000;
-		emit frontSonar : sonar(10);
-		delay 5000;
-		emit frontSonar : sonar(10);
-		delay 500;
-		emit frontSonar : sonar(10)
-	]
-}
+//
+//		// ostacolo fisso
+//		delay 8000;
+//		emit frontSonar : sonar(10);
+//		delay 5000;
+//		emit frontSonar : sonar(10);
+//		delay 500;
+//		emit frontSonar : sonar(10)
+//	]
+//}

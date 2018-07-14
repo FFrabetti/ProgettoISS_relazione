@@ -56,7 +56,7 @@ public abstract class AbstractClockagent extends QActor {
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
-	    	stateTab.put("checkTime",checkTime);
+	    	stateTab.put("emitTime",emitTime);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -77,31 +77,31 @@ public abstract class AbstractClockagent extends QActor {
 	    	temporaryStr = "\"clockAgent start\"";
 	    	println( temporaryStr );  
 	    	it.unibo.finalTask2018.adapter.clockAdapter.initGUI( myself  );
-	    	//switchTo checkTime
+	    	//switchTo emitTime
 	        switchToPlanAsNextState(pr, myselfName, "clockagent_"+myselfName, 
-	              "checkTime",false, false, null); 
+	              "emitTime",false, false, null); 
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//init
 	    
-	    StateFun checkTime = () -> {	
+	    StateFun emitTime = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_checkTime",0);
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_emitTime",0);
 	     pr.incNumIter(); 	
-	    	String myselfName = "checkTime";  
+	    	String myselfName = "emitTime";  
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(5000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "checkTime";
+	    	aar = delayReactive(6000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "emitTime";
 	    	if( ! aar.getGoon() ) return ;
 	    	it.unibo.finalTask2018.adapter.clockAdapter.emitTime( myself  );
 	    	repeatPlanNoTransition(pr,myselfName,"clockagent_"+myselfName,true,false);
-	    }catch(Exception e_checkTime){  
-	    	 println( getName() + " plan=checkTime WARNING:" + e_checkTime.getMessage() );
+	    }catch(Exception e_emitTime){  
+	    	 println( getName() + " plan=emitTime WARNING:" + e_emitTime.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//checkTime
+	    };//emitTime
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

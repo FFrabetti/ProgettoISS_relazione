@@ -10,8 +10,8 @@ digraph finite_state_machine {
 	size="8,5"
 	
 	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
-	checkTime [ color = blue ][ fontcolor = blue ][ penwidth = 3 ]
+	emitTime [ color = blue ][ fontcolor = blue ][ penwidth = 3 ]
 	
-	init -> checkTime [ label = "switch" ][ color = black ][ fontcolor = black ]
-	checkTime -> checkTime [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
+	init -> emitTime [ label = "switch" ][ color = black ][ fontcolor = black ]
+	emitTime -> emitTime [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
 }

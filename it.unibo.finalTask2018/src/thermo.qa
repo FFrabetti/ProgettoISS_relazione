@@ -3,6 +3,7 @@ System thermo
 Event temperature : temperature(T)
 
 Context ctxThermo ip [host="localhost" port=3232]
+Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
 
 QActor thermoqa context ctxThermo {
 	

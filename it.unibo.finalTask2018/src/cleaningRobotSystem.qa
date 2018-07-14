@@ -1,0 +1,626 @@
+System finalTask2018 
+ 
+Dispatch cmd : cmd(X)
+Event usercmd : usercmd(X)
+Event temperature : temperature(T)	
+Event clock : clock(H,M) 
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME,DISTANCE)
+Event moveRobot : moveRobot(C)
+Event lightCmd : lightCmd(STATE)
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
+Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
+
+Event alarm : usercmd(CMD)	// start/stop from GUI
+Dispatch swagmsg : cmd(CMD) // internal
+Dispatch externalcmd : usercmd(CMD)
+
+Context ctxAppl ip [ host="localhost"  port=8018 ] -httpserver
+EventHandler evadapter for temperature,clock  { //maps temperature and clock into inputCtrlEvent
+	emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature,t1,T );
+	emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock,c1,h(H,M) )
+};
+EventHandler evled for ctrlEvent  { // filter ctrlEvent by CATEGORY and NAME
+	emit lightCmd fromContent ctrlEvent( led,l1,blink ) to lightCmd(blink);
+	emit lightCmd fromContent ctrlEvent( led,l1,on ) to lightCmd(on);
+	emit lightCmd fromContent ctrlEvent( led,l1,off ) to lightCmd(off)
+};
+EventHandler evhswag for alarm {
+	forwardEvent swag -m externalcmd
+};
+
+// -------------------------- CONTROLLER --------------------------
+QActor controller context ctxAppl {
+Rules{ //The model is in the theory resourceModel. 
+	//fatti
+	limitTemperatureValue( 25 ).
+	timeInterval(h(7,0),h(10,0)).
+	
+	//se cambia il modello della temperatura
+	//	R-TempKo: fermo il robot se temperatura >= limite
+	changedModelAction( temperature, t1, V  ):-
+			limitTemperatureValue( MAX ), 
+			eval( ge, V , MAX ),   
+			changeModelItem(robot,r1,h(0)).		      			
+
+ 	//se cambia il modello del clock
+ 	//	R-TimeKo: fermo il robot se il tempo non e' nell'intervallo
+ 	changedModelAction(clock,c1,h(HC,MC)):-
+ 			non(inTime(HC,MC)),
+ 			changeModelItem(robot,r1,h(0)).
+ 			 	
+ 	//se cambia il modello del robot
+ 	changedModelAction(robot,R,CMD):-
+ 			emitevent(ctrlEvent, ctrlEvent(robot,R,CMD)), fail.	
+ 	changedModelAction(robot,R, w(X)):-
+ 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
+ 	changedModelAction(robot,R, s(X)):-
+ 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
+ 	changedModelAction(robot,R, h(X)):-
+ 			changeModelItem(led,l1,off).	// R-BlinkLed/R-BlinkHue
+ 	//dopo una svolta il modello deve risultare fermo
+ 	changedModelAction(robot,R, a(X)):-
+ 			changeModelItem(robot,R,h(X)).		
+ 	changedModelAction(robot,R, d(X)):-
+ 			changeModelItem(robot,R,h(X)).
+ 	
+ 	//se cambia il modello del led		
+ 	changedModelAction(led,L,X):-
+ 			emitevent(ctrlEvent,ctrlEvent(led,L,X)).
+ 	
+ 	//utility: restituisce vero se il primo tempo e' precedente al secondo		
+ 	timeBefore(H1,_,H2,_):-
+ 			eval(lt,H1,H2),!.
+ 	timeBefore(H,M1,H,M2):-
+ 			eval(lt,M1,M2).
+ 	
+ 	//vero se HC,MC e' dentro all'intervallo di tempo consentito		
+ 	inTime(HC,MC):-
+ 			timeInterval(h(H1,M1),h(H2,M2)),
+ 			timeBefore(H1,M1,HC,MC),
+ 			timeBefore(HC,MC,H2,M2).
+ 			
+ 	//possibilita' di muovere il robot (R-TempOk e R-TimeOk)
+ 	canMove:-
+ 			limitTemperatureValue(MAX),
+ 			getModelItem(sensor,temperature,t1,T),
+ 			eval(lt,T,MAX),
+ 			getModelItem(sensor,clock,c1,h(HC,MC)),
+ 			inTime(HC,MC).
+ 			
+ 	//R-TempOk e R-TimeOk: cambio il modello solo se il robot puo' muoversi
+ 	changeRobotModel(CMD):-
+ 			canMove,
+ 			changeModelItem(robot,r1,CMD).		
+}
+ 
+	Plan init normal [         
+		demo consult("./resourceModel.pl");  //contains the models and related rules
+   		println( qacontrol(starts) )   
+   	]
+   	switchTo waitForInputEvent      
+ 
+    Plan waitForInputEvent[
+//    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
+//    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE));
+//    	[ !? getModelItem(sensor, temperature, t1, VALUE) ] println(model(t1, VALUE));
+//    	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
+//    	println("---------------------------------------")
+    ]
+    transition stopAfter 6000000 
+     	whenEvent inputCtrlEvent -> handleInputEvent,
+     	whenMsg cmd -> handleCmd,
+     	whenEvent frontSonar -> handleFront
+    finally repeatPlan	
+       
+    Plan handleInputEvent resumeLastPlan [
+     	printCurrentEvent;
+    	onEvent inputCtrlEvent : inputEvent( CATEG, NAME, VALUE ) ->  //change the model
+    		demo changeModelItem( CATEG, NAME, VALUE )
+    ]
+    
+    Plan handleCmd resumeLastPlan [
+    	onMsg cmd : cmd(X) -> println(ricevuto(X));
+    	onMsg cmd : cmd(X) -> demo changeRobotModel(X)
+    ]
+    
+    Plan handleFront resumeLastPlan [
+    	[ !? getModelItem( software,agent,swag,idle ) ]
+    		demo changeRobotModel(h(0))
+    ]
+}
+// -------------------------- CONTROLLER --------------------------
+
+// -------------------------- SOFTWARE AGENT --------------------------
+QActor swag context ctxAppl {
+	Rules{
+		isCloseTo(S) :-
+			sonarDetect(S,D),
+			eval(gt,D,0),!,
+			eval(lt,D,5).
+		
+		isCloseTo(S) :-
+			sonarDetect(S,D), 	// D<=0
+			eval(minus,0,D,R),	// -> R>=0
+			eval(lt,R,5).
+		
+		increment(C) :-
+			counter(C,N), !,
+			N2 is N+1,
+			retract(counter(C,N)),
+			assert(counter(C,N2)).
+			
+		increment(C) :-
+			assert(counter(C,1)).
+		
+		increment(C,1) :- !,
+			increment(C).
+		
+		increment(C,N) :-
+			increment(C),
+			eval(minus,N,1,N2),
+			increment(C,N2).
+		
+		decrement(C) :-
+			counter(C,1), !,
+			retract(counter(C,1)).
+		
+		decrement(C) :-
+			counter(C,N), !,
+			eval(minus,N,1,N2),
+			retract(counter(C,N)),
+			assert(counter(C,N2)).
+		
+		avoidFixTry :-
+			increment(foundFix).
+		
+		avoidFixGiveUp :-
+			counter(foundFix, 3).
+		
+		decremFoundFix :-
+			decrement(foundFix).
+
+		switchExplorationDir :-
+			exploring(r), !,
+			retract(exploring(r)),
+			assert(exploring(l)).
+
+		isInWallProximity :- // se sono a due passi o meno dalla presunta parete
+			counter(steps,N),
+			counter(roomLen,M),
+			eval(minus,M,N,R),
+			eval(lt,R,4).
+	}
+	
+	Plan init normal [         
+   		println("swag start: waiting for start command")
+   	]
+	transition stopAfter 3600000
+		whenMsg externalcmd -> receivedCmd
+	finally repeatPlan
+   	
+   	Plan receivedCmd [
+   		onMsg externalcmd : usercmd(X) -> println(externalcmd(X));
+   		
+		// R-Start
+		onMsg externalcmd : usercmd(clean) -> {
+   			println("ricevuto clean");
+   			addRule startCmd
+   		};
+   		// R-Stop
+   		onMsg externalcmd : usercmd(halt) -> println("ricevuto halt")
+   	]
+   	transition
+   		whenTime 800 -> init
+    	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
+    	
+  	Plan detectedBySonar [
+		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
+	
+		[ !? isCloseTo(sonar1) ] {
+			println("close to sonar1");
+			selfMsg swagmsg : cmd(clean) // R-Start
+		}
+		else
+			println("NOT close to sonar1");
+			
+		removeRule sonarDetect(sonar1,D)
+	]
+	transition
+		whenTime 800 -> init
+		whenMsg swagmsg -> startCleaning
+
+    // R-End
+    Plan detectedByFinal [
+		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);
+	
+		[ !? isCloseTo(sonar2) ] {
+			println("close to sonar2");
+			selfMsg swagmsg : cmd(halt) // R-End
+		}
+		else
+			println("NOT close to sonar2");
+			
+		removeRule sonarDetect(sonar2, D)
+	]
+	transition
+		whenTime 800 -> leftTurn
+		whenMsg swagmsg -> end
+
+// ############################ C L E A N I N G  R O U T I N E ############################ \\
+
+Plan startCleaning [         
+   		println("swag start cleaning");
+   		emit inputCtrlEvent : inputEvent( agent,swag,cleaning );
+   		forward controller -m cmd : cmd( w(1) )
+   	]
+   	switchTo countRoomLen
+	
+	Plan countRoomLen [
+		demo increment(roomLen) // counter(roomLen, C++)
+	]
+	transition
+		whenTime 300 -> countRoomLen
+		whenEvent frontSonar -> leftTurn
+		
+	Plan forwardCleaning [
+		println("cleaning forward");
+		[ !? direction(D) ]
+			println(direction(D)) // debug
+		else
+			addRule direction(f);
+		forward controller -m cmd : cmd( w(1) )
+	]
+	transition stopAfter 3600000
+		// la parete di fondo e' segnalata da sonar2
+		whenEvent sonarSensor -> detectedByFinal,
+		whenEvent frontSonar -> handleFront
+		
+	Plan leftTurn [
+		println("left turn");
+		// resetto le informazioni per l'obstacle avoidance
+		removeRule counter(steps,X);
+		removeRule direction(D);
+		
+		forward controller -m cmd : cmd( h(1) );
+		forward controller -m cmd : cmd( a(1) );
+		delay 1000;
+		forward controller -m cmd : cmd( w(1) );
+		delay 800;
+		forward controller -m cmd : cmd( h(1) );
+		forward controller -m cmd : cmd( a(1) );
+		delay 600
+	]
+	transition
+		// tutto ok, no ostacoli a sinistra
+		whenTime 800 -> waitForGodot // backCleaning
+
+	// "consumo" eventuali eventi frontSonar residui...		
+	Plan waitForGodot [
+		println("waiting for Godot...")
+	]
+	transition
+		whenTime 2000 -> backCleaning // tutto ok, procedi
+		whenEvent frontSonar -> backCleaning // waitForGodot
+	
+	Plan backCleaning [
+		println("cleaning back");
+		[ !? direction(D) ]
+			println(direction(D)) // debug
+		else
+			addRule direction(b);
+		forward controller -m cmd : cmd( w(1) )
+	]
+	switchTo countSteps
+	
+	Plan rightTurn [
+		println("right turn");
+		// resetto le informazioni per l'obstacle avoidance
+		removeRule counter(steps,X);
+		removeRule direction(D);
+		
+		forward controller -m cmd : cmd( h(1) );
+		forward controller -m cmd : cmd( d(1) );
+		delay 1000;
+		forward controller -m cmd : cmd( w(1) );
+		delay 800;
+		forward controller -m cmd : cmd( h(1) );
+		forward controller -m cmd : cmd( d(1) );
+		delay 600
+	]
+	transition
+		// tutto ok, no ostacoli a destra
+		whenTime 800 -> forwardCleaning
+		
+	Plan end [
+		println("end");
+   		emit inputCtrlEvent : inputEvent( agent,swag,idle );
+		forward controller -m cmd : cmd( h(1) )
+	]
+	switchTo init
+	
+	Plan countSteps [
+		println("Sto contando...");
+		demo increment(steps)
+	]
+	transition
+		whenTime 300 -> countSteps
+		whenEvent frontSonar -> frontSonarDetected
+		
+	Plan frontSonarDetected [
+		println("frontSonarDetected");
+		[ !? counter(roomLen,C)] println(roomLen(C));
+		[ !? counter(steps,N)] println(steps(N));
+		
+		[ !? isInWallProximity ] {
+			println("parete");
+			[ !? direction(b) ] selfMsg swagmsg : cmd(r)
+		}
+		else
+			println("ostacolo")
+	]
+	transition
+		whenTime 800 -> handleFront // obstacle avoidance
+		whenMsg swagmsg -> rightTurn
+			
+	Plan selectDirection [
+		println("selectDirection");
+		removeRule exploring(X);
+		[ !? direction(f) ] println("f");
+		[ !? direction(b) ] { println("b"); selfMsg swagmsg : cmd(b) }
+	]
+	transition
+		whenTime 800 -> forwardCleaning
+		whenMsg swagmsg -> backCleaning
+
+// ############################ C L E A N I N G  R O U T I N E ############################ \\
+
+
+// ############################ O B S T A C L E  A V O I D A N C E ############################ \\
+   
+	Plan handleFront [
+		println("handleFront");
+		forward controller -m cmd : cmd( h(0) );
+		println("possible mobile obstacle");
+		delay 1000;
+		forward controller -m cmd : cmd( w(0) );
+		println("provo ad avanzare")
+	]
+    transition whenTime 800 -> avoidMobile
+   		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+     	whenEvent frontSonar -> avoidFix // avoidFixRight
+     
+     Plan avoidMobile [
+		println("avoidMobile");
+		println("ok, ostacolo superato")
+	]
+	switchTo selectDirection
+	
+	Plan avoidFix [
+		println("avoidFix");
+		[ !? exploring(DIR) ] println(explorng(DIR))
+		else addRule exploring(r);
+		
+		// aumento contatore di tentativi
+		demo avoidFixTry;
+		[ !? avoidFixGiveUp ] {
+			[ !? exploring(l) ] selfMsg swagmsg : cmd(giveUpLeft)
+			else selfMsg swagmsg : cmd(giveUpRight);
+			demo switchExplorationDir;
+			println("Raggiunti max tentativi")
+		} else {
+			delay 800;
+			println("proviamo a girarci intorno");
+			[ !? exploring(l) ] {
+				forward controller -m cmd : cmd( a(0) );
+				println("da sinistra")
+			}
+			else {
+				forward controller -m cmd : cmd( d(0) );
+				println("da destra")
+			};
+			delay 2000;
+			forward controller -m cmd : cmd( w(0) );
+			delay 1000; // passo laterale
+			forward controller -m cmd : cmd( h(0) );
+			println("forward + stop");
+			delay 2000
+		}
+	]
+	transition whenTime 800 -> checkDoor
+		whenEvent frontSonar -> failure,
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> giveUp // esaminare il payload
+	
+	Plan checkDoor [
+		println("checkDoor");
+		[ !? exploring(r) ] forward controller -m cmd : cmd( a(0) )
+		else forward controller -m cmd : cmd( d(0) );
+		delay 800;
+		forward controller -m cmd : cmd( w(0) );
+		println("forward");
+		delay 800;
+		forward controller -m cmd : cmd( h(0) );
+		delay 2000;
+		println("stop")
+	]
+	transition whenTime 800 -> doorFound
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenEvent frontSonar -> avoidFix
+	
+	Plan doorFound [
+		println("doorFound");
+		forward controller -m cmd : cmd( w(0) );
+		println("forward");
+		delay 1000;
+		forward controller -m cmd : cmd( h(0) );
+		demo increment(steps,6);
+		println("stop");
+		delay 2000;
+		[ !? exploring(r) ] forward controller -m cmd : cmd( a(0) )
+		else forward controller -m cmd : cmd( d(0) );
+		delay 800
+	]
+	switchTo goToPrevLevel
+	
+	Plan goToPrevLevel [
+		println("goToPrevLevel");
+		[ !? counter(foundFix, C) ] {
+			demo decremFoundFix;
+			forward controller -m cmd : cmd( w(0) );
+			delay 800;
+			forward controller -m cmd : cmd( h(0) );
+			println("forward + stop")
+		}
+		else {
+			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+			[ !? exploring(r) ] forward controller -m cmd : cmd( d(0) )
+			else forward controller -m cmd : cmd( a(0) );
+			delay 800;
+			println("riprendo la direzione di marcia")
+		}
+	]
+	transition whenTime 200 -> goToPrevLevel
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> selectDirection // riprendo a pulire la stanza
+	
+	Plan resumeLastPosition [
+		println("resume last position");
+		[ !? counter(foundFix, C) ] {
+			demo decremFoundFix;
+			forward controller -m cmd : cmd( w(0) );
+			println("forward");
+			delay 800;
+			forward controller -m cmd : cmd( h(0) );
+			delay 2000;
+			println("stop")
+		}
+		else {
+			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+			forward controller -m cmd : cmd( d(0) );
+			println("fronteggio l'invalicabile muro")
+		}
+	]
+	transition whenTime 800 -> resumeLastPosition
+		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg swagmsg -> avoidFix
+	
+	// trovo un altro muro mentre cerco la porta
+	Plan failure [
+		println("failure");
+		forward controller -m cmd : cmd( a(0) );
+		[ !? exploring(r) ] selfMsg swagmsg : cmd(giveUpRight)
+		else selfMsg swagmsg : cmd(giveUpLeft);
+		demo switchExplorationDir
+	]
+	transition stopAfter 3600000
+		whenMsg swagmsg -> giveUp
+
+	// ho raggiunto i max tentativi
+	Plan giveUp [
+		println("giveUp");
+		demo decremFoundFix; // elimino l'ultimo incremento, quello che ha fatto raggiungere la soglia
+		
+		onMsg swagmsg : cmd(giveUpRight) -> {
+			forward controller -m cmd : cmd( a(0) );
+			selfMsg swagmsg : cmd(resumeLastPos);
+			println("ruoto di 90")
+		};
+		onMsg swagmsg : cmd(giveUpLeft) -> { // R-Obstacle
+			removeRule foundFix(X);
+			removeRule exploring(l);
+			println("tentativi massimi raggiunti")
+		};
+		
+		delay 2000
+	]
+	transition
+		whenTime 800 -> end
+		whenMsg swagmsg -> resumeLastPosition // torno alla posizione iniziale e tento di aggirare l'ostacolo da sinistra
+
+// ############################ O B S T A C L E   A V O I D A N C E ############################ \\
+}
+// -------------------------- SOFTWARE AGENT --------------------------
+
+// -------------------------- HUMAN OPERATOR --------------------------
+QActor humanoperator context ctxAppl {
+	
+	Plan init normal [
+		println("humanOperator start")
+	]
+	switchTo waitForUserCmd
+	
+	Plan waitForUserCmd [ ]
+	transition stopAfter 3600000
+		whenEvent usercmd -> sendCmd
+	finally repeatPlan
+
+	Plan sendCmd resumeLastPlan [
+		onEvent usercmd : usercmd( robotgui(CMD) ) -> println(robotgui(CMD));
+		onEvent usercmd : usercmd( robotgui(CMD) ) -> forward controller -m cmd : cmd(CMD)
+	]
+}
+// -------------------------- HUMAN OPERATOR --------------------------
+
+// -------------------------- CLOCK AGENT --------------------------
+QActor clockagent context ctxAppl {
+	Plan init normal [
+		println("clockAgent start");
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.initGUI()
+	]
+	switchTo emitTime
+	
+	Plan emitTime [
+		delay 6000;
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.emitTime()
+	]
+	finally repeatPlan
+}
+// -------------------------- CLOCK AGENT --------------------------
+
+// -------------------------- TEMPERATURE AGENT --------------------------
+QActor temperatureagent context ctxAppl {
+	Plan init normal [
+		println("temperatureAgent start")
+	]
+	switchTo checkTemperature 
+	
+	Plan checkTemperature [
+		delay 5000;
+		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
+		[ !? currentTemp(T) ] println(currentTemperature(T));
+		[ ?? currentTemp(T) ] emit temperature : temperature(T)
+	]
+	finally repeatPlan
+}
+// -------------------------- TEMPERATURE AGENT --------------------------
+
+// -------------------------- HUE LAMP AGENT --------------------------
+QActor huelampagent context ctxAppl {
+	Plan init normal [         
+   		println("hueLampAgent start");
+
+   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.init();
+   		//lampeggia per prova
+   		delay 1000;
+   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
+   		delay 1000;
+   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
+   	]
+   	switchTo waitForCommand     
+  
+    Plan waitForCommand[ ]
+    transition stopAfter 3600000 
+     	whenEvent lightCmd -> handleCmd
+    finally repeatPlan	
+   	 
+	Plan handleCmd resumeLastPlan[
+ 		printCurrentEvent;
+ 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("blink");
+		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
+		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
+	]
+}
+// -------------------------- HUE LAMP AGENT --------------------------

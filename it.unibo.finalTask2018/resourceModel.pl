@@ -10,6 +10,9 @@ model( type(sensor, clock), name(c1),   value(h(8,0))  ).
 %%Modello del robot
 model( type(robots, robot), name(r1), value(h(0)) ).
 
+% Modello dell'agent
+model( type(software, agent), name(swag), value(idle) ).
+
 getModelItem( TYPE, CATEG, NAME, VALUE ) :-
 		model( type(TYPE, CATEG), name(NAME), value(VALUE) ).
 

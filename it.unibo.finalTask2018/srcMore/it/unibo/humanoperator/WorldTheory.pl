@@ -1,11 +1,11 @@
 %==============================================
-% WorldTheory.pl for actor swag
+% WorldTheory.pl for actor humanoperator
 %==============================================
 /*
 For a QActor as a singleton statically degined in the model
 */
-myname(qatuswag).	%%old version (deprecated)
-actorobj(qatuswag).	%% see registerActorInProlog18 in QActor
+myname(qatuhumanoperator).	%%old version (deprecated)
+actorobj(qatuhumanoperator).	%% see registerActorInProlog18 in QActor
 
 /*
 For a QActor instance of name=Name dynamically created
@@ -81,7 +81,7 @@ evalGuard( G ) :-
 
 output( M ):-stdout <- println( M ).
 %-------------------------------------------------
-%  TuProlo FEATURES of the QActor swag
+%  TuProlo FEATURES of the QActor humanoperator
 %-------------------------------------------------
 dialog( FileName ) :-  
 	java_object('javax.swing.JFileChooser', [], Dialog),
@@ -89,7 +89,7 @@ dialog( FileName ) :-
 	Dialog <- getSelectedFile returns File,
 	File <- getName returns FileName. 		 
 
-%% :- stdout <- println(  "hello from world theory of swag" ). 
+%% :- stdout <- println(  "hello from world theory of humanoperator" ). 
 
 %-------------------------------------------------
 %  UTILITIES for TuProlog computations
@@ -140,21 +140,8 @@ inc(I,K,N):-
 actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 
 %-------------------------------------------------
-%  User static rules about swag
+%  User static rules about humanoperator
 %------------------------------------------------- 
-isCloseTo( S):-sonarDetect( S,D),eval( gt,D,0), ! ,eval( lt,D,5).
-isCloseTo( S):-sonarDetect( S,D),eval( minus,0,D,R),eval( lt,R,5).
-increment( C):-counter( C,N), ! ,N2 is N + 1,retract( counter( C,N)),assert( counter( C,N2)).
-increment( C):-assert( counter( C,1)).
-increment( C,1):- ! ,increment( C).
-increment( C,N):-increment( C),eval( minus,N,1,N2),increment( C,N2).
-decrement( C):-counter( C,1), ! ,retract( counter( C,1)).
-decrement( C):-counter( C,N), ! ,eval( minus,N,1,N2),retract( counter( C,N)),assert( counter( C,N2)).
-avoidFixTry:-increment( foundFix).
-avoidFixGiveUp:-counter( foundFix,3).
-decremFoundFix:-decrement( foundFix).
-switchExplorationDir:-exploring( r), ! ,retract( exploring( r)),assert( exploring( l)).
-isInWallProximity:-counter( steps,N),counter( roomLen,M),eval( minus,M,N,R),eval( lt,R,4).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

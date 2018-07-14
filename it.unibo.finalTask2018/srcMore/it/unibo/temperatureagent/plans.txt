@@ -1,5 +1,5 @@
 plan(1,init, sentence(true,move(print("temperatureAgent start")),'','' ))
 plan(1,checkTemperature, sentence(true,delay( 5000) ,'','' ))
-plan(2,checkTemperature, sentence(true,move(print("temperatureAgent checking temperature")),'','' ))
-plan(3,checkTemperature, sentence(true,not here StateMoveNormal,'','' ))
+plan(2,checkTemperature, sentence(true,not here StateMoveNormal,'','' ))
+plan(3,checkTemperature, sentence( currentTemp( T),move(print(currentTemperature( T))),'','' ))
 plan(4,checkTemperature, sentence(-  currentTemp( T) ,raise( temperature , temperature( T) )'),'','' ))

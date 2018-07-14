@@ -11,8 +11,8 @@ Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
 EventHandler evhnode for ctrlEvent {
 	forwardEvent nodebroker -m ctrlMsg		// stesso payload
 };
-
 //Context ctxApplPA ip [ host="localhost"  port=8018 ] -standalone 
+Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
 
 QActor robotnode context ctxVirtualRobotNode {
 	Rules {

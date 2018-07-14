@@ -3,10 +3,10 @@ const config = {
         size: { x: 25, y: 20 }
     },
     player: {
-        position: { x: 0.5, y: 0.7 },		//CENTER
-        //position: { x: 0.15, y: 0.3 },		//INIT
+        // position: { x: 0.5, y: 0.7 },		//CENTER
+        position: { x: 0.15, y: 0.3 },		//INIT
         //position: { x: 0.8, y: 0.85 },		//END
-        speed: 0.1 // 0.2
+        speed: 0.05 // 0.2
     },
     sonars: [
         {

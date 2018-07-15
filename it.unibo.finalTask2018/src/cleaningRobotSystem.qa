@@ -181,11 +181,11 @@ QActor swag context ctxAppl {
 			decrement(foundFix).
 
 		switchExplorationDir :-
-			exploring(r), !,
+			exploring(r),
 			retract(exploring(r)),
 			assert(exploring(l)).
 
-		isInWallProximity :- // se sono a due passi o meno dalla presunta parete
+		isInWallProximity :-
 			counter(steps,N),
 			counter(roomLen,M),
 			eval(minus,M,N,R),
@@ -211,7 +211,7 @@ QActor swag context ctxAppl {
    		onMsg externalcmd : usercmd(halt) -> println("ricevuto halt")
    	]
    	transition
-   		whenTime 800 -> init
+   		whenTime 800 -> end
     	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
     	
   	Plan detectedBySonar [
@@ -251,8 +251,9 @@ QActor swag context ctxAppl {
 
 // ############################ C L E A N I N G  R O U T I N E ############################ \\
 
-Plan startCleaning [         
-   		println("swag start cleaning");
+	// R-FloorClean
+	Plan startCleaning [
+   		println("start cleaning");
    		emit inputCtrlEvent : inputEvent( agent,swag,cleaning );
    		forward controller -m cmd : cmd( w(1) )
    	]
@@ -263,7 +264,8 @@ Plan startCleaning [
 	]
 	transition
 		whenTime 300 -> countRoomLen
-		whenEvent frontSonar -> leftTurn
+		whenEvent frontSonar -> leftTurn,
+		whenEvent externalcmd -> receivedCmd // R-Stop
 		
 	Plan forwardCleaning [
 		println("cleaning forward");
@@ -275,13 +277,13 @@ Plan startCleaning [
 	]
 	transition stopAfter 3600000
 		// la parete di fondo e' segnalata da sonar2
-		whenEvent sonarSensor -> detectedByFinal,
-		whenEvent frontSonar -> handleFront
+		whenEvent sonarSensor -> detectedByFinal, // R-End
+		whenEvent frontSonar -> handleFront,
+		whenEvent externalcmd -> receivedCmd // R-Stop
 		
 	Plan leftTurn [
 		println("left turn");
 		// resetto le informazioni per l'obstacle avoidance
-		removeRule counter(steps,X);
 		removeRule direction(D);
 		
 		forward controller -m cmd : cmd( h(1) );
@@ -291,11 +293,10 @@ Plan startCleaning [
 		delay 800;
 		forward controller -m cmd : cmd( h(1) );
 		forward controller -m cmd : cmd( a(1) );
-		delay 600
+		delay 800
 	]
 	transition
-		// tutto ok, no ostacoli a sinistra
-		whenTime 800 -> waitForGodot // backCleaning
+		whenTime 800 -> waitForGodot
 
 	// "consumo" eventuali eventi frontSonar residui...		
 	Plan waitForGodot [
@@ -303,7 +304,7 @@ Plan startCleaning [
 	]
 	transition
 		whenTime 2000 -> backCleaning // tutto ok, procedi
-		whenEvent frontSonar -> backCleaning // waitForGodot
+		whenEvent frontSonar -> backCleaning // evento "consumato"
 	
 	Plan backCleaning [
 		println("cleaning back");
@@ -328,12 +329,10 @@ Plan startCleaning [
 		delay 800;
 		forward controller -m cmd : cmd( h(1) );
 		forward controller -m cmd : cmd( d(1) );
-		delay 600
+		delay 800
 	]
-	transition
-		// tutto ok, no ostacoli a destra
-		whenTime 800 -> forwardCleaning
-		
+	switchTo forwardCleaning
+	
 	Plan end [
 		println("end");
    		emit inputCtrlEvent : inputEvent( agent,swag,idle );
@@ -342,12 +341,12 @@ Plan startCleaning [
 	switchTo init
 	
 	Plan countSteps [
-		println("Sto contando...");
-		demo increment(steps)
+		demo increment(steps) // counter(steps, C++)
 	]
 	transition
 		whenTime 300 -> countSteps
-		whenEvent frontSonar -> frontSonarDetected
+		whenEvent frontSonar -> frontSonarDetected,
+		whenEvent externalcmd -> receivedCmd // R-Stop
 		
 	Plan frontSonarDetected [
 		println("frontSonarDetected");
@@ -388,25 +387,27 @@ Plan startCleaning [
 		forward controller -m cmd : cmd( w(0) );
 		println("provo ad avanzare")
 	]
-    transition whenTime 800 -> avoidMobile
-   		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
-     	whenEvent frontSonar -> avoidFix // avoidFixRight
+    transition
+    	whenTime 800 -> avoidMobile
+   		whenMsg externalcmd -> receivedCmd,
+     	whenEvent frontSonar -> avoidFix // R-AvoidFix
      
+     // R-AvoidMobile
      Plan avoidMobile [
 		println("avoidMobile");
 		println("ok, ostacolo superato")
 	]
 	switchTo selectDirection
 	
+	// R-AvoidFix
 	Plan avoidFix [
 		println("avoidFix");
 		[ !? exploring(DIR) ] println(explorng(DIR))
 		else addRule exploring(r);
-		
 		// aumento contatore di tentativi
 		demo avoidFixTry;
 		[ !? avoidFixGiveUp ] {
-			[ !? exploring(l) ] selfMsg swagmsg : cmd(giveUpLeft)
+			[ !? exploring(l) ] selfMsg swagmsg : cmd(giveUpLeft) // R-Obstacle
 			else selfMsg swagmsg : cmd(giveUpRight);
 			demo switchExplorationDir;
 			println("Raggiunti max tentativi")
@@ -425,13 +426,12 @@ Plan startCleaning [
 			forward controller -m cmd : cmd( w(0) );
 			delay 1000; // passo laterale
 			forward controller -m cmd : cmd( h(0) );
-			println("forward + stop");
 			delay 2000
 		}
 	]
 	transition whenTime 800 -> checkDoor
 		whenEvent frontSonar -> failure,
-		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg externalcmd -> receivedCmd,
 		whenMsg swagmsg -> giveUp // esaminare il payload
 	
 	Plan checkDoor [
@@ -440,24 +440,20 @@ Plan startCleaning [
 		else forward controller -m cmd : cmd( d(0) );
 		delay 800;
 		forward controller -m cmd : cmd( w(0) );
-		println("forward");
 		delay 800;
 		forward controller -m cmd : cmd( h(0) );
-		delay 2000;
-		println("stop")
+		delay 2000
 	]
 	transition whenTime 800 -> doorFound
-		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg externalcmd -> receivedCmd,
 		whenEvent frontSonar -> avoidFix
 	
 	Plan doorFound [
 		println("doorFound");
 		forward controller -m cmd : cmd( w(0) );
-		println("forward");
 		delay 1000;
 		forward controller -m cmd : cmd( h(0) );
 		demo increment(steps,6);
-		println("stop");
 		delay 2000;
 		[ !? exploring(r) ] forward controller -m cmd : cmd( a(0) )
 		else forward controller -m cmd : cmd( d(0) );
@@ -471,11 +467,10 @@ Plan startCleaning [
 			demo decremFoundFix;
 			forward controller -m cmd : cmd( w(0) );
 			delay 800;
-			forward controller -m cmd : cmd( h(0) );
-			println("forward + stop")
+			forward controller -m cmd : cmd( h(0) )
 		}
 		else {
-			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
+			selfMsg swagmsg : cmd(initialP); // raggiunta posizione di partenza
 			[ !? exploring(r) ] forward controller -m cmd : cmd( d(0) )
 			else forward controller -m cmd : cmd( a(0) );
 			delay 800;
@@ -483,28 +478,26 @@ Plan startCleaning [
 		}
 	]
 	transition whenTime 200 -> goToPrevLevel
-		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg externalcmd -> receivedCmd,
 		whenMsg swagmsg -> selectDirection // riprendo a pulire la stanza
 	
+	// torno alla posizione iniziale e tento di aggirare l'ostacolo da sinistra
 	Plan resumeLastPosition [
 		println("resume last position");
 		[ !? counter(foundFix, C) ] {
 			demo decremFoundFix;
 			forward controller -m cmd : cmd( w(0) );
-			println("forward");
 			delay 800;
 			forward controller -m cmd : cmd( h(0) );
-			delay 2000;
-			println("stop")
+			delay 2000
 		}
 		else {
-			selfMsg swagmsg : cmd(initialP); // ho raggiunto la posizione di partenza
-			forward controller -m cmd : cmd( d(0) );
-			println("fronteggio l'invalicabile muro")
+			selfMsg swagmsg : cmd(initialP); // raggiunta posizione di partenza
+			forward controller -m cmd : cmd( d(0) )
 		}
 	]
 	transition whenTime 800 -> resumeLastPosition
-		whenMsg externalcmd -> receivedCmd, // gestisco i click sui bottoni
+		whenMsg externalcmd -> receivedCmd,
 		whenMsg swagmsg -> avoidFix
 	
 	// trovo un altro muro mentre cerco la porta
@@ -518,27 +511,25 @@ Plan startCleaning [
 	transition stopAfter 3600000
 		whenMsg swagmsg -> giveUp
 
-	// ho raggiunto i max tentativi
+	// ho raggiunto max tentativi
 	Plan giveUp [
 		println("giveUp");
-		demo decremFoundFix; // elimino l'ultimo incremento, quello che ha fatto raggiungere la soglia
-		
+		// elimino l'ultimo incremento, quello che ha fatto raggiungere la soglia
+		demo decremFoundFix;
 		onMsg swagmsg : cmd(giveUpRight) -> {
 			forward controller -m cmd : cmd( a(0) );
-			selfMsg swagmsg : cmd(resumeLastPos);
-			println("ruoto di 90")
+			selfMsg swagmsg : cmd(resumeLastPos)
 		};
 		onMsg swagmsg : cmd(giveUpLeft) -> { // R-Obstacle
 			removeRule foundFix(X);
 			removeRule exploring(l);
 			println("tentativi massimi raggiunti")
 		};
-		
 		delay 2000
 	]
 	transition
 		whenTime 800 -> end
-		whenMsg swagmsg -> resumeLastPosition // torno alla posizione iniziale e tento di aggirare l'ostacolo da sinistra
+		whenMsg swagmsg -> resumeLastPosition
 
 // ############################ O B S T A C L E   A V O I D A N C E ############################ \\
 }

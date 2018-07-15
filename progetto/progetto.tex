@@ -42,7 +42,7 @@
 		Plan,System,Event,Dispatch,Context,ip,host,port,httpserver,QActor,context,
 		normal,switchTo,transition,whenMsg,finally,repeatPlan,stopAfter,resumeLastPlan,
 		onMsg,addRule,replyToCaller,onEvent,removeRule,javaRun,whenTime,sendto,emit,else,not,
-		selfMsg,forward,delay,whenEvent,printCurrentEvent,EventHandler,forwardEvent,Rules
+		selfMsg,forward,delay,whenEvent,printCurrentEvent,EventHandler,forwardEvent,Rules,demo
 	}
 }
 
@@ -496,24 +496,24 @@ Al momento, l'applicazione è in grado di soddisfare i seguenti requisiti:
 \begin{itemize}
 \item \code{R-TempOk}, \code{R-TimeOk}, \code{R-TempKo} e \code{R-TimeKo}, ad opera di opportune regole Prolog presenti nella base di conoscenza del \texttt{Controller}
 \item \code{R-BlinkLed} e \code{R-BlinkHue}
-\footnote{Resta da sviluppare l'implementazione della classe Java \emph{technology-dependent} che dovrà interagire in modo RESTful con la \texttt{Hue Lamp} remota}, mediante l'emissione da parte del controller di eventi \codescript{ctrlEvent : ctrlEvent(led,l1,CMD)} a seguito della modifica del modello del led \codescript{l1} in base allo stato di movimento del robot
+\footnote{Resta da sviluppare l'implementazione della classe Java \emph{technology-dependent} che dovrà interagire in modo RESTful con la \texttt{Hue Lamp} remota}, mediante l'emissione da parte del controller di eventi \codescript{ctrlEvent : ctrlEvent(led,l1,CMD)} a seguito della modifica del modello del led \codescript{l1} in base allo stato di movimento del robot. L'Hue Lamp agent e il robot fisico sono sensibili a questo evento.
 \end{itemize}
 
 Rimangono da affrontare i restanti requisiti relativi al movimento autonomo del robot (pilotato da \texttt{SoftwareAgent}):
 \begin{enumerate}
-\item \code{R-Start} e \code{R-Stop}: la pulizia della stanza inizia e termina preventivamente a seguito di un comando \texttt{start/stop} inviato da un \emph{utente autorizzato}
+\item \code{R-Start} e \code{R-Stop}: la pulizia della stanza inizia e termina preventivamente a seguito di comandi \texttt{start/stop} inviati da un \emph{utente autorizzato}
 \item \code{R-FloorClean} e \code{R-End}: il robot deve pulire l'intera superficie della stanza (da \code{sonar1} a \code{sonar2}), fermandosi al termine del lavoro
 \item \code{R-AvoidMobile}, \code{R-AvoidFix} e \code{R-Obstacle}: il robot deve essere in grado di rilevare ed evitare gli ostacoli sia fissi sia mobili, eventualmente fermandosi nel caso ciò non sia possibile
 \end{enumerate}
 
 \subsection{Starting and stopping the agent}
-Al momento è disponibile una \emph{web GUI} fornita dall'infrastruttura \qa grazie alla presenza del flag \codescript{-htthserver} presente nel contesto dell'applicazione. Questa è in grado di emettere eventi \codescript{usercmd : usercmd(CMD)} alla pressione dei pulsanti di movimento da parte dell'utilizzatore umano.
+Al momento è disponibile una \emph{web GUI} fornita dall'infrastruttura \qa grazie alla presenza del flag \codescript{-httpserver} presente nel contesto dell'applicazione. Questa è in grado di emettere eventi \codescript{usercmd : usercmd(CMD)} alla pressione dei pulsanti di movimento da parte dell'utilizzatore umano.
 
 Oltre ai bottoni che corrispondono ai movimenti elementari del robot, ve ne sono altri due che possono essere utilizzati per l'avvio e la terminazione della pulizia della stanza ad opera di \texttt{SoftwareAgent}, con l'idea di gestire in seguito la problematica relativa all'autenticazione degli utenti.
 
-Attualmente, la GUI di default emettere eventi \codescript{cmd : cmd(C)} alla pressione di questi pulsanti. Abbiamo però deciso di sostituirli con eventi \codescript{alarm : usercmd(C)} così che, avendo lo stesso payload degli altri, la loro gestione risulti semplificata.\\
+Attualmente, la GUI di default emette eventi \codescript{cmd : cmd(C)} alla pressione di questi pulsanti. Abbiamo però deciso di sostituirli con eventi \codescript{alarm : usercmd(C)} così che, avendo lo stesso payload degli altri, la loro gestione risulti semplificata.\\
 
-Poiché non vogliamo che nessun comando vada perso, introduciamo un componente event-driven (\emph{EventHandler}) che effettui un mapping degli eventi \codescript{usercmd} ed \codescript{alarm} in messaggi \codescript{externalcmd} diretti all'agent e aventi lo stesso payload dei precedenti.
+Poiché non vogliamo che nessun comando vada perso, introduciamo un componente event-driven (\emph{EventHandler}) che effettui un mapping degli eventi \codescript{alarm} in messaggi \codescript{externalcmd} diretti all'agent e aventi lo stesso payload dei precedenti.
 
 \subsubsection{R-Start e R-Stop}
 Alla pressione del pulsante di start, il robot deve trovarsi vicino a \code{sonar1} per poter partire con la pulizia, in caso contrario il comando viene ignorato. Se invece viene ricevuto un messaggio di stop (\codescript{usercmd(halt)}) durante il movimento del robot, questi deve fermarsi e l'agent deve ritornare nello stato iniziale.\\
@@ -528,12 +528,12 @@ finally repeatPlan
 
 Plan receivedCmd [
 	// R-Start
-	onMsg externalcmd : usercmd(start) -> {
-   		println("ricevuto usercmd(start)");
+	onMsg externalcmd : usercmd(clean) -> {
+   		println("ricevuto clean");
    		addRule startCmd
 	};
 	// R-Stop
-   	onMsg externalcmd : usercmd(halt) -> println("ricevuto usercmd(halt)")
+   	onMsg externalcmd : usercmd(halt) -> println("ricevuto halt")
 ]
 transition
 	whenTime 800 -> init
@@ -577,9 +577,9 @@ isCloseTo(S) :-
 
 \vspace{8px}
 
-Per quanto riguarda la terminazione, se durante la pulizia arriva il comando \codescript{externalcmd : usercmd(halt)}, l'agent transita prima in \codescript{receivedCmd} e successivamente nello stato iniziale, in attesa di nuovi comandi.
+Per quanto riguarda la terminazione, se durante la pulizia arriva il comando \codescript{externalcmd : usercmd(halt)}, l'agent transita prima in \codescript{receivedCmd} e successivamente nello stato iniziale, in attesa di nuovi comandi.\\
 
-Ciò avviene anche quando l'utente preme un qualsiasi altro bottone della GUI, riprendendo il controllo manuale del robot.\\
+%Ciò avviene anche quando l'utente preme un qualsiasi altro bottone della GUI, riprendendo il controllo manuale del robot.\\
 
 \begin{qacode}[caption={SoftwareAgent, pt3}]
 Plan cleaning [
@@ -625,11 +625,7 @@ Il comportamento di \texttt{SoftwareAgent}, per quanto riguarda il soddisfacimen
 \end{figure}
 
 \subsection{Cleaning the room}
-Durante la sua attività, il robot deve pulire l'intera superficie della stanza (\code{R-FloorClean}). Concettualmente possiamo identificare 3 macro-stati in cui l'agent può trovarsi: uno stato iniziale in cui attende il comando di start e controlla se le condizioni ad esso relative sono soddisfatte, uno stato di lavoro nel quale effettua la pulizia, e uno finale in cui gestisce la terminazione.
-
-Il primo e il terzo macro-stato sono stati trattati nella sezione precedente, quindi ora ci concentreremo su ciò che avviene nella fase centrale.\\
-
-L'approccio più semplice per affrontare la pulizia di una stanza rettangolare è quello di partire da un angolo e percorrere a ''zig-zag'' la stanza in tutta la sua profondità, coprendo progressivamente l'intera larghezza fino a terminare nell'angolo opposto a quello di partenza.
+Durante la sua attività, il robot deve pulire l'intera superficie della stanza (\code{R-FloorClean}). L'approccio più semplice per affrontare la pulizia di una stanza rettangolare è quello di partire da un angolo e percorrere a ''zig-zag'' la stanza in tutta la sua profondità, coprendo progressivamente l'intera larghezza fino a terminare nell'angolo opposto a quello di partenza.
 
 I movimenti del robot possono essere quindi riassunti in prima battuta dal diagramma della \xf{floorCleanDraft}
 
@@ -639,17 +635,95 @@ I movimenti del robot possono essere quindi riassunti in prima battuta dal diagr
 \caption{Schema del movimento del robot durante la pulizia}\labelfig{floorCleanDraft}
 \end{figure}
 
-Partendo da questo modello concettuale di base, introduciamo alcuni stati aggiuntivi che derivano dai vincoli specifici del problema.\\
+Partendo da questo modello concettuale di base, introduciamo alcuni stati aggiuntivi che derivano dai vincoli specifici del problema.
 
 In particolare, mentre il raggiungimento della parete frontale (rispetto alla posizione iniziale del robot, ovvero quella opposta a \code{sonar1}) è segnalato dalla presenza del secondo sonar, per la parete di fondo non vi è altro modo se non il sonar frontale del robot a rilevare la presenza di un generico ostacolo. Questa problematica verrà ripresa nella sezione successiva.
 
 Un'ulteriore complicazione riguarda la presenza del primo sonar lungo tutta la parete di sinistra, il che ci suggerisce l'inserimento di uno stato aggiuntivo, \texttt{startCleaning}, analogo allo stato di \texttt{forward}, dove anche in questo caso viene usato eccezionalmente il sonar frontale per gestire la svolta al raggiungimento della parete
 \footnote{Assumiamo, per semplicità, che non vi siano ostacoli lungo le pareti}.
 
-Il diagramma degli stati risultante è quindi rappresentato nella \xf{floorClean}
+\begin{qacode}[caption={SoftwareAgent, pt5}]
+Plan startCleaning [
+	println("start cleaning");
+	emit inputCtrlEvent : inputEvent( agent,swag,cleaning ); // (1)
+	forward controller -m cmd : cmd( w(1) )
+]
+transition stopAfter 3600000
+	whenEvent frontSonar -> leftTurn,
+	whenEvent externalcmd -> receivedCmd // R-Stop
+	
+Plan leftTurn [
+	println("left turn");	
+	forward controller -m cmd : cmd( h(1) );
+	forward controller -m cmd : cmd( a(1) );
+	delay 1000;
+	forward controller -m cmd : cmd( w(1) );
+	delay 800;
+	forward controller -m cmd : cmd( h(1) );
+	forward controller -m cmd : cmd( a(1) );
+	delay 800
+]
+switchTo backCleaning
 
-\todo{insert qa code}
-\todo{ricorda di sistemare le svolte complete in turnLeft e right}
+Plan backCleaning [
+	println("cleaning back");
+	forward controller -m cmd : cmd( w(1) )
+]
+transition stopAfter 3600000
+	whenEvent frontSonar -> rightTurn,
+	whenEvent externalcmd -> receivedCmd // R-Stop
+	
+Plan rightTurn [
+	println("right turn");
+	forward controller -m cmd : cmd( h(1) );
+	forward controller -m cmd : cmd( d(1) );
+	delay 1000;
+	forward controller -m cmd : cmd( w(1) );
+	delay 800;
+	forward controller -m cmd : cmd( h(1) );
+	forward controller -m cmd : cmd( d(1) );
+	delay 800
+]
+switchTo forwardCleaning
+
+Plan forwardCleaning [
+	println("cleaning forward");
+	forward controller -m cmd : cmd( w(1) )
+]
+transition stopAfter 3600000
+	// la parete di fondo e' segnalata da sonar2
+	whenEvent sonarSensor -> detectedByFinal, // R-End
+	whenEvent externalcmd -> receivedCmd // R-Stop
+\end{qacode}
+
+Dallo stato \codescript{detectedByFinal}, riportato precedentemente, l'agent transita infine nello stato finale \codescript{end}.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt5}]
+Plan end [
+	println("end");
+	emit inputCtrlEvent : inputEvent( agent,swag,idle ); // (2)
+	forward controller -m cmd : cmd( h(1) )
+]
+switchTo init
+\end{qacode}
+
+Quando il robot viene pilotato da un utente umano, in caso di collisione è il controller a rilevare l'evento \codescript{frontSonar} e a fermare il robot. Ciò non deve accadere quando è invece il \texttt{SoftwareAgent} a controllarlo: per questo motivo l'agent si fa carico di inviare un \codescript{inputCtrlEvent} per segnalare al controller quando sta pilotando il robot, così che questi non interferisca (righe (1) e (2)).
+
+Alla ricezione di questi eventi, il controller modifica il modello delle risorse in cui è mantenuto lo stato dell'agent.\\
+
+\begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={resourceModel.pl}]
+% Modello dell'agent
+model( type(software, agent), name(swag), value(idle) ).
+\end{lstlisting}
+
+\begin{qacode}[caption={Gestione di \codescript{frontSonar} da parte del \texttt{Controller}}]
+Plan handleFront resumeLastPlan [
+	[ !? getModelItem( software,agent,swag,idle ) ]
+		demo changeRobotModel(h(0))
+]
+\end{qacode}
+
+Il diagramma degli stati risultante è quindi rappresentato nella \xf{floorClean}
 
 \begin{figure}[!htb]
 \centering
@@ -660,23 +734,188 @@ Il diagramma degli stati risultante è quindi rappresentato nella \xf{floorClean
 \subsection{Obstacle avoidance}
 Gli eventi \codescript{frontSonar} permettono al  \texttt{SoftwareAgent} di individuare gli ostacoli sul cammino del robot. In presenza di uno di questi deve cercare di capire se sia fisso o mobile e tentare di evitarlo.
 
-Inizialmente si assume che l'ostacolo sia mobile, si aspetta dunque un piccolo intervallo di tempo per poi riprovare ad avanzare. Se non si ricevono altri eventi dal sonar frontale, si assume di essere riuscito a superare l'ostacolo.
+Inizialmente si assume che l'ostacolo sia mobile, si aspetta dunque un piccolo intervallo di tempo per poi riprovare ad avanzare. Se non si ricevono altri eventi dal sonar frontale, si presume di essere riusciti a superare l'ostacolo.\\
 
-Viceversa, se si ricevono altri eventi \codescript{frontSonar}, l'ostacolo viene considerato fisso e occorre provare ad aggirarlo prima da una direzione e, in caso di fallimento, dall'altra, cercando periodicamente la presenza di passaggi. Il fallimento è determinato dalla presenza di un nuovo ostacolo che impedisce di proseguire oltre in quella direzione o dopo un certo numero di tentativi -- se si fallisce in entrambe le direzioni, la pulizia termina (\code{R-Obstacle}). Se invece viene trovato un passaggio, dopo averlo superato il robot deve ritornare alla stessa altezza a cui si trovava prima dell'ostacolo.
+\begin{qacode}[caption={SoftwareAgent, pt6}]
+Plan handleFront [
+	println("handleFront");
+	forward controller -m cmd : cmd( h(0) );
+	println("possible mobile obstacle");
+	delay 1000;
+	forward controller -m cmd : cmd( w(0) );
+	println("provo ad avanzare")
+]
+transition
+	whenTime 800 -> avoidMobile
+	whenMsg externalcmd -> receivedCmd,
+	whenEvent frontSonar -> avoidFix // R-AvoidFix
+ 
+ // R-AvoidMobile
+ Plan avoidMobile [
+	println("avoidMobile");
+	println("ok, ostacolo superato")
+]
+switchTo cleaning
+\end{qacode}
 
-\todo{codice di avoidmobile e fix, resumelastposition, failure, giveup}
-\todo{diagramma obstacle}
+Viceversa, se si ricevono altri eventi \codescript{frontSonar}, l'ostacolo viene considerato fisso e occorre provare ad aggirarlo prima da una direzione e, in caso di fallimento, dall'altra, cercando periodicamente la presenza di passaggi.\\
 
-Per gestire il passaggio fra i sui stati interni, l'agent utilizza dei messaggi ''privati'' \codescript{swagmsg : cmd(CMD)}, mentre le due fasi di esplorazione, a destra e a sinistra dell'ostacolo, vengono realizzate dagli stessi stati discriminando i due casi tramite la regola \codescript{exploring(DIR)}.
+\begin{qacode}[caption={SoftwareAgent, pt7}]
+Plan avoidFix [
+	println("avoidFix");
+	[ !? exploring(DIR) ] println(explorng(DIR))
+	else addRule exploring(r);
+	// aumento contatore di tentativi
+	demo avoidFixTry;
+	[ !? avoidFixGiveUp ] {
+		[ !? exploring(l) ] selfMsg swagmsg : cmd(giveUpLeft) // R-Obstacle
+		else selfMsg swagmsg : cmd(giveUpRight);
+		demo switchExplorationDir;
+		println("Raggiunti max tentativi")
+	} else {
+		delay 800;
+		println("proviamo a girarci intorno");
+		[ !? exploring(l) ] {
+			forward controller -m cmd : cmd( a(0) );
+			println("da sinistra")
+		}
+		else {
+			forward controller -m cmd : cmd( d(0) );
+			println("da destra")
+		};
+		delay 2000;
+		forward controller -m cmd : cmd( w(0) );
+		delay 1000; // passo laterale
+		forward controller -m cmd : cmd( h(0) );
+		delay 2000
+	}
+]
+transition whenTime 800 -> checkDoor
+	whenEvent frontSonar -> failure,
+	whenMsg externalcmd -> receivedCmd,
+	whenMsg swagmsg -> giveUp // esaminare il payload
+
+Plan checkDoor [
+	println("checkDoor");
+	[ !? exploring(r) ] forward controller -m cmd : cmd( a(0) )
+	else forward controller -m cmd : cmd( d(0) );
+	delay 800;
+	forward controller -m cmd : cmd( w(0) );
+	delay 800;
+	forward controller -m cmd : cmd( h(0) );
+	delay 2000
+]
+transition whenTime 800 -> doorFound
+	whenMsg externalcmd -> receivedCmd,
+	whenEvent frontSonar -> avoidFix
+
+Plan doorFound [
+	println("doorFound");
+	forward controller -m cmd : cmd( w(0) );
+	delay 1000;
+	forward controller -m cmd : cmd( h(0) );
+	delay 2000;
+	[ !? exploring(r) ] forward controller -m cmd : cmd( a(0) )
+	else forward controller -m cmd : cmd( d(0) );
+	delay 800
+]
+switchTo goToPrevLevel
+\end{qacode}
+
+Il fallimento è determinato dalla presenza di un nuovo ostacolo che impedisce di proseguire oltre in quella direzione o dopo un certo numero di tentativi non riusciti. Se si fallisce in entrambe le direzioni, la pulizia termina (\code{R-Obstacle}).\\
+
+\begin{qacode}[caption={SoftwareAgent, pt8}]
+Plan failure [
+	println("failure");
+	forward controller -m cmd : cmd( a(0) );
+	[ !? exploring(r) ] selfMsg swagmsg : cmd(giveUpRight)
+	else selfMsg swagmsg : cmd(giveUpLeft);
+	demo switchExplorationDir
+]
+transition stopAfter 3600000
+	whenMsg swagmsg -> giveUp
+
+// ho raggiunto max tentativi
+Plan giveUp [
+	println("giveUp");
+	// elimino l'ultimo incremento, quello che ha fatto raggiungere la soglia
+	demo decremFoundFix;
+	onMsg swagmsg : cmd(giveUpRight) -> {
+		forward controller -m cmd : cmd( a(0) );
+		selfMsg swagmsg : cmd(resumeLastPos)
+	};
+	onMsg swagmsg : cmd(giveUpLeft) -> { // R-Obstacle
+		removeRule foundFix(X);
+		removeRule exploring(l);
+		println("tentativi massimi raggiunti")
+	};
+	delay 2000
+]
+transition
+	whenTime 800 -> end
+	whenMsg swagmsg -> resumeLastPosition
+	
+Plan resumeLastPosition [
+	println("resume last position");
+	[ !? counter(foundFix, C) ] {
+		demo decremFoundFix;
+		forward controller -m cmd : cmd( w(0) );
+		delay 800;
+		forward controller -m cmd : cmd( h(0) );
+		delay 2000
+	}
+	else {
+		selfMsg swagmsg : cmd(initialP); // raggiunta posizione di partenza
+		forward controller -m cmd : cmd( d(0) )
+	}
+]
+transition whenTime 800 -> resumeLastPosition
+	whenMsg externalcmd -> receivedCmd,
+	whenMsg swagmsg -> avoidFix
+\end{qacode}
+
+Se invece viene trovato un passaggio, dopo averlo superato il robot deve ritornare alla stessa altezza a cui si trovava prima dell'ostacolo.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt9}]
+Plan goToPrevLevel [
+	println("goToPrevLevel");
+	[ !? counter(foundFix, C) ] {
+		demo decremFoundFix;
+		forward controller -m cmd : cmd( w(0) );
+		delay 800;
+		forward controller -m cmd : cmd( h(0) )
+	}
+	else {
+		selfMsg swagmsg : cmd(initialP); // raggiunta posizione di partenza
+		[ !? exploring(r) ] forward controller -m cmd : cmd( d(0) )
+		else forward controller -m cmd : cmd( a(0) );
+		delay 800;
+		println("riprendo la direzione di marcia")
+	}
+]
+transition whenTime 200 -> goToPrevLevel
+	whenMsg externalcmd -> receivedCmd,
+	whenMsg swagmsg -> cleaning
+\end{qacode}
+
+Gli stati che implementano le politiche di \emph{obstacle avoidance} possono essere riassunti con la \xf{obstacleAvoidance}.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.4]{img/stateDiagramObstacle.png}
+\caption{Diagramma parziale degli stati di \texttt{SoftwareAgent} - \code{R-AvoidFix}, \code{R-AvoidMobile}, \code{R-Obstacle}}\labelfig{obstacleAvoidance}
+\end{figure}
+
+Per gestire il passaggio fra i suoi stati interni, l'agent utilizza dei messaggi ''privati'' \codescript{swagmsg : cmd(CMD)}, mentre le due fasi di esplorazione, a destra e a sinistra dell'ostacolo, vengono realizzate dagli stessi stati discriminando i due casi tramite la regola \codescript{exploring(DIR)}.\\
 
 \begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={SoftwareAgent, Rules - pt2}]
 switchExplorationDir :-
-
-...
-...
+	exploring(r),
+	retract(exploring(r)),
+	assert(exploring(l)).
 \end{lstlisting}
 
-Per realizzare il comportamento a tentativi del robot vengono impiegate le seguenti regole Prolog che implementano un contatore.
+Per realizzare il comportamento a tentativi del robot vengono impiegate le seguenti regole Prolog che implementano un contatore.\\
 
 \begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={SoftwareAgent, Rules - pt3}]
 increment(C) :-
@@ -687,6 +926,14 @@ increment(C) :-
 	
 increment(C) :-
 	assert(counter(C,1)).
+	
+increment(C,1) :- !,
+	increment(C).
+	
+increment(C,N) :-
+	increment(C),
+	eval(minus,N,1,N2),
+	increment(C,N2).
 
 decrement(C) :-
 	counter(C, 1), !,
@@ -709,11 +956,125 @@ decremFoundFix :-
 \end{lstlisting}
 
 \subsection{Complete Agent}
-- Problema di distinguere la parete di fondo da un ostacolo fisso -> contatore sul primo tratto (startCleaning)
-- La reazione agli eventi degli ostacoli negli stati forward e backward (ricorda no ostacoli lungo le pareti)
-- Altro contatore in backward, con soglia
-- Nuovi stati: uno per il conteggio in forward (countRoomLen - swag3) e in backward (countSteps swagFF), uno per discriminare ostacoli e parete di fondo in base ai due contatori (frontSonarDetected). Uno stato selectDirection per decidere se tornare in forward o in backward dopo aver superato l'ostacolo
+Per integrare l'\emph{obstacle avoidance} con la pulizia della stanza sono necessari alcuni accorgimenti.\\
 
+Poiché abbiamo assunto che non vi siano ostacoli lungo le pareti, gli unici stati sensibili agli eventi del sonar frontale sono \codescript{forwardCleaning} e \codescript{backCleaning}, ai quali va quindi aggiunta la transizione che originariamente si trovava nello stato fittizio \emph{cleaning}.
+
+Inoltre, dopo aver aggirato un ostacolo, l'agent deve tornare nello stato in cui si trovava in precedenza: a tal fine abbiamo introdotto lo stato \codescript{selectDirection}, che tramite opportune regole discrimina lo stato futuro in cui deve portarsi. Tali regole devono essere asserite nei rispettivi stati di provenienza.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt10}]
+Plan selectDirection [
+	println("selectDirection");
+	removeRule exploring(X);
+	[ !? direction(f) ] println("f");
+	[ !? direction(b) ] { println("b"); selfMsg swagmsg : cmd(b) }
+]
+transition
+	whenTime 800 -> forwardCleaning
+	whenMsg swagmsg -> backCleaning
+	
+Plan forwardCleaning [
+	println("cleaning forward");
+	[ !? direction(D) ]
+		println(direction(D)) // debug
+	else
+		addRule direction(f);
+	forward controller -m cmd : cmd( w(1) )
+]
+transition stopAfter 3600000
+	whenEvent sonarSensor -> detectedByFinal, // R-End
+	whenEvent frontSonar -> handleFront,
+	whenEvent externalcmd -> receivedCmd // R-Stop
+
+Plan backCleaning [
+	println("cleaning back");
+	[ !? direction(D) ]
+		println(direction(D)) // debug
+	else
+		addRule direction(b);
+	forward controller -m cmd : cmd( w(1) )
+]
+transition stopAfter 3600000
+	whenEvent frontSonar -> frontSonarDetected,
+	whenEvent externalcmd -> receivedCmd // R-Stop
+\end{qacode}
+
+Per distinguere la parete di fondo da un ostacolo, entrambi segnalati da un evento \codescript{frontSonar}, utilizziamo un contatore per misurare la profondità della stanza durante il primo tratto, corrispondente a \codescript{startCleaning}, e uno durante ogni pulizia ''backward''. In questo modo, alla ricezione dell'evento, è possibile capire se si debba tornare indietro (\emph{turnRight}) o evitare l'ostacolo.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt11}]
+Plan startCleaning [
+	[...]
+]
+switchTo countRoomLen
+
+Plan countRoomLen [
+	demo increment(roomLen) // counter(roomLen, C++)
+]
+transition
+	whenTime 300 -> countRoomLen
+	whenEvent frontSonar -> leftTurn,
+	whenEvent externalcmd -> receivedCmd // R-Stop
+	
+Plan backCleaning [
+	[...]
+]
+switchTo countSteps
+
+Plan countSteps [
+	demo increment(steps) // counter(steps, C++)
+]
+transition
+	whenTime 300 -> countSteps
+	whenEvent frontSonar -> frontSonarDetected,
+	whenEvent externalcmd -> receivedCmd // R-Stop
+	
+Plan frontSonarDetected [
+	println("frontSonarDetected");
+	[ !? counter(roomLen,C)] println(roomLen(C));
+	[ !? counter(steps,N)] println(steps(N));
+	
+	[ !? isInWallProximity ] {
+		println("parete");
+		[ !? direction(b) ] selfMsg swagmsg : cmd(r)
+	}
+	else
+		println("ostacolo")
+]
+transition
+	whenTime 800 -> handleFront // obstacle avoidance
+	whenMsg swagmsg -> rightTurn // wall
+\end{qacode}
+
+Se i passi contati sono maggiori o minori entro una certa soglia (per tolleranza ad eventuali errori nel conteggio) della dimensione della stanza, allora il robot si trova davanti alla parete di fondo.\\
+
+\begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={SoftwareAgent, Rules - pt4}]
+isInWallProximity :-
+	counter(steps,N),
+	counter(roomLen,M),
+	eval(minus,M,N,R),
+	eval(lt,R,4).
+\end{lstlisting}
+
+Per quanto riguarda il raggiungimento della parete frontale, segnalata dalla presenza di \code{sonar2}, occorre tenere in considerazione il fatto che il robot potrebbe comunque urtare la parete, generando un evento \codescript{frontSonar}. Se tale evento viene ricevuto quando l'agent si trova già in \codescript{backCleaning}, questi potrebbe scambiarlo erroneamente per un ostacolo. Pertanto, abbiamo inserito uno stato ''di comodo'' per catturare l'eventuale \codescript{frontSonar} e ''consumarlo'' prima di transitare in uno stato sensibile agli eventi del sonar frontale
+\footnote{
+\url{https://en.wikipedia.org/wiki/Waiting_for_Godot}
+}.\\
+
+\begin{qacode}[caption={SoftwareAgent, pt12}]
+Plan leftTurn [
+	[...]
+]
+transition
+	whenTime 800 -> waitForGodot
+
+// "consumo" eventuali eventi frontSonar residui...
+Plan waitForGodot [
+	println("waiting for Godot...")
+]
+transition
+	whenTime 2000 -> backCleaning // tutto ok, procedi
+	whenEvent frontSonar -> backCleaning // evento "consumato"
+\end{qacode}
 %===========================================================================
 
 %===========================================================================

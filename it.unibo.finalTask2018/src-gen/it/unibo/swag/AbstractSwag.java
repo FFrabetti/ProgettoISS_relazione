@@ -158,7 +158,7 @@ public abstract class AbstractSwag extends QActor {
 	     msgTransition( pr,myselfName,"swag_"+myselfName,false,
 	          new StateFun[]{stateTab.get("detectedBySonar") }, 
 	          new String[]{" ??startCmd" ,"E","sonarSensor" },
-	          800, "init" );//msgTransition
+	          800, "end" );//msgTransition
 	    }catch(Exception e_receivedCmd){  
 	    	 println( getName() + " plan=receivedCmd WARNING:" + e_receivedCmd.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -251,7 +251,7 @@ public abstract class AbstractSwag extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("startCleaning",-1);
 	    	String myselfName = "startCleaning";  
-	    	temporaryStr = "\"swag start cleaning\"";
+	    	temporaryStr = "\"start cleaning\"";
 	    	println( temporaryStr );  
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "inputEvent(CATEG,NAME,VALUE)","inputEvent(agent,swag,cleaning)", guardVars ).toString();
 	    	emit( "inputCtrlEvent", temporaryStr );
@@ -275,8 +275,8 @@ public abstract class AbstractSwag extends QActor {
 	    	solveGoal( parg ); //sept2017
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag_"+myselfName,false,
-	          new StateFun[]{stateTab.get("leftTurn") }, 
-	          new String[]{"true","E","frontSonar" },
+	          new StateFun[]{stateTab.get("leftTurn"), stateTab.get("receivedCmd") }, 
+	          new String[]{"true","E","frontSonar", "true","E","externalcmd" },
 	          300, "countRoomLen" );//msgTransition
 	    }catch(Exception e_countRoomLen){  
 	    	 println( getName() + " plan=countRoomLen WARNING:" + e_countRoomLen.getMessage() );
@@ -302,8 +302,8 @@ public abstract class AbstractSwag extends QActor {
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag_"+myselfName,false,
-	          new StateFun[]{stateTab.get("detectedByFinal"), stateTab.get("handleFront") }, 
-	          new String[]{"true","E","sonarSensor", "true","E","frontSonar" },
+	          new StateFun[]{stateTab.get("detectedByFinal"), stateTab.get("handleFront"), stateTab.get("receivedCmd") }, 
+	          new String[]{"true","E","sonarSensor", "true","E","frontSonar", "true","E","externalcmd" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_forwardCleaning){  
 	    	 println( getName() + " plan=forwardCleaning WARNING:" + e_forwardCleaning.getMessage() );
@@ -317,8 +317,6 @@ public abstract class AbstractSwag extends QActor {
 	    	String myselfName = "leftTurn";  
 	    	temporaryStr = "\"left turn\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = "counter(steps,X)";
-	    	removeRule( temporaryStr );  
 	    	temporaryStr = "direction(D)";
 	    	removeRule( temporaryStr );  
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(h(1))", guardVars ).toString();
@@ -340,7 +338,7 @@ public abstract class AbstractSwag extends QActor {
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(a(1))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(600,"" , "");
+	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "leftTurn";
 	    	if( ! aar.getGoon() ) return ;
 	    	//bbb
@@ -425,14 +423,12 @@ public abstract class AbstractSwag extends QActor {
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(1))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(600,"" , "");
+	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "rightTurn";
 	    	if( ! aar.getGoon() ) return ;
-	    	//bbb
-	     msgTransition( pr,myselfName,"swag_"+myselfName,false,
-	          new StateFun[]{}, 
-	          new String[]{},
-	          800, "forwardCleaning" );//msgTransition
+	    	//switchTo forwardCleaning
+	        switchToPlanAsNextState(pr, myselfName, "swag_"+myselfName, 
+	              "forwardCleaning",false, false, null); 
 	    }catch(Exception e_rightTurn){  
 	    	 println( getName() + " plan=rightTurn WARNING:" + e_rightTurn.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -462,15 +458,13 @@ public abstract class AbstractSwag extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("countSteps",-1);
 	    	String myselfName = "countSteps";  
-	    	temporaryStr = "\"Sto contando...\"";
-	    	println( temporaryStr );  
 	    	parg = "increment(steps)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag_"+myselfName,false,
-	          new StateFun[]{stateTab.get("frontSonarDetected") }, 
-	          new String[]{"true","E","frontSonar" },
+	          new StateFun[]{stateTab.get("frontSonarDetected"), stateTab.get("receivedCmd") }, 
+	          new String[]{"true","E","frontSonar", "true","E","externalcmd" },
 	          300, "countSteps" );//msgTransition
 	    }catch(Exception e_countSteps){  
 	    	 println( getName() + " plan=countSteps WARNING:" + e_countSteps.getMessage() );
@@ -662,8 +656,6 @@ public abstract class AbstractSwag extends QActor {
 	    	if( ! aar.getGoon() ) return ;
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(h(0))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward + stop\"";
-	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "avoidFix";
@@ -699,8 +691,6 @@ public abstract class AbstractSwag extends QActor {
 	    	if( ! aar.getGoon() ) return ;
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(w(0))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward\"";
-	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "checkDoor";
@@ -711,8 +701,6 @@ public abstract class AbstractSwag extends QActor {
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "checkDoor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = "\"stop\"";
-	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag_"+myselfName,false,
 	          new StateFun[]{stateTab.get("receivedCmd"), stateTab.get("avoidFix") }, 
@@ -732,8 +720,6 @@ public abstract class AbstractSwag extends QActor {
 	    	println( temporaryStr );  
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(w(0))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward\"";
-	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(1000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "doorFound";
@@ -743,8 +729,6 @@ public abstract class AbstractSwag extends QActor {
 	    	parg = "increment(steps,6)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = "\"stop\"";
-	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "doorFound";
@@ -787,8 +771,6 @@ public abstract class AbstractSwag extends QActor {
 	    	if( ! aar.getGoon() ) return ;
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(h(0))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward + stop\"";
-	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
 	    	else{ {//actionseq
@@ -832,8 +814,6 @@ public abstract class AbstractSwag extends QActor {
 	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(w(0))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward\"";
-	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "resumeLastPosition";
@@ -844,8 +824,6 @@ public abstract class AbstractSwag extends QActor {
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "resumeLastPosition";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = "\"stop\"";
-	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
 	    	else{ {//actionseq
@@ -853,8 +831,6 @@ public abstract class AbstractSwag extends QActor {
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(0))", guardVars ).toString();
 	    	sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"fronteggio l'invalicabile muro\"";
-	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
 	    	//bbb
@@ -917,8 +893,6 @@ public abstract class AbstractSwag extends QActor {
 	    		sendMsg("cmd","controller", QActorContext.dispatch, temporaryStr ); 
 	    		temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(resumeLastPos)", guardVars ).toString();
 	    		sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    		temporaryStr = "\"ruoto di 90\"";
-	    		println( temporaryStr );  
 	    		};//actionseq
 	    	}
 	    	//onMsg 

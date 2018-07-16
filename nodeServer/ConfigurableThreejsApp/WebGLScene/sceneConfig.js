@@ -42,6 +42,11 @@ const config = {
            centerPosition: { x: 0.5, y: 0.6},
            size: { x: 0.2, y: 0.01}
        },
+       {
+           name: "sidewall",
+           centerPosition: { x: 0.6, y: 0.56},
+           size: { x: 0.01, y: 0.08}
+       },
         {
         name: "wallUp",
         centerPosition: { x: 0.58, y: 0.98},

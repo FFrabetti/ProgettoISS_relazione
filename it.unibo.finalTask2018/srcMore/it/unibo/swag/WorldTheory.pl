@@ -155,6 +155,12 @@ avoidFixGiveUp:-counter( foundFix,3).
 decremFoundFix:-decrement( foundFix).
 switchExplorationDir:-exploring( r),retract( exploring( r)),assert( exploring( l)).
 isInWallProximity:-counter( steps,N),counter( roomLen,M),eval( minus,M,N,R),eval( lt,R,4).
+wait( short,300).
+wait( medium,800).
+wait( long,2000).
+nwait( TYPE,1,W):- ! ,wait( TYPE,W).
+nwait( TYPE,N,W):-eval( minus,N,1,N2),wait( TYPE,W1),nwait( TYPE,N2,W2),eval( plus,W1,W2,W).
+test.
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

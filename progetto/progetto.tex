@@ -646,7 +646,7 @@ Un'ulteriore complicazione riguarda la presenza del primo sonar lungo tutta la p
 Plan startCleaning [
 	println("start cleaning");
 	emit inputCtrlEvent : inputEvent( agent,swag,cleaning ); // (1)
-	forward controller -m cmd : cmd( w(1) )
+	forward controller -m cmd : cmd( w(0) )
 ]
 transition stopAfter 3600000
 	whenEvent frontSonar -> leftTurn,
@@ -654,20 +654,20 @@ transition stopAfter 3600000
 	
 Plan leftTurn [
 	println("left turn");	
-	forward controller -m cmd : cmd( h(1) );
-	forward controller -m cmd : cmd( a(1) );
+	forward controller -m cmd : cmd( h(0) );
+	forward controller -m cmd : cmd( a(0) );
 	delay 1000;
-	forward controller -m cmd : cmd( w(1) );
+	forward controller -m cmd : cmd( w(0) );
 	delay 800;
-	forward controller -m cmd : cmd( h(1) );
-	forward controller -m cmd : cmd( a(1) );
+	forward controller -m cmd : cmd( h(0) );
+	forward controller -m cmd : cmd( a(0) );
 	delay 800
 ]
 switchTo backCleaning
 
 Plan backCleaning [
 	println("cleaning back");
-	forward controller -m cmd : cmd( w(1) )
+	forward controller -m cmd : cmd( w(0) )
 ]
 transition stopAfter 3600000
 	whenEvent frontSonar -> rightTurn,
@@ -675,20 +675,20 @@ transition stopAfter 3600000
 	
 Plan rightTurn [
 	println("right turn");
-	forward controller -m cmd : cmd( h(1) );
-	forward controller -m cmd : cmd( d(1) );
+	forward controller -m cmd : cmd( h(0) );
+	forward controller -m cmd : cmd( d(0) );
 	delay 1000;
-	forward controller -m cmd : cmd( w(1) );
+	forward controller -m cmd : cmd( w(0) );
 	delay 800;
-	forward controller -m cmd : cmd( h(1) );
-	forward controller -m cmd : cmd( d(1) );
+	forward controller -m cmd : cmd( h(0) );
+	forward controller -m cmd : cmd( d(0) );
 	delay 800
 ]
 switchTo forwardCleaning
 
 Plan forwardCleaning [
 	println("cleaning forward");
-	forward controller -m cmd : cmd( w(1) )
+	forward controller -m cmd : cmd( w(0) )
 ]
 transition stopAfter 3600000
 	// la parete di fondo e' segnalata da sonar2
@@ -702,7 +702,7 @@ Dallo stato \codescript{detectedByFinal}, riportato precedentemente, l'agent tra
 Plan end [
 	println("end");
 	emit inputCtrlEvent : inputEvent( agent,swag,idle ); // (2)
-	forward controller -m cmd : cmd( h(1) )
+	forward controller -m cmd : cmd( h(0) )
 ]
 switchTo init
 \end{qacode}
@@ -763,6 +763,7 @@ Viceversa, se si ricevono altri eventi \codescript{frontSonar}, l'ostacolo viene
 \begin{qacode}[caption={SoftwareAgent, pt7}]
 Plan avoidFix [
 	println("avoidFix");
+	forward controller -m cmd : cmd( h(0) );
 	[ !? exploring(DIR) ] println(explorng(DIR))
 	else addRule exploring(r);
 	// aumento contatore di tentativi
@@ -790,7 +791,8 @@ Plan avoidFix [
 		delay 2000
 	}
 ]
-transition whenTime 800 -> checkDoor
+transition
+	whenTime 800 -> checkDoor
 	whenEvent frontSonar -> failure,
 	whenMsg externalcmd -> receivedCmd,
 	whenMsg swagmsg -> giveUp // esaminare il payload
@@ -805,7 +807,8 @@ Plan checkDoor [
 	forward controller -m cmd : cmd( h(0) );
 	delay 2000
 ]
-transition whenTime 800 -> doorFound
+transition
+	whenTime 800 -> doorFound
 	whenMsg externalcmd -> receivedCmd,
 	whenEvent frontSonar -> avoidFix
 
@@ -814,10 +817,8 @@ Plan doorFound [
 	forward controller -m cmd : cmd( w(0) );
 	delay 1000;
 	forward controller -m cmd : cmd( h(0) );
-	delay 2000;
 	[ !? exploring(r) ] forward controller -m cmd : cmd( a(0) )
-	else forward controller -m cmd : cmd( d(0) );
-	delay 800
+	else forward controller -m cmd : cmd( d(0) )
 ]
 switchTo goToPrevLevel
 \end{qacode}
@@ -827,9 +828,16 @@ Il fallimento è determinato dalla presenza di un nuovo ostacolo che impedisce d
 \begin{qacode}[caption={SoftwareAgent, pt8}]
 Plan failure [
 	println("failure");
-	forward controller -m cmd : cmd( a(0) );
-	[ !? exploring(r) ] selfMsg swagmsg : cmd(giveUpRight)
-	else selfMsg swagmsg : cmd(giveUpLeft);
+	[ !? exploring(r) ] {
+		println("failure da destra");
+		selfMsg swagmsg : cmd(giveUpRight);
+		delay 800;
+		forward controller -m cmd : cmd( a(0) )
+	}
+	else {
+		selfMsg swagmsg : cmd(giveUpLeft);
+		println("failure da sinistra")
+	};
 	demo switchExplorationDir
 ]
 transition stopAfter 3600000
@@ -841,15 +849,15 @@ Plan giveUp [
 	// elimino l'ultimo incremento, quello che ha fatto raggiungere la soglia
 	demo decremFoundFix;
 	onMsg swagmsg : cmd(giveUpRight) -> {
+		delay 800;
 		forward controller -m cmd : cmd( a(0) );
+		delay 800;
 		selfMsg swagmsg : cmd(resumeLastPos)
 	};
 	onMsg swagmsg : cmd(giveUpLeft) -> { // R-Obstacle
 		removeRule foundFix(X);
-		removeRule exploring(l);
-		println("tentativi massimi raggiunti")
-	};
-	delay 2000
+		removeRule exploring(l)
+	}
 ]
 transition
 	whenTime 800 -> end
@@ -857,7 +865,8 @@ transition
 	
 Plan resumeLastPosition [
 	println("resume last position");
-	[ !? counter(foundFix, C) ] {
+	delay 2000;
+	[ !? counter(foundFix,C) ] {
 		demo decremFoundFix;
 		forward controller -m cmd : cmd( w(0) );
 		delay 800;
@@ -869,7 +878,8 @@ Plan resumeLastPosition [
 		forward controller -m cmd : cmd( d(0) )
 	}
 ]
-transition whenTime 800 -> resumeLastPosition
+transition
+	whenTime 800 -> resumeLastPosition
 	whenMsg externalcmd -> receivedCmd,
 	whenMsg swagmsg -> avoidFix
 \end{qacode}
@@ -879,7 +889,8 @@ Se invece viene trovato un passaggio, dopo averlo superato il robot deve ritorna
 \begin{qacode}[caption={SoftwareAgent, pt9}]
 Plan goToPrevLevel [
 	println("goToPrevLevel");
-	[ !? counter(foundFix, C) ] {
+	delay 2000;
+	[ !? counter(foundFix,C) ] {
 		demo decremFoundFix;
 		forward controller -m cmd : cmd( w(0) );
 		delay 800;
@@ -893,7 +904,8 @@ Plan goToPrevLevel [
 		println("riprendo la direzione di marcia")
 	}
 ]
-transition whenTime 200 -> goToPrevLevel
+transition
+	whenTime 300 -> goToPrevLevel
 	whenMsg externalcmd -> receivedCmd,
 	whenMsg swagmsg -> cleaning
 \end{qacode}
@@ -979,7 +991,7 @@ Plan forwardCleaning [
 		println(direction(D)) // debug
 	else
 		addRule direction(f);
-	forward controller -m cmd : cmd( w(1) )
+	forward controller -m cmd : cmd( w(0) )
 ]
 transition stopAfter 3600000
 	whenEvent sonarSensor -> detectedByFinal, // R-End
@@ -992,7 +1004,7 @@ Plan backCleaning [
 		println(direction(D)) // debug
 	else
 		addRule direction(b);
-	forward controller -m cmd : cmd( w(1) )
+	forward controller -m cmd : cmd( w(0) )
 ]
 transition stopAfter 3600000
 	whenEvent frontSonar -> frontSonarDetected,

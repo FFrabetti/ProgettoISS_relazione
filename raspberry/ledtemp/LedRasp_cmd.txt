@@ -1,0 +1,7 @@
+on
+./arduino_led.py on
+off
+./arduino_led.py off
+blink
+./arduino_led.py blink
+

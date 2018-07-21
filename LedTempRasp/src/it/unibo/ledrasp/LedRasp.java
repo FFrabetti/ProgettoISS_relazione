@@ -23,7 +23,9 @@ public class LedRasp {
 	
 	private static final String EXEC_TEMP_CLIENT = "./tempServer.py " + DEF_ADDR;
 	
-	public static void main(String[] args) throws IOException {
+	private static LampAgent lampAgent;
+	
+	public static void init(String[] args) throws IOException {
 		Map<String,String> map = new HashMap<>();
 		
 		try(Reader reader = new FileReader(FILE_CMD)) {
@@ -43,22 +45,28 @@ public class LedRasp {
 			e.printStackTrace();
 		}
 		
-//		TCPServer server = new TCPServer(args.length==1 ? args[0] : "5555", new LampAgent(map));
-//		server.startServer();
-
 		String localAddr = args.length>=1 ? args[0] : DEF_ADDR;
 		String localPort = args.length>=2 ? args[1] : DEF_PORT;
 		String localTempPort = args.length>=3 ? args[2] : DEF_TEMP_PORT;
-		
+
+		lampAgent = new LampAgent(map);
 		UDPServer server = new UDPServer(localAddr, localPort);
-		UDPServerThread sT = new UDPServerThread(server, new LampAgent(map));
+		UDPServerThread sT = new UDPServerThread(server, lampAgent);
 		sT.start();
 		
-		System.out.println("Ora exec: " + EXEC_TEMP_CLIENT + " " + localTempPort);
 		Runtime.getRuntime().exec(EXEC_TEMP_CLIENT + " " + localTempPort);
-		System.out.println("Dopo exec");
+	}
+	
+	public static void main(String[] args) throws IOException {
+		init(args);
 	}
 
+	public static void sendLedCmd(String cmd) {
+		lampAgent.apply(cmd);
+	}
+	
+	// -------------------------------------------------------------------------
+	
 	private static class LampAgent implements UnaryOperator<String> {
 
 		private LightCmd status = LightCmd.OFF;

@@ -605,14 +605,15 @@ QActor clockagent context ctxAppl {
 // -------------------------- TEMPERATURE AGENT --------------------------
 QActor temperatureagent context ctxAppl {
 	Plan init normal [
-		println("temperatureAgent start")
+		println("temperatureAgent(rasp) start");
+		javaRun it.unibo.finalTask2018.adapter.raspAdapter.init("temp")
 	]
 	switchTo checkTemperature 
 	
 	Plan checkTemperature [
 		delay 5000;
-		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
-		[ !? currentTemp(T) ] println(currentTemperature(T));
+		javaRun it.unibo.finalTask2018.adapter.raspAdapter.getTemperature();
+		[ !? currentTemp(T) ] println(currTempSensor(T));
 		[ ?? currentTemp(T) ] emit temperature : temperature(T)
 	]
 	finally repeatPlan

@@ -5,15 +5,15 @@ Event temperature : temperature(T)
 Context ctxTemperatureAgent ip [ host="localhost" port=8886 ]
 Context ctxMvc ip [ host="localhost"  port=8019 ] -standalone 
 
-QActor temperatureagent context ctxTemperatureAgent {
+QActor temperatureagentold context ctxTemperatureAgent {
 	Plan init normal [ 
-		println("temperatureAgent start")
+		println("temperatureAgent_OLD start")
 	]
 	switchTo checkTemperature 
 	
 	Plan checkTemperature [
 		delay 5000;
-		println("temperatureAgent checking temperature");
+		println("temperatureAgent_OLD checking temperature");
 		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
 		[?? currentTemp(T)] emit temperature : temperature(T)
 	]

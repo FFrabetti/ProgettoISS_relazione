@@ -4,8 +4,8 @@
 context(ctxclockagent, "localhost",  "TCP", "8884" ).  		 
 context(ctxmvc, "localhost",  "TCP", "8019" ).  		 
 %%% -------------------------------------------
-qactor( clockagent , ctxclockagent, "it.unibo.clockagent.MsgHandle_Clockagent"   ). %%store msgs 
-qactor( clockagent_ctrl , ctxclockagent, "it.unibo.clockagent.Clockagent"   ). %%control-driven 
+qactor( clockagentold , ctxclockagent, "it.unibo.clockagentold.MsgHandle_Clockagentold"   ). %%store msgs 
+qactor( clockagentold_ctrl , ctxclockagent, "it.unibo.clockagentold.Clockagentold"   ). %%control-driven 
 %%% -------------------------------------------
 %%% -------------------------------------------
 

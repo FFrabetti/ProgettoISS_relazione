@@ -1,0 +1,66 @@
+System finalTask2018            
+
+Event frontSonar : sonar(DISTANCE)
+Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
+Event lightCmd : lightCmd(STATE)
+Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
+Dispatch moveRobot : moveRobot(CMD)
+
+// inserire host e port giusti
+Context ctxRealRobotRasp ip [ host="localhost" port=8888 ]
+EventHandler evhnode for ctrlEvent {
+	forwardEvent realrobotbroker -m ctrlMsg // stesso payload
+};
+
+// inserire host e port giusti
+Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
+
+QActor realrobotrasp context ctxRealRobotRasp {
+	Plan init normal [
+	    println("realrobotrasp start");
+	    javaRun it.unibo.raspRobot.adapter.raspAdapter.setUpEnvironment()
+  	]
+    switchTo waitForCmd
+		
+   	Plan waitForCmd[
+   		println("realrobotrasp waiting for commands")
+   	]  
+  	transition stopAfter 3600000 
+ 		whenMsg moveRobot -> execMove 
+   	finally repeatPlan    
+
+  	Plan execMove resumeLastPlan[     
+     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotStop();
+  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotForward();
+    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotBackward();
+  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotLeft();
+   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotRight()
+   	]
+}
+
+QActor realrobotbroker context ctxRealRobotRasp {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward realrobotrasp -m moveRobot : moveRobot(CMD)
+	finally repeatPlan
+}
+
+QActor ledagent context ctxRealRobotRasp {
+	Plan init normal [
+   		println("ledAgent start");
+   		javaRun it.unibo.raspRobot.adapter.ledAdapter.init()
+   	]
+   	switchTo waitForCommand     
+  
+    Plan waitForCommand[ ]
+    transition stopAfter 3600000 
+     	whenEvent ctrlEvent -> switchLed
+    finally repeatPlan	
+   	 
+	Plan switchLed resumeLastPlan [
+ 		printCurrentEvent;
+ 		onEvent lightCmd : lightCmd( blink ) -> javaRun it.unibo.raspRobot.adapter.ledAdapter.setState("blink");
+		onEvent lightCmd : lightCmd( on ) -> javaRun it.unibo.raspRobot.adapter.ledAdapter.setState("on");
+		onEvent lightCmd : lightCmd( off ) -> javaRun it.unibo.raspRobot.adapter.ledAdapter.setState("off")
+	]
+}

@@ -1,3 +1,7 @@
+#include <Servo.h>
+
+const int SRV_PIN = 9;
+
 const int sensorPin = A0;
 
 const int lowTLed = 2;
@@ -6,6 +10,10 @@ const int outLed = 4;
 
 const float tMax = 30;
 const int period = 500;
+
+char n = '0';
+Servo myServo;
+int angle = 90;
 
 void setup() {
   Serial.begin(9600);
@@ -16,15 +24,22 @@ void setup() {
   digitalWrite(lowTLed,LOW);
   digitalWrite(highTLed,LOW);
   digitalWrite(outLed,LOW);
+
+  myServo.attach(SRV_PIN);
 }
 
 void loop() {
+  if(Serial.available()){
+    n = Serial.read();
+  }
+  
   handleTemperature();
   handleLed();
+  handleServo();
   delay(period);
 }
 
-void handleTemperature(){
+void handleTemperature() {
   int sensorVal = analogRead(sensorPin);
   Serial.print("Sensor: ");
   Serial.print(sensorVal);
@@ -49,15 +64,26 @@ void handleTemperature(){
   }
 }
 
-void handleLed(){
-  int n;
-  if(Serial.available()){
-    n = Serial.read() - '0';
-    if(n != 0){ // on
-      digitalWrite(outLed,HIGH);
-    }
-    else{ // off
-       digitalWrite(outLed,LOW);
-    }
+void handleLed() {
+  int i = n - '0';
+  if(i == 1) { // on
+    digitalWrite(outLed,HIGH);
+  }
+  else if(i == 0) { // off
+    digitalWrite(outLed,LOW);
   }
 }
+
+void handleServo() {
+  int i = n - '0';
+  if(i == 2) {
+    angle = 45;
+  }
+  else if(i == 3) {
+    angle = 135;
+  }
+  myServo.write(angle);
+  if(i==2 || i==3)
+    delay(15);
+}
+

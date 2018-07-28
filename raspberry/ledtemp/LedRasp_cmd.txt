@@ -4,4 +4,7 @@ off
 ./arduino_led.py off
 blink
 ./arduino_led.py blink
-
+left
+./arduino_servo.py left
+right
+./arduino_servo.py right

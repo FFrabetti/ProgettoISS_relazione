@@ -4,7 +4,7 @@ Event blinkCmd : blinkCmd(STATE)
 
 Context ctxHueLampAgent ip [ host="localhost" port=8888 ]
 
-QActor huelampagent context ctxHueLampAgent {
+QActor huelampagentold context ctxHueLampAgent {
 	Plan init normal [ 
 		println("hueLampAgent start")
 	]

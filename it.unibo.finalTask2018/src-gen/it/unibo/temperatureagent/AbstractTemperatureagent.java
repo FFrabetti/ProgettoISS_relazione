@@ -74,9 +74,14 @@ public abstract class AbstractTemperatureagent extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
 	    	String myselfName = "init";  
-	    	temporaryStr = "\"temperatureAgent(rasp) start\"";
+	    	parg = "consult(\"./temperatureAgent.pl\")";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = "\"temperatureAgent start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.raspAdapter.init( myself ,"temp"  );
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?server(ADDR,PORT)" )) != null ){
+	    	it.unibo.finalTask2018.tempClient.init( myself ,guardVars.get("ADDR"), guardVars.get("PORT")  );
+	    	}
 	    	//switchTo checkTemperature
 	        switchToPlanAsNextState(pr, myselfName, "temperatureagent_"+myselfName, 
 	              "checkTemperature",false, false, null); 
@@ -91,13 +96,17 @@ public abstract class AbstractTemperatureagent extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_checkTemperature",0);
 	     pr.incNumIter(); 	
 	    	String myselfName = "checkTemperature";  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?requestPeriod(P)" )) != null ){
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(5000,"" , "");
+	    	aar = delayReactive(Integer.parseInt(QActorUtils.substituteVars(guardVars,"P").replace("'","")),"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "checkTemperature";
 	    	if( ! aar.getGoon() ) return ;
-	    	it.unibo.finalTask2018.adapter.raspAdapter.getTemperature( myself  );
+	    	}
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?requestMsg(MSG)" )) != null ){
+	    	it.unibo.finalTask2018.tempClient.temperatureRequest( myself ,guardVars.get("MSG")  );
+	    	}
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?currentTemp(T)" )) != null ){
-	    	temporaryStr = "currTempSensor(T)";
+	    	temporaryStr = "currentTemp(T)";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}

@@ -1,0 +1,12 @@
+Per compilazione e deployment:
+// aggiungere riga
+compile fileTree(dir: '../', include: 'LedTempRasp.jar')
+
+gradle distZip --info
+// crea archivio in build/distributions con .jar e lib/
+// serve anche srcMore
+
+// alla fine si ottiene:
+// - lib/
+// - srcMore/
+// it.unibo.XXX-1.0.jar

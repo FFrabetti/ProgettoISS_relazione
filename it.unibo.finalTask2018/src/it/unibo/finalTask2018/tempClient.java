@@ -7,7 +7,7 @@ import it.unibo.sockutils.tcp.TCPClient;
 
 public class tempClient {
 	
-	private static final double DEFAULT_TEMP = 20.0;
+	private static final double DEFAULT_TEMP = 20.20;
 	
 	// SERVER ATTIVO: invio continuo di dati
 //	private static double temperature = 0;	

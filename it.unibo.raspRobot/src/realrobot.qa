@@ -6,35 +6,35 @@ Event lightCmd : lightCmd(STATE)
 Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
 Dispatch moveRobot : moveRobot(CMD)
 
-// inserire host e port giusti
+// RICORDA: inserire host e port giusti
 Context ctxRealRobotRasp ip [ host="localhost" port=8888 ]
 EventHandler evhnode for ctrlEvent {
 	forwardEvent realrobotbroker -m ctrlMsg // stesso payload
 };
 
-// inserire host e port giusti
-Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
+// RICORDA: inserire host e port giusti
+// Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
 
 QActor realrobotrasp context ctxRealRobotRasp {
 	Plan init normal [
+		demo consult("./mapping.pl");
 	    println("realrobotrasp start");
-	    javaRun it.unibo.raspRobot.adapter.raspAdapter.setUpEnvironment()
+	    [ !? server(ADDR,PORT) ] javaRun it.unibo.raspRobot.robotClient.init(ADDR,PORT)
   	]
     switchTo waitForCmd
 		
-   	Plan waitForCmd[
+   	Plan waitForCmd [
    		println("realrobotrasp waiting for commands")
-   	]  
-  	transition stopAfter 3600000 
- 		whenMsg moveRobot -> execMove 
-   	finally repeatPlan    
+   	]
+  	transition stopAfter 3600000
+ 		whenMsg moveRobot -> execMove
+   	finally repeatPlan
 
-  	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotStop();
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotForward();
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotBackward();
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotLeft();
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.raspRobot.adapter.raspAdapter.robotRight()
+  	Plan execMove resumeLastPlan [
+     	onMsg moveRobot : moveRobot( CMD ) -> addRule receivedCmd(CMD);
+     	[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
+     	
+   		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
    	]
 }
 
@@ -47,20 +47,58 @@ QActor realrobotbroker context ctxRealRobotRasp {
 
 QActor ledagent context ctxRealRobotRasp {
 	Plan init normal [
-   		println("ledAgent start");
-   		javaRun it.unibo.raspRobot.adapter.ledAdapter.init()
+		demo consult("./mapping.pl");
+		delay 1000; // waiting for realrobotrasp to start... (robotClient.init())
+   		println("ledagent start")
    	]
-   	switchTo waitForCommand     
+   	switchTo waitForCommand
   
     Plan waitForCommand[ ]
-    transition stopAfter 3600000 
-     	whenEvent ctrlEvent -> switchLed
-    finally repeatPlan	
+    transition stopAfter 3600000
+     	whenEvent lightCmd -> switchLed
+    finally repeatPlan
    	 
 	Plan switchLed resumeLastPlan [
  		printCurrentEvent;
- 		onEvent lightCmd : lightCmd( blink ) -> javaRun it.unibo.raspRobot.adapter.ledAdapter.setState("blink");
-		onEvent lightCmd : lightCmd( on ) -> javaRun it.unibo.raspRobot.adapter.ledAdapter.setState("on");
-		onEvent lightCmd : lightCmd( off ) -> javaRun it.unibo.raspRobot.adapter.ledAdapter.setState("off")
+ 		onEvent lightCmd : lightCmd( CMD ) -> addRule receivedCmd(CMD);
+ 		[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
+
+   		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
 	]
+}
+
+// for testing
+QActor applmocktest context ctxRealRobotRasp {
+	Plan init normal [
+		delay 5000;
+		
+		emit ctrlEvent : ctrlEvent(robot,r1,h(0));
+		delay 1000;
+		emit ctrlEvent : ctrlEvent(robot,r1,a(0));
+		delay 1000;
+		emit ctrlEvent : ctrlEvent(robot,r1,s(0));
+		delay 1000;
+		emit ctrlEvent : ctrlEvent(robot,r1,d(0));
+		delay 1000;
+		emit ctrlEvent : ctrlEvent(robot,r1,w(0));		
+		delay 1000;
+		
+		emit lightCmd : lightCmd(on);
+		delay 2000;
+		emit lightCmd : lightCmd(blink);
+		delay 2000;
+		emit lightCmd : lightCmd(off);
+		
+		println("switch to handle sonar")
+	]
+	switchTo waitForSonar
+	
+	Plan waitForSonar [ ]
+	 transition stopAfter 3600000
+     	whenEvent frontSonar -> handleSonar
+    finally repeatPlan
+    
+ 	Plan handleSonar resumeLastPlan [
+ 		printCurrentEvent
+ 	]
 }

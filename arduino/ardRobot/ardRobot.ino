@@ -121,6 +121,7 @@ void handleLed() {
     digitalWrite(MOV_LED_PIN, iter%2==0 ? LOW : HIGH);
 }
 
+/*
 void handleServo() {
   if(n=='a' || n=='d' || n=='f') {
     if(n=='f')
@@ -130,6 +131,22 @@ void handleServo() {
    
 	myServo.write(servoState);
 	n = '\0'; // input consumato
+  }
+}
+*/
+
+void handleServo() {
+  if(n=='a' || n=='d' || n=='f') {
+    if(n=='f') {
+	  servoState = SRV_FRONT;
+	  n = '\0'; // input consumato
+	}
+	else {
+	  servoState = n=='d' ? SRV_RIGHT : SRV_LEFT;
+	  n = 'f';
+	}
+	
+	myServo.write(servoState);
   }
 }
 

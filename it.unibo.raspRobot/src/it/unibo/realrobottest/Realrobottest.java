@@ -2,12 +2,12 @@
 /*
 This code is generated only ONCE
 */
-package it.unibo.applmocktest;
+package it.unibo.realrobottest;
 import it.unibo.is.interfaces.IOutputEnvView;
 import it.unibo.qactors.QActorContext;
 
-public class Applmocktest extends AbstractApplmocktest { 
-	public Applmocktest(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
+public class Realrobottest extends AbstractRealrobottest { 
+	public Realrobottest(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
 		super(actorId, myCtx, outEnvView);
 	}
 /*

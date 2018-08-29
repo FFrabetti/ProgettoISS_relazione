@@ -1,10 +1,10 @@
 System finalTask2018            
 
-Event frontSonar : sonar(DISTANCE)
-Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
-Event lightCmd : lightCmd(STATE)
-Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
-Dispatch moveRobot : moveRobot(CMD)
+Event frontSonar : sonar(DISTANCE)				// out
+Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)	// in
+Event lightCmd : lightCmd(STATE)				// in
+Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)	// internal
+Dispatch moveRobot : moveRobot(CMD)				// internal
 
 // RICORDA: inserire host e port giusti
 Context ctxRealRobotRasp ip [ host="localhost" port=8888 ]
@@ -31,7 +31,12 @@ QActor realrobotrasp context ctxRealRobotRasp {
    	finally repeatPlan
 
   	Plan execMove resumeLastPlan [
-     	onMsg moveRobot : moveRobot( CMD ) -> addRule receivedCmd(CMD);
+  		// -------- TEST{ --------
+  		onMsg moveRobot : moveRobot(CMD) -> addRule logmsg(moveRobot,moveRobot(CMD));
+  		// -------- }TEST --------
+  		
+//  	printCurrentMessage;
+     	onMsg moveRobot : moveRobot(CMD) -> addRule receivedCmd(CMD);
      	[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
      	
    		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
@@ -53,52 +58,33 @@ QActor ledagent context ctxRealRobotRasp {
    	]
    	switchTo waitForCommand
   
-    Plan waitForCommand[ ]
+    Plan waitForCommand [ ]
     transition stopAfter 3600000
      	whenEvent lightCmd -> switchLed
     finally repeatPlan
    	 
 	Plan switchLed resumeLastPlan [
- 		printCurrentEvent;
- 		onEvent lightCmd : lightCmd( CMD ) -> addRule receivedCmd(CMD);
+  		// -------- TEST{ --------
+  		onEvent lightCmd : lightCmd(CMD) -> addRule logevent(lightCmd,lightCmd(CMD));
+  		// -------- }TEST --------
+		
+// 		printCurrentEvent;
+ 		onEvent lightCmd : lightCmd(CMD) -> addRule receivedCmd(CMD);
  		[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
 
    		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
 	]
 }
 
-// for testing
-QActor applmocktest context ctxRealRobotRasp {
-	Plan init normal [
-		delay 5000;
+// -------- TEST{ --------
+QActor realrobottest context ctxRealRobotRasp {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenEvent frontSonar -> dologevent
+	finally repeatPlan
 		
-		emit ctrlEvent : ctrlEvent(robot,r1,h(0));
-		delay 1000;
-		emit ctrlEvent : ctrlEvent(robot,r1,a(0));
-		delay 1000;
-		emit ctrlEvent : ctrlEvent(robot,r1,s(0));
-		delay 1000;
-		emit ctrlEvent : ctrlEvent(robot,r1,d(0));
-		delay 1000;
-		emit ctrlEvent : ctrlEvent(robot,r1,w(0));		
-		delay 1000;
-		
-		emit lightCmd : lightCmd(on);
-		delay 2000;
-		emit lightCmd : lightCmd(blink);
-		delay 2000;
-		emit lightCmd : lightCmd(off);
-		
-		println("switch to handle sonar")
+	Plan dologevent resumeLastPlan [
+		onEvent frontSonar : sonar(D) -> addRule logevent(frontSonar,sonar(D))
 	]
-	switchTo waitForSonar
-	
-	Plan waitForSonar [ ]
-	 transition stopAfter 3600000
-     	whenEvent frontSonar -> handleSonar
-    finally repeatPlan
-    
- 	Plan handleSonar resumeLastPlan [
- 		printCurrentEvent
- 	]
 }
+// -------- }TEST --------

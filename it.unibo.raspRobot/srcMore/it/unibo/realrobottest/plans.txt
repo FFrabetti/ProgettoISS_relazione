@@ -1,0 +1,2 @@
+plan(1,dologevent, sentence(true,eventswitch(frontSonar, »sonar( D), addRule( logevent( frontSonar,sonar( D)) ) ),'','' ))
+plan(2,dologevent, sentence(true,move(resumeplan),'','' ))

@@ -3,7 +3,7 @@
 
 import sys
 import socket
-import serial
+# import serial
 import time
 import random		# for testing
 from threading import Thread
@@ -104,8 +104,8 @@ if len(sys.argv)==4:
 sockDict = dict()
 
 # https://pythonhosted.org/pyserial/pyserial_api.html#classes
-asd = serial.Serial(SERIAL_PORT, SERIAL_BAUDRATE)
-#asd = MockSerial() # test senza arduino
+#asd = serial.Serial(SERIAL_PORT, SERIAL_BAUDRATE)
+asd = MockSerial() # test senza arduino
 
 serverRobot = ServerThread(ROBOT_PORT, ROBOT_KEY, sockDict, asd)
 serverTemp = ServerThread(TEMP_PORT, TEMP_KEY, sockDict, asd)
@@ -115,26 +115,23 @@ serverTemp.start()
 
 try:
 	while True:
-		if(asd.inWaiting() > 0): # changed to property in_waiting from inWaiting(). Get the number of bytes in the input buffer
-			data = asd.readline().decode()
+		if(asd.in_waiting > 0): # changed to property from inWaiting(). Get the number of bytes in the input buffer
+			data = asd.readline()
 			print("Serial:", data)
-			list = data.split()
-			if(len(list)!=2): # no letture spurie
-#				print("len(list) = ", len(list))
-				continue
+			list = str(data).split()
 			type = list[0]
 			value = list[1]
-#			print("Type:",type," - Value:",value)
+	##		print(type)
+	##		print(value)
 	
 			# appena il sonar rileva qualcosa, lo notifico al client
 			if(type=="Sonar:"):
 				socket_sendmsg(sockDict, ROBOT_KEY, value)
-#				print("new sonar:", value)
 			
 			# il sensore di temperatura invece e' passivo: invia dati solo su richiesta
 			if(type=="Temperature:"):
 				currTemp = value
-#				print("new temp:", currTemp)
+			#	print("new temp:", currTemp)
 finally:
 	for s in sockDict:
 		s.close()

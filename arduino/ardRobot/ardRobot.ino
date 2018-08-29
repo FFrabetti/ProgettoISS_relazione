@@ -50,23 +50,19 @@ int servoState = SRV_FRONT;	// angolo servo motore
 
 int motorState = 0; // 0 = halt, 1 = forward, -1 = backward
 
-void setup() {
-  pinMode(LOWT_LED_PIN, OUTPUT);
-  digitalWrite(LOWT_LED_PIN, LOW);
-  pinMode(HIGHT_LED_PIN, OUTPUT);
-  digitalWrite(HIGHT_LED_PIN, LOW);
-  
-  pinMode(MOV_LED_PIN, OUTPUT);
-  digitalWrite(MOV_LED_PIN, LOW);
+void setPinOutput(int pin) {
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);
+}
 
-  pinMode(MOTOR_PIN, OUTPUT);
-  digitalWrite(MOTOR_PIN, LOW);
-  pinMode(FORW_PIN, OUTPUT);
-  digitalWrite(FORW_PIN, LOW);
-  pinMode(RETRO_PIN, OUTPUT);
-  digitalWrite(RETRO_PIN, LOW);
-  pinMode(MOTOR_LED_PIN, OUTPUT);
-  digitalWrite(MOTOR_LED_PIN, LOW);
+void setup() {
+  setPinOutput(LOWT_LED_PIN);
+  setPinOutput(HIGHT_LED_PIN);
+  setPinOutput(MOV_LED_PIN);
+  setPinOutput(MOTOR_PIN);
+  setPinOutput(FORW_PIN);
+  setPinOutput(RETRO_PIN);
+  setPinOutput(MOTOR_LED_PIN); // debug
   
   myServo.attach(SRV_PIN);
   

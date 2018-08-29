@@ -1,9 +1,10 @@
 % server address and port
-server(localhost,6666).
+%server(localhost,6666).
+server(addr(10,0,3,14),6666).
 
 % servo
-map(a(_),a). % af ???
-map(d(_),d). % df ???
+map(a(_),aaaf). % a
+map(d(_),dddf). % d
 
 % motor
 map(w(_),w).

@@ -12,19 +12,25 @@ public class robotClient {
 	private static TCPClient client;
 	
 	public static void init(QActor qa, String host, String port) throws NumberFormatException, UnknownHostException, IOException {
+		// "host" dot-notation conversion: addr(X,Y,W,Z) -> X.Y.W.Z
+		int index = host.indexOf('(');
+		if(index>=0) {
+			String inner = host.substring(index+1, host.length()-1); // no ( and )
+			host = inner.replace(',','.');
+		}
+		
+		System.out.println("Connecting to: " + host + ":" + port);
 		client = new TCPClient(host, port);
 		
 		new Thread(() -> {
 			try {
 				BufferedReader br = client.getBufferedReader();
 	
-				while(true) {
-					String line = br.readLine();
-					System.out.println("sonar: " + line);
-					
+				String line;
+				while((line = br.readLine()) != null) {
+					System.out.println("emitting frontSonar : sonar(" + line + ")");
 					qa.emit("frontSonar", "sonar(" + line + ")");
 				}
-				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -32,8 +38,9 @@ public class robotClient {
 		}).start();
 	}
 	
+	// synchronized: metodo usato sia da realrobotrasp sia da ledagent
 	public synchronized static void sendCmd(QActor qa, String cmd) throws IOException {
 		client.writeLine(cmd);
 	}
-
+	
 }

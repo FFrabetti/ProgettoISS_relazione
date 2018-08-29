@@ -1,13 +1,15 @@
 package it.unibo.finalTask2018;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 
 import it.unibo.qactors.akka.QActor;
 import it.unibo.sockutils.tcp.TCPClient;
 
 public class tempClient {
 	
-	private static final double DEFAULT_TEMP = 20.20;
+	// se ricevo questo esatto valore, probabilmente ci sono stati problemi con il server
+	private static final double DEFAULT_TEMP = 25.0195;
 	
 	// SERVER ATTIVO: invio continuo di dati
 //	private static double temperature = 0;	
@@ -36,6 +38,14 @@ public class tempClient {
 	private static BufferedReader br;
 	
 	public static void init(QActor qa, String host, String port) {
+		// "host" dot-notation conversion: addr(X,Y,W,Z) -> X.Y.W.Z
+		int index = host.indexOf('(');
+		if(index>=0) {
+			String inner = host.substring(index+1, host.length()-1); // no ( and )
+			host = inner.replace(',','.');
+		}
+		
+		System.out.println("Connecting to: " + host + ":" + port);
 		try {
 			client = new TCPClient(host, port);
 			br = client.getBufferedReader();
@@ -49,7 +59,10 @@ public class tempClient {
 		String temp;
 		try {
 			client.writeLine(request);
+			
 			temp = br.readLine();
+			if(temp==null)
+				throw new IOException("br.readLine()==null");
 		} catch(Exception e) {
 //			e.printStackTrace();
 //			System.out.println(tempClient.class.getSimpleName() + ": " + e.getMessage());

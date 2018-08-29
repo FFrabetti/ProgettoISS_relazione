@@ -17,6 +17,9 @@ const int MOV_LED_PIN = 4;
 const int SRV_PIN = 9;
 // motore elettrico
 const int MOTOR_PIN = 8;
+const int FORW_PIN = 7;
+const int RETRO_PIN = 6;
+const int MOTOR_LED_PIN = 12; //  debug
 // ---------------- PIN ----------------
 
 // periodo di loop(), arg di delay
@@ -45,12 +48,11 @@ int ledState = 0; // 0 = off, 1 = on, 2 = blink
 Servo myServo;	// "oggetto" servo motore
 int servoState = SRV_FRONT;	// angolo servo motore
 
-int motorState = LOW; // LOW = halt, HIGH = forward, ??? -1 = backward
+int motorState = 0; // 0 = halt, 1 = forward, -1 = backward
 
 void setup() {
   pinMode(LOWT_LED_PIN, OUTPUT);
   digitalWrite(LOWT_LED_PIN, LOW);
-  
   pinMode(HIGHT_LED_PIN, OUTPUT);
   digitalWrite(HIGHT_LED_PIN, LOW);
   
@@ -59,6 +61,12 @@ void setup() {
 
   pinMode(MOTOR_PIN, OUTPUT);
   digitalWrite(MOTOR_PIN, LOW);
+  pinMode(FORW_PIN, OUTPUT);
+  digitalWrite(FORW_PIN, LOW);
+  pinMode(RETRO_PIN, OUTPUT);
+  digitalWrite(RETRO_PIN, LOW);
+  pinMode(MOTOR_LED_PIN, OUTPUT);
+  digitalWrite(MOTOR_LED_PIN, LOW);
   
   myServo.attach(SRV_PIN);
   
@@ -121,20 +129,19 @@ void handleLed() {
     digitalWrite(MOV_LED_PIN, iter%2==0 ? LOW : HIGH);
 }
 
-/*
 void handleServo() {
   if(n=='a' || n=='d' || n=='f') {
     if(n=='f')
-	  servoState = SRV_FRONT;
-	else
-	  servoState = n=='d' ? SRV_RIGHT : SRV_LEFT;
-   
-	myServo.write(servoState);
-	n = '\0'; // input consumato
+      servoState = SRV_FRONT;
+    else
+      servoState = n=='d' ? SRV_RIGHT : SRV_LEFT;
+
+    myServo.write(servoState);
+    n = '\0'; // input consumato
   }
 }
-*/
 
+/*
 void handleServo() {
   if(n=='a' || n=='d' || n=='f') {
     if(n=='f') {
@@ -149,15 +156,37 @@ void handleServo() {
 	myServo.write(servoState);
   }
 }
+*/
 
 void handleMotor() {
   if(n=='w' || n=='s' || n=='h') {
-    // if(n=='s')
-	//   motorState = LOW; // -1; ???
-	// else
-	  motorState = n=='w' ? HIGH : LOW;
-   
-    digitalWrite(MOTOR_PIN, motorState);
-	n = '\0'; // input consumato
+    if(n=='h') {
+	  motorState = 0;
+	  motorStop();
+	}
+    else {
+	  motorState = n=='w' ? 1 : -1;
+	  motorStart(motorState);
+	}
+	
+    n = '\0'; // input consumato
   }
+}
+
+void motorStart(int dir) {
+  digitalWrite(FORW_PIN, dir>0 ? HIGH : LOW);
+  digitalWrite(RETRO_PIN, dir>0 ? LOW : HIGH);
+
+  // enable
+  digitalWrite(MOTOR_PIN, HIGH);
+  digitalWrite(MOTOR_LED_PIN, HIGH); // debug
+}
+
+void motorStop() {
+  // disable
+  digitalWrite(MOTOR_PIN, LOW);
+  digitalWrite(MOTOR_LED_PIN, LOW); // debug
+  
+  digitalWrite(FORW_PIN, LOW);
+  digitalWrite(RETRO_PIN, LOW);
 }

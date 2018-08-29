@@ -13,7 +13,7 @@ void setup() {
 	pinMode(MOTOR_PIN, OUTPUT);
 	pinMode(FORW_PIN, OUTPUT);
 	pinMode(RETRO_PIN, OUTPUT);
-	pinMode(LED_PIN, OUTPUT);
+	pinMode(LED_PIN, OUTPUT); // debug
 
 	Serial.begin(9600);
 }
@@ -47,15 +47,19 @@ void motorBackward() {
 }
 
 void motorStart(int dir) {
-	digitalWrite(MOTOR_PIN, HIGH);
-	digitalWrite(LED_PIN, HIGH);
 	digitalWrite(FORW_PIN, dir>0 ? HIGH : LOW);
 	digitalWrite(RETRO_PIN, dir>0 ? LOW : HIGH);
+	
+	// enable
+	digitalWrite(MOTOR_PIN, HIGH);
+	digitalWrite(LED_PIN, HIGH); // debug
 }
 
 void motorStop() {
+	// disable
 	digitalWrite(MOTOR_PIN, LOW);
-	digitalWrite(LED_PIN, LOW);
+	digitalWrite(LED_PIN, LOW); // debug
+	
 	digitalWrite(FORW_PIN, LOW);
 	digitalWrite(RETRO_PIN, LOW);
 }

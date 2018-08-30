@@ -32,7 +32,6 @@ public class robotClient {
 					qa.emit("frontSonar", "sonar(" + line + ")");
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}).start();

@@ -648,3 +648,16 @@ QActor huelampagent context ctxAppl {
 	]
 }
 // -------------------------- HUE LAMP AGENT --------------------------
+
+// -------- TEST{ --------
+QActor crslogger context ctxAppl {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenEvent temperature -> dologevent
+	finally repeatPlan
+		
+	Plan dologevent resumeLastPlan [
+		onEvent temperature : temperature(T) -> addRule logevent(temperature,temperature(T))
+	]
+}
+// -------- }TEST --------

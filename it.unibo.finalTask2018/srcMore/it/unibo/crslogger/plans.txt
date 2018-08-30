@@ -1,0 +1,2 @@
+plan(1,dologevent, sentence(true,eventswitch(temperature, »temperature( T), addRule( logevent( temperature,temperature( T)) ) ),'','' ))
+plan(2,dologevent, sentence(true,move(resumeplan),'','' ))

@@ -1,6 +1,6 @@
 % server address and port
-%server(localhost,6666).
-server(addr(10,0,3,14),6666).
+server(localhost,6666).
+%server(addr(10,0,3,14),6666).
 
 % servo
 map(a(_),aaaf). % a

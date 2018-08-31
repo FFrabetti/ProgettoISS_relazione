@@ -336,22 +336,23 @@
     \vskip 40\p@
   }}
 
+% Dimensioni: \normalsize \large \Large \LARGE \huge \Huge
 \renewcommand\section{\@startsection{section}{1}{\z@}%
                        {-18\p@ \@plus -4\p@ \@minus -4\p@}%
                        {12\p@ \@plus 4\p@ \@minus 4\p@}%
-                       {\normalfont\large\bfseries\boldmath
+                       {\normalfont\Large\bfseries\boldmath			% \large
                         \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
 \renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
                        {-18\p@ \@plus -4\p@ \@minus -4\p@}%
                        {8\p@ \@plus 4\p@ \@minus 4\p@}%
-                       {\normalfont\normalsize\bfseries\boldmath
+                       {\normalfont\large\bfseries\boldmath			% \normalsize
                         \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
 \renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
                        {-18\p@ \@plus -4\p@ \@minus -4\p@}%
 %                       {-0.5em \@plus -0.22em \@minus -0.1em}%
 % https://tex.stackexchange.com/questions/94095/new-line-after-subsubsection-with-llncs-class/94101
 						{4\p@ \@plus 2\p@ \@minus 2\p@}%
-                       {\normalfont\normalsize\bfseries\boldmath}}
+                       {\normalfont\normalsize\bfseries\boldmath}}		% \normalsize
 \renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
                        {-12\p@ \@plus -4\p@ \@minus -4\p@}%
                        {-0.5em \@plus -0.22em \@minus -0.1em}%

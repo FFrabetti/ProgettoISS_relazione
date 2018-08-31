@@ -241,7 +241,9 @@ Scegliamo di procedere top-down, con zooming progressivo verso i dettagli.
 % FINAL TASK 2018
 In a home of a given city (e.g. Bologna), a \texttt{ddr} robot is used to clean the floor of a room (\code{R-FloorClean}).
 
-The floor in the room is a flat floor of solid material and is equipped with two \emph{sonars}, named \code{sonar1} and \code{sonar2} as shown in the picture (\code{sonar1} is that at the top). The initial position (\code{start-point}) of the robot is detected by \code{sonar1}, while the final position (\code{end-point}) is detected by \code{sonar2}.\\
+The floor in the room is a flat floor of solid material and is equipped with two \emph{sonars}, named \code{sonar1} and \code{sonar2} as shown in the picture
+\footnote{\textit{iss2018$\backslash$it.unibo.issMaterial$\backslash$issdocs$\backslash$Material$\backslash$nodeLab2018.pdf}: \textbf{8 Final task 2018}}
+(\code{sonar1} is that at the top). The initial position (\code{start-point}) of the robot is detected by \code{sonar1}, while the final position (\code{end-point}) is detected by \code{sonar2}.\\
 
 \noindent The robot works under the following conditions:
 \begin{enumerate}
@@ -284,29 +286,33 @@ Moreover, the robot must stop its activity when one of the following conditions 
 %===========================================================================
 \section{Requirement analysis}
 \labelsec{ReqAnalysis}
-Dai requisiti emerge il fatto che il sistema sia distribuito e composto da due nodi di esecuzione: uno per il robot e uno che ospita la logica di controllo e la console per pilotare il robot (\code{R-Start} e \code{R-Stop}).\\
+Dai requisiti emerge il fatto che il sistema sia distribuito e composto da due nodi di esecuzione: uno per il robot ed uno che ospita la logica di controllo e fornisce la console, usabile da remoto, per pilotare il robot (\code{R-Start} e \code{R-Stop}).\\
 
 \noindent Si delineano nello specifico 5 entità:
 \begin{enumerate}
-\item il robot, che può essere sia fisico sia virtuale (\texttt{RealDDR} e \texttt{VirtualDDR}), e l'ambiente in cui si muove (fisico/virtuale)
-\item gli attuatori: il \texttt{Led} per il robot reale e l'\texttt{Hue Lamp} remota per quello virtuale
-\item i sensori: un indicatore di temperatura remoto (\texttt{TemperatureSensor}) e un orologio (\texttt{Clock})
-\item un utilizzatore umano (\texttt{HumanOperator}) della \code{console}
-\item più un componente che andrà ad incapsulare l'\texttt{Application logic}
+\item il robot, che può essere sia fisico sia virtuale (\texttt{RealRobot} e \texttt{VirtualRobot}), e l'ambiente in cui si muove (fisico/virtuale)
+\item gli attuatori: il \texttt{Led} per il robot reale e l'\texttt{HueLamp} per quello virtuale
+\item i sensori: un indicatore di temperatura remoto (\texttt{RemoteThermometer}) e un orologio (\texttt{ClockAgent})
+\item un utilizzatore umano (\texttt{HumanOperator}) a cui è collegata la console grafica
+\item un componente che andrà ad incapsulare l'\texttt{Application logic}
 \end{enumerate}
 
-\noindent L'ambiente è inoltre costituito a sua volta da:
+\noindent L'ambiente in cui si trova il robot è inoltre costituito da:
 \begin{itemize}[label={--}]
-\item 2 sensori \code{sonar1} e \code{sonar2} (ambiente virtuale)
+\item 2 sensori \code{sonar1} e \code{sonar2} % (ambiente virtuale) %% sono virtuali solo perchè non li abbiamo fisici, giusto?
 \item ostacoli fissi (pareti) e mobili
 \end{itemize}
 
-L'architettura del sistema può essere descritta in maniera informale dalla \xf{informalRA}.
+L'architettura del sistema può essere quindi descritta in maniera informale dalla \xf{informalRA}.
 \begin{figure}[!htb]
 \centering
 \includegraphics[scale=0.4]{img/informalArchitecture1.png}
 \caption{Architettura informale ottenuta dall'analisi dei requisiti}\labelfig{informalRA}
 \end{figure}
+
+\vspace{8px}
+
+Passiamo ora ad analizzare formalmente i singoli componenti presenti all'interno dei due contesti, a partire da quello che rappresenta l'applicazione principale.
 
 \subsection{Actuators}
 \labelssec{actuatorsRA}
@@ -327,68 +333,84 @@ Possiamo quindi definire il modello di un attore in grado di interagire con l'\t
 
 Si noti come la scelta di utilizzare l'evento \codescript{lightCmd} consenta di controllare più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
 
-Inoltre, poiché i comandi utilizzati nel payload dell'evento non si limitano solo a gestire il \textit{lampeggiamento}, il modello è generale e facilmente riutilizzabile. Ad esempio un cambiamento dei requisiti potrebbe stabilire che il led vada solo acceso durante il movimento del robot.
+Inoltre, poiché i comandi utilizzati nel payload dell'evento non si limitano al solo \textit{lampeggiamento}, il modello è generale e facilmente riutilizzabile. Ad esempio un cambiamento dei requisiti potrebbe stabilire che il led debba restare acceso durante il movimento del robot.
 
 \subsection{Sensors}
 
-\subsubsection{TemperatureSensor}
-Poiché abbiamo a che fare con un servizio remoto che fornisce i dati sulla temperatura, ci viene naturale modellare un attore che funga da adapter per permettere la comunicazione di questi con il sistema.
+\subsubsection{TemperatureAgent}
+Poiché abbiamo a che fare con un servizio remoto che fornisce i dati sulla temperatura, modelliamo un attore che funga da \emph{adapter} e permetta la comunicazione tra questi e il sistema.\\
 
-Nello specifico, l'applicazione può interagire con l'adapter mediante tre possibili approcci:
+In generale, l'applicazione può interagire con l'adapter mediante tre possibili approcci del tipo produttore/consumatore:
 \begin{itemize}
-\item \textbf{polling:} chi necessita dell'informazione a farsi carico di fare richiesta periodicamente al sensore;
+\item \textbf{polling:} chi necessita dell'informazione si fa carico di fare richiesta periodicamente al consumatore;
 \item \textbf{pattern observer:} l'observer si registra presso l'observable e viene notificato al cambiamento di stato di quest'ultimo;
-\item \textbf{publish/subscribe:} è il sensore stesso a pubblicare all'esterno le informazioni quando queste sono disponibili ad uso degli eventuali subscriber.
+\item \textbf{publish/subscribe:} è il produttore stesso a pubblicare all'esterno le informazioni quando queste sono disponibili, ad uso degli eventuali consumatori.
 \end{itemize}
 Scegliamo di adottare la terza strategia, poiché meno costosa in termini di dati scambiati e poiché garantisce un minor accoppiamento tra le entità coinvolte.
 
-Anche in questo caso l'adapter del sensore, non conoscendo i componenti interessati, emette un evento \codescript{temperature : temperature(T)} che può essere percepito da chiunque sia in ascolto.\\
+Nell'ambiente distribuito in cui operano i QActor, la pubblicazione (\textit{publish}) di informazioni avviene tramite l'emissione di \textbf{eventi} che per essere rilevati necessitano che il consumatore si sia preventivamente messo in ascolto (operazione logicamente equivalente alla \textit{subscribe}).\\
 
 \lstinputlisting[style=style_qa, firstline=38, lastline=52, firstnumber=38]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
+Come per \codescript{lightCmd}, anche in questo caso l'evento \codescript{temperature}% : temperature(T)}
+emesso dall'adapter del sensore può essere percepito da chiunque sia in ascolto, senza dover specificare a priori i possibili componenti interessati.\\
+
+Si noti infine come l'interazione tra \codescript{TemperatureAgent} e il servizio che fornisce la temperatura sia a polling.
+
 \subsubsection{Clock}
-Poiché nei requisiti non viene specificata la natura del \texttt{Clock}, scegliamo di modellarlo come un attore a se stante -- separato dalla logica applicativa specifica del problema -- così che in futuro possa essere facilmente introdotto un qualsiasi meccanismo di sincronizzazione distribuito (es. orologio logico di Lamport
-\footnote{\url{https://en.wikipedia.org/wiki/Leslie_Lamport}}).
+% Poiché nei requisiti non viene specificata la natura del \texttt{Clock},
+Per quanto riguarda il \texttt{Clock}, scegliamo di modellarlo come un attore a se stante, separato dalla logica applicativa specifica del problema, così che sia facilmente modificabile e riutilizzabile.%; inoltre, in questo modo in futuro potrebbe essere tranquillamente sostituito con un meccanismo di sincronizzazione distribuito (es. orologio logico di Lamport\footnote{\url{https://en.wikipedia.org/wiki/Leslie_Lamport}}).
+
+Il modello di tale attore è pressoché analogo a quello visto per \texttt{TemperatureAgent}.\\
 
 \lstinputlisting[style=style_qa, firstline=56, lastline=71, firstnumber=56]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
-
-Il suo comportamento interno è pressoché analogo a quello visto per il \texttt{TemperatureSensor}.
 
 \subsection{HumanOperator}
 Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
 
 \lstinputlisting[style=style_qa, firstline=75, lastline=89, firstnumber=75]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
-Lo \texttt{HumanOperator} dovrà inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'applicazione, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con un server più sofisticato.\\
+Il sistema deve inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'applicazione, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con un server più sofisticato (ad esempio per realizzare l'autenticazione degli utenti).\\
 
-\lstinputlisting[style=style_qa, firstline=12, lastline=12, firstnumber=12]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=11, lastline=11, firstnumber=11]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+
+\todo{La console Web è raggiungibile tramite browser all'indirizzo ... ed emette eventi/msg ... alla pressione dei pulsanti. Ecc...}
+
+\subsection{Application logic}
+Per poter attuare la logica applicativa stabilita dai requisiti, l'applicazione deve ricevere i dati della temperatura, del tempo e dei vari sonar, emessi sotto forma di eventi; oltre a questi, deve mettersi in attesa dei comandi di movimento inviati dallo \texttt{HumanOperator}, così da poterli inoltrare a tutti i robot disponibili (reali e virtuali): a tal fine è stato introdotto l'evento \codescript{robotCmd : moveRobot(CMD)}.
+
+Sempre in accordo con i requisiti, l'applicazione deve gestire ed emettere, quando opportuno, gli eventi contenenti i comandi che regolano il \texttt{Led}, presente sul robot fisico, e la \texttt{Hue Lamp} remota, gestita da quello virtuale.\\
+
+\lstinputlisting[style=style_qa, firstline=93, lastline=117, firstnumber=93]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 \subsection{Robot}
 Ci viene fornito un modello del robot espresso nel linguaggio \qa
-\footnote{it.unibo.mbot.divide/src/realRobotExecutor.qa}: questi è in grado di ricevere messaggi \codescript{moveRobot : moveRobot(CMD)} e di interpretarli come comandi di movimento (stop, forward, left, right, backward).
+\footnote{iss2018Lab/it.unibo.mbot.divide/src/realRobotExecutor.qa e virtualRobotExecutor.qa}: questi è in grado di ricevere messaggi \codescript{moveRobot : moveRobot(CMD)} e di interpretarli come comandi di movimento (forward, backward, left, right, stop).
 
-Il robot è anche dotato di un sonar frontale che gli permette di rilevare la presenza di ostacoli (\code{R-AvoidFix} e \code{R-AvoidMobile}). Il robot riveste quindi il duplice ruolo di attuatore e di sensore, in quanto emette informazioni relative alla distanza dagli ostacoli che incontra sotto forma di eventi \codescript{frontSonar : sonar(DISTANCE)}.\\
+Il robot è anche dotato di un sonar frontale che gli permette di rilevare la presenza di ostacoli (\code{R-AvoidFix} e \code{R-AvoidMobile}), rivestendo il duplice ruolo di attuatore e di sensore, in quanto emette informazioni relative alla distanza dagli ostacoli che incontra sotto forma di eventi \codescript{frontSonar : sonar(DISTANCE)}.
 
-Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato ed emettere eventi relativi al sonar frontale. L'implementazione delle varie mosse è delegata ad un'opportuna classe Java che può essere modificata senza alterare il modello del robot.\\
+Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato ed emettere eventi relativi al sonar frontale.\\
 
-\lstinputlisting[style=style_qa]{../it.unibo.finalTask2018/src/ddr.qa}
+Poiché l'attore che incarna la logica applicativa emette comandi sotto forma di eventi \codescript{robotCmd}, è necessario introdurre un ulteriore componente che effettui il mapping di questi nei rispettivi messaggi \codescript{moveRobot} gestiti dal robot. In questo caso, dal momento che vogliamo evitare che i comandi per pilotare il robot vadano persi, facciamo ricorso per tale scopo ad un componente \emph{event-driven} (\texttt{EventHandler}).\\
 
-\vspace{8px}
+\lstinputlisting[style=style_qa, lastline=37]{../it.unibo.finalTask2018/src/ddr.qa}
 
-Nell'ambiente virtuale sono presenti due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due. Per questo motivo definiamo un ulteriore evento \codescript{sonarSensor : sonar(NAME, DISTANCE)}, dove \codescript{NAME} è \code{sonar1} o \code{sonar2}.\\
+L'implementazione delle varie mosse viene delegata ad un'opportuna classe Java, così che questa possa essere modificata senza alterare il modello del robot. Questa soluzione permette inoltre di riutilizzare lo stesso modello per entrambe le tipologie di robot, reale e virtuale.\\
 
-Da notare come l'emissione di tali eventi dipenda dalla specifica implementazione del \textit{virtual environment} (le operazioni ad esso relative sono delegate ad una classe Java):
+Nella stanza sono presenti due sonar in grado di rilevare la presenza di un robot che passi in corrispondenza di uno dei due, emettendo in tal caso un evento \codescript{sonarSensor : sonar(NAME,DISTANCE)}, dove \codescript{NAME} è \code{sonar1} o \code{sonar2}.
 
-\lstinputlisting[language=Java, firstline=8, lastline=19, firstnumber=8]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/robot/MockRobot.java}
+L'emissione di tali eventi dipende dalla specifica implementazione dell'\textit{environment}, pertanto anch'essa viene delegata ad una classe Java:\\
 
-\subsection{Application logic}
-L'immagine della \xf{informalRA} può essere quindi formalmente definita dal seguente sistema {\qa}:\\
+\lstinputlisting[language=Java, firstline=9, lastline=21, firstnumber=9]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/ra/robotAdapter.java}
 
-\lstinputlisting[style=style_qa, lastline=13]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\subsection{System formal definition}
+L'immagine della \xf{informalRA} può essere quindi formalmente definita dal sistema {\qa} risultante dall'integrazione tra \codescript{ddr.qa} e \codescript{requirementsAnalysis.qa}, rappresentata da un ulteriore componente il cui compito è mettere in contatto i contesti degli altri due.\\
 
-\vspace{8px}
+\lstinputlisting[style=style_qa, lastline=14]{../it.unibo.finalTask2018/src/raintegrator.qa}
 
-\lstinputlisting[style=style_qa, firstline=93, lastline=116, firstnumber=93]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+In alternativa, è possibile decommentare in \codescript{ddr.qa} la riga contenente la conoscenza del contesto dell'applicazione principale, aggiungendo quindi il vincolo che al momento dell'esecuzione del robot questa sia già attiva.
+
+Questa seconda opzione è meno conveniente dal punto di vista del testing automatizzato dei singoli componenti, discusso nella \xsss{reqAnalTesting}.\\
 
 \vspace{8px}
 
@@ -1097,6 +1119,9 @@ transition
 %===========================================================================
 \section{Testing}
 \labelsec{Testing}
+
+\subsection{Requirement analysis}
+\labelsssec{reqAnalTesting}
 %===========================================================================
 
 %===========================================================================

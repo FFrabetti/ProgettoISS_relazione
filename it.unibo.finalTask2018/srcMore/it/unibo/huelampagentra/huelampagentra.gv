@@ -10,11 +10,11 @@ digraph finite_state_machine {
 	size="8,5"
 	
 	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	commandLamp [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	waitForEvents [ color = black ][ fontcolor = black ][ penwidth = 3 ]
-	commandLed [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	
 	init -> waitForEvents [ label = "switch" ][ color = black ][ fontcolor = black ]
 	waitForEvents -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
-	waitForEvents -> commandLed [ label = "lightCmd" ][ color = black ][ fontcolor = black ]
-	commandLed -> waitForEvents [ label = "switch" ][ color = black ][ fontcolor = black ]
+	waitForEvents -> commandLamp [ label = "lightCmd" ][ color = red ][ fontcolor = red ][ dir = both ]
+	waitForEvents -> waitForEvents [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
 }

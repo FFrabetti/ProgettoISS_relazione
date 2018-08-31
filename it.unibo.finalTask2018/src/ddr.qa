@@ -1,47 +1,56 @@
 System finalTask2018            
 
 Dispatch moveRobot : moveRobot(CMD)
-
+Event robotCmd : moveRobot(CMD)
+Event lightCmd : lightCmd(CMD)
 Event frontSonar : sonar(DISTANCE)
-Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
+Event sonarSensor : sonar(NAME,DISTANCE)
 
 Context ctxDdr ip [ host="localhost" port=8882 ]
+EventHandler evhddr for robotCmd {
+	forwardEvent ddr -m moveRobot // event -> msg (stesso payload)
+};
+// see: raintegrator.qa
+//Context ctxReqAnalysis ip [ host="localhost" port=8888 ] -standalone 
 
-QActor ddr context ctxDdr {   
-	Plan init normal [       
-	    println("ddr start");
-	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
-  	]
-    switchTo waitForCmd        
-		
-   	Plan waitForCmd[
-   		println("ddr waiting for commands")
-   	]  
-  	transition stopAfter 3600000 
- 		whenMsg moveRobot -> execMove 
-   	finally repeatPlan    
-	   
-  	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward();
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
-   	]
-}
-
-QActor testerrobot context ctxDdr {
+QActor ddr context ctxDdr {
 	Plan init normal [
-		println("testerrobot start");
-		delay 2000;
-		forward ddr -m moveRobot : moveRobot(w(1));
-		delay 2000;
-		forward ddr -m moveRobot : moveRobot(h(1));
-		delay 2000;
-		forward ddr -m moveRobot : moveRobot(s(1));
-		delay 2000;
-		forward ddr -m moveRobot : moveRobot(a(1));
-		delay 2000;
-		forward ddr -m moveRobot : moveRobot(d(1))
+		println("ddr start");
+		javaRun it.unibo.finalTask2018.ra.robotAdapter.setUpEnvironment()
+	]
+	switchTo waitForCmd
+	
+	Plan waitForCmd [
+		println("ddr waiting for commands")
+	]
+	transition stopAfter 3600000
+		whenMsg moveRobot -> execMove
+	finally repeatPlan
+	
+	Plan execMove resumeLastPlan [
+		onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.ra.robotAdapter.robotStop();
+		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.ra.robotAdapter.robotForward();
+		onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.ra.robotAdapter.robotBackward();
+		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.ra.robotAdapter.robotLeft();
+		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.ra.robotAdapter.robotRight()
 	]
 }
+
+// -------- TEST{ --------
+QActor ddrlogger context ctxDdr {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenEvent sonarSensor -> dologevent,
+		whenEvent frontSonar -> dologevent,
+		whenEvent robotCmd -> dologevent,
+		whenEvent lightCmd -> dologevent
+	finally repeatPlan
+	
+	Plan dologevent resumeLastPlan [
+		onEvent sonarSensor : sonar(N,D) -> addRule logevent(sonarSensor,sonar(N,D));
+		onEvent frontSonar : sonar(D) -> addRule logevent(frontSonar,sonar(D));
+		onEvent robotCmd : moveRobot(CMD) -> addRule logevent(robotCmd,moveRobot(CMD));
+		onEvent lightCmd : lightCmd(CMD) -> addRule logevent(lightCmd,lightCmd(CMD))
+	]
+}
+// -------- }TEST --------

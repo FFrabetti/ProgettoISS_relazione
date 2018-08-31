@@ -3,16 +3,16 @@ System finalTask2018
 Event clock : clock(H,M)
 Event temperature : temperature(T)
 Event frontSonar : sonar(DISTANCE)
-Event sonarSensor : sonar(NAME, DISTANCE)
-Event lightCmd : lightCmd(STATE)
-Dispatch cmd : cmd(X)
-Dispatch moveRobot : moveRobot(CMD)
+Event sonarSensor : sonar(NAME,DISTANCE)
+Event lightCmd : lightCmd(CMD)
+Dispatch cmd : cmd(CMD)
+Event robotCmd : moveRobot(CMD) // Dispatch moveRobot : moveRobot(CMD)
 
-Context ctxReqAnalysis ip [host="localhost" port=8888] -httpserver
-Context ctxDdr ip [ host="localhost" port=8882 ] -standalone 
+Context ctxReqAnalysis ip [ host="localhost" port=8888 ] -httpserver
+//Context ctxDdr ip [ host="localhost" port=8882 ] -standalone 
 
 // -------------------------- HUE LAMP AGENT --------------------------
-// Event lightCmd : lightCmd(STATE)
+// Event lightCmd : lightCmd(CMD)
 QActor huelampagentra context ctxReqAnalysis {
 	Plan init normal [ 
 		println("hueLampAgent start")
@@ -23,14 +23,14 @@ QActor huelampagentra context ctxReqAnalysis {
 		println("hueLampAgent waiting for events")
 	]
 	transition stopAfter 3600000
-		whenEvent lightCmd -> commandLed
+		whenEvent lightCmd -> commandLamp
+	finally repeatPlan
 	
-	Plan commandLed [
-		onEvent lightCmd : lightCmd( blink )-> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("blink");
-		onEvent lightCmd : lightCmd( on ) 	-> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("on");
-		onEvent lightCmd : lightCmd ( off ) -> javaRun it.unibo.finalTask2018.adapter.hueAdapter.light("off")
+	Plan commandLamp resumeLastPlan [
+		onEvent lightCmd : lightCmd( blink )-> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("blink");
+		onEvent lightCmd : lightCmd( on ) 	-> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("on");
+		onEvent lightCmd : lightCmd ( off ) -> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("off")
 	]
-	switchTo waitForEvents
 }
 // -------------------------- HUE LAMP AGENT --------------------------
 
@@ -45,8 +45,8 @@ QActor temperatureagentra context ctxReqAnalysis {
 	Plan checkTemperature [
 		delay 5000;
 		println("temperatureAgent checking temperature");
-		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
-		[?? currentTemp(T)] emit temperature : temperature(T)
+		javaRun it.unibo.finalTask2018.ra.temperatureAdapter.getTemperature();
+		[ ?? currentTemp(T) ] emit temperature : temperature(T)
 	]
 	finally repeatPlan
 }
@@ -64,15 +64,15 @@ QActor clockagentra context ctxReqAnalysis {
 		delay 6000; // for testing
 		// delay 60000;
 		println("clockAgent checking time");
-		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
-		[?? currentTime(H,M)] emit clock : clock(H,M)
+		javaRun it.unibo.finalTask2018.ra.clockAdapter.getTime();
+		[ ?? currentTime(H,M) ] emit clock : clock(H,M)
 	]
 	finally repeatPlan
 }
 // -------------------------- CLOCK AGENT --------------------------
 
 // -------------------------- HUMAN OPERATOR --------------------------
-// Dispatch cmd : cmd(X)
+// Dispatch cmd : cmd(CMD)
 QActor humanoperatorra context ctxReqAnalysis {
 	Plan init normal [
 		println("humanOperator start")
@@ -81,37 +81,61 @@ QActor humanoperatorra context ctxReqAnalysis {
 	
 	Plan sendCmd [
 		// for testing
-		delay 400;
+		delay 800;
 		forward applra -m cmd : cmd(w(X));
-		delay 400;
-		forward applra -m cmd : cmd(d(X))
+		delay 800;
+		forward applra -m cmd : cmd(h(X))
 	]
 }
 // -------------------------- HUMAN OPERATOR --------------------------
 
 // -------------------------- APPLICATION LOGIC --------------------------
 QActor applra context ctxReqAnalysis {
-	Plan init normal[
+	Plan init normal [
 		println("appl start")
 	]
 	switchTo waitForCmd
 	
-	Plan waitForCmd[]
-	transition stopAfter 60000
-		whenEvent clock : clock(h(H,M)) do printCurrentEvent,
+	Plan waitForCmd [ ]
+	transition stopAfter 3600000
+		whenEvent temperature : temperature(T) do printCurrentEvent,
+		whenEvent clock : clock(H,M) do printCurrentEvent,
 		whenEvent sonarSensor : sonar(N,D) do printCurrentEvent,
-		whenEvent temperature -> testHue,
+		whenEvent frontSonar : sonar(DISTANCE) do printCurrentEvent,
 		whenMsg cmd -> msgReceived
 	finally repeatPlan
 	
-	Plan testHue resumeLastPlan [
-		emit lightCmd : lightCmd(blink);
-		delay 1000;
-		emit lightCmd : lightCmd(off)
-	]
-	
-	Plan msgReceived resumeLastPlan[
-		onMsg cmd: cmd(X) -> sendto ddr in ctxDdr -m moveRobot : moveRobot(X)
+	Plan msgReceived resumeLastPlan [
+		printCurrentMessage;
+		onMsg cmd: cmd(CMD) -> emit robotCmd : moveRobot(CMD);
+		
+		// for testing
+		delay 400;
+		onMsg cmd: cmd(w(X)) -> emit lightCmd : lightCmd(on);
+		onMsg cmd: cmd(h(X)) -> emit lightCmd : lightCmd(off)
 	]
 }
 // -------------------------- APPLICATION LOGIC --------------------------
+
+// -------- TEST{ --------
+QActor ralogger context ctxReqAnalysis {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenEvent temperature -> dologevent,
+		whenEvent clock -> dologevent,
+		whenEvent sonarSensor -> dologevent,
+		whenEvent frontSonar -> dologevent,
+		whenEvent lightCmd -> dologevent,
+		whenEvent robotCmd -> dologevent
+	finally repeatPlan
+		
+	Plan dologevent resumeLastPlan [
+		onEvent temperature : temperature(T) -> addRule logevent(temperature,temperature(T));
+		onEvent clock : clock(H,M) -> addRule logevent(clock,clock(H,M));
+		onEvent sonarSensor : sonar(D) -> addRule logevent(sonarSensor,sonar(D));
+		onEvent frontSonar : sonar(N,D) -> addRule logevent(frontSonar,sonar(N,D));
+		onEvent lightCmd : lightCmd(CMD) -> addRule logevent(lightCmd,lightCmd(CMD));
+		onEvent robotCmd : moveRobot(CMD) -> addRule logevent(robotCmd,moveRobot(CMD))
+	]
+}
+// -------- }TEST --------

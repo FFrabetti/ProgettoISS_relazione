@@ -1,7 +1,7 @@
 package it.unibo.finalTask2018.robot;
 
 import it.unibo.finalTask2018.robot.ledMock.ILed;
-import it.unibo.finalTask2018.robot.ledMock.ledMockGui;
+import it.unibo.finalTask2018.robot.ledMock.LedMockGui;
 import it.unibo.qactors.akka.QActor;
 
 public class RealRobotMock implements DDRobot {
@@ -11,7 +11,7 @@ public class RealRobotMock implements DDRobot {
 
 	@Override
 	public void setUpEnvironment(QActor qa, String host, int port) {
-		led = new ledMockGui();
+		led = new LedMockGui();
 		led.turnOn();
 		try {
 			Thread.sleep(2000);

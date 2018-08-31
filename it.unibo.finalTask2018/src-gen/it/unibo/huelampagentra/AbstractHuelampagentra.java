@@ -57,7 +57,7 @@ public abstract class AbstractHuelampagentra extends QActor {
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
 	    	stateTab.put("waitForEvents",waitForEvents);
-	    	stateTab.put("commandLed",commandLed);
+	    	stateTab.put("commandLamp",commandLamp);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -88,13 +88,14 @@ public abstract class AbstractHuelampagentra extends QActor {
 	    
 	    StateFun waitForEvents = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("waitForEvents",-1);
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_waitForEvents",0);
+	     pr.incNumIter(); 	
 	    	String myselfName = "waitForEvents";  
 	    	temporaryStr = "\"hueLampAgent waiting for events\"";
 	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"huelampagentra_"+myselfName,false,
-	          new StateFun[]{stateTab.get("commandLed") }, 
+	          new StateFun[]{stateTab.get("commandLamp") }, 
 	          new String[]{"true","E","lightCmd" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForEvents){  
@@ -103,54 +104,52 @@ public abstract class AbstractHuelampagentra extends QActor {
 	    }
 	    };//waitForEvents
 	    
-	    StateFun commandLed = () -> {	
+	    StateFun commandLamp = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("commandLed",-1);
-	    	String myselfName = "commandLed";  
+	     PlanRepeat pr = PlanRepeat.setUp("commandLamp",-1);
+	    	String myselfName = "commandLamp";  
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("lightCmd(blink)");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
-	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "blink" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
+	    			it.unibo.finalTask2018.ra.hueAdapter.setLight(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("lightCmd(on)");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
-	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "on" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
+	    			it.unibo.finalTask2018.ra.hueAdapter.setLight(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("lightCmd(off)");
 	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
-	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
+	    		pengine.unify(curT, Term.createTerm("lightCmd(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueAdapter.light(this,arg1 );
+	    			it.unibo.finalTask2018.ra.hueAdapter.setLight(this,arg1 );
 	    			}
 	    	}
-	    	//switchTo waitForEvents
-	        switchToPlanAsNextState(pr, myselfName, "huelampagentra_"+myselfName, 
-	              "waitForEvents",false, false, null); 
-	    }catch(Exception e_commandLed){  
-	    	 println( getName() + " plan=commandLed WARNING:" + e_commandLed.getMessage() );
+	    	repeatPlanNoTransition(pr,myselfName,"huelampagentra_"+myselfName,false,true);
+	    }catch(Exception e_commandLamp){  
+	    	 println( getName() + " plan=commandLamp WARNING:" + e_commandLamp.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//commandLed
+	    };//commandLamp
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

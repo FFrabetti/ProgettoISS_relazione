@@ -10,15 +10,15 @@ digraph finite_state_machine {
 	size="8,5"
 	
 	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
-	testHue [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	waitForCmd [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	msgReceived [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	
 	waitForCmd -> action [ label = "clock" ][ color = red ][ fontcolor = red ][ dir = both ]
 	waitForCmd -> action [ label = "sonarSensor" ][ color = red ][ fontcolor = red ][ dir = both ]
 	waitForCmd -> msgReceived [ label = "cmd" ][ color = red ][ fontcolor = red ][ dir = both ]
-	waitForCmd -> testHue [ label = "temperature" ][ color = red ][ fontcolor = red ][ dir = both ]
-	waitForCmd -> handleToutBuiltIn [ label = "timeout(60000)" ][ color = green ][ fontcolor = green ]
+	waitForCmd -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	waitForCmd -> action [ label = "temperature" ][ color = red ][ fontcolor = red ][ dir = both ]
+	waitForCmd -> action [ label = "frontSonar" ][ color = red ][ fontcolor = red ][ dir = both ]
 	init -> waitForCmd [ label = "switch" ][ color = black ][ fontcolor = black ]
 	waitForCmd -> waitForCmd [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
 }

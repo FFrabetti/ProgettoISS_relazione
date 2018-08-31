@@ -4,13 +4,14 @@ import java.awt.Color;
 
 import it.unibo.custom.gui.customBlsGui;
 
-public class ledMockGui extends customBlsGui implements ILed {
+public class LedMockGui extends customBlsGui implements ILed {
 
 	private static boolean on = false;
 	
-	public ledMockGui() {
+	public LedMockGui() {
 		super();
 		createCustomLedGui(null, Color.CYAN);
+		turnOff();
 	}
 	
 	@Override

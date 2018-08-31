@@ -96,7 +96,7 @@ public abstract class AbstractClockagentra extends QActor {
 	    	if( ! aar.getGoon() ) return ;
 	    	temporaryStr = "\"clockAgent checking time\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.clockAdapter.getTime( myself  );
+	    	it.unibo.finalTask2018.ra.clockAdapter.getTime( myself  );
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??currentTime(H,M)" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "clock(H,M)","clock(H,M)", guardVars ).toString();
 	    	emit( "clock", temporaryStr );

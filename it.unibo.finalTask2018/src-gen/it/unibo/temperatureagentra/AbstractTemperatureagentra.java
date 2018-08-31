@@ -96,7 +96,7 @@ public abstract class AbstractTemperatureagentra extends QActor {
 	    	if( ! aar.getGoon() ) return ;
 	    	temporaryStr = "\"temperatureAgent checking temperature\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature( myself  );
+	    	it.unibo.finalTask2018.ra.temperatureAdapter.getTemperature( myself  );
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??currentTemp(T)" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "temperature(T)","temperature(T)", guardVars ).toString();
 	    	emit( "temperature", temporaryStr );

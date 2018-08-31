@@ -46,4 +46,19 @@ public class QActorTestUtils {
 				throw new IllegalStateException("not isGoalSuccess(tester, test(end))");
 		}
 	}
+	
+	/*
+	 * qa.sendMsg(String msgID, String dest, String msgType, String msg)
+	 * 		humanoperatorra.sendMsg("cmd", "applra", "dispatch", "cmd(d(1))");
+	 * qa.sendMsg(String senderName, String msgID, String dest, String msgType, String msg)
+	 * 		humanoperatorra.sendMsg("humanoperatorra_ctrl", "cmd", "applra", "dispatch", "cmd(d(2))");
+	 */
+	public static void sendMsg(QActor sender, String dest, String msgname, String msgpl) throws Exception {
+		sender.sendMsg(msgname, dest, "dispatch", msgpl);
+	}
+	
+	public static void sendMsg(QActor sender, QActor dest, String msgname, String msgpl) throws Exception {
+		sendMsg(sender, dest.getNameNoCtrl(), msgname, msgpl);
+	}
+	
 }

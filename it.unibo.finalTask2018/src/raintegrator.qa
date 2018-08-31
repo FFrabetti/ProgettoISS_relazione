@@ -1,0 +1,32 @@
+System raintegrator
+
+Event clock : clock(H,M)
+Event temperature : temperature(T)
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME,DISTANCE)
+Event lightCmd : lightCmd(CMD)
+Dispatch cmd : cmd(CMD)
+Event robotCmd : moveRobot(CMD) // Dispatch moveRobot : moveRobot(CMD)
+
+Context ctxRaIntegrator ip [ host="localhost" port=8880 ]
+
+Context ctxDdr ip [ host="localhost" port=8882 ] -standalone 
+Context ctxReqAnalysis ip [ host="localhost" port=8888 ] -standalone 
+
+QActor raintegratorqa context ctxRaIntegrator {
+	Plan init normal [
+		println("raIntegrator start");
+		delay 1000;
+		println("raIntegrator emitting cmd : cmd(s(3))");
+		sendto applra in ctxReqAnalysis -m cmd : cmd(s(3));
+		delay 1000;
+		println("raIntegrator emitting cmd : cmd(s(4))");
+		sendto applra in ctxReqAnalysis -m cmd : cmd(s(4))
+	]
+	transition stopAfter 3600000
+		whenEvent frontSonar -> end
+	
+	Plan end [
+		println("raIntegrator end")
+	]
+}

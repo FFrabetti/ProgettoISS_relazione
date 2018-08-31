@@ -90,16 +90,16 @@ public abstract class AbstractHumanoperatorra extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp("sendCmd",-1);
 	    	String myselfName = "sendCmd";  
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(400,"" , "");
+	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "sendCmd";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(w(X))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(w(X))", guardVars ).toString();
 	    	sendMsg("cmd","applra", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(400,"" , "");
+	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "sendCmd";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(X))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(h(X))", guardVars ).toString();
 	    	sendMsg("cmd","applra", QActorContext.dispatch, temporaryStr ); 
 	    	repeatPlanNoTransition(pr,myselfName,"humanoperatorra_"+myselfName,false,false);
 	    }catch(Exception e_sendCmd){  

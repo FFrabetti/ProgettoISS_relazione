@@ -77,7 +77,7 @@ public abstract class AbstractDdr extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"ddr start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself  );
+	    	it.unibo.finalTask2018.ra.robotAdapter.setUpEnvironment( myself  );
 	    	//switchTo waitForCmd
 	        switchToPlanAsNextState(pr, myselfName, "ddr_"+myselfName, 
 	              "waitForCmd",false, false, null); 
@@ -116,7 +116,7 @@ public abstract class AbstractDdr extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.adapter.robotAdapter.robotStop(this );
+	    		it.unibo.finalTask2018.ra.robotAdapter.robotStop(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -126,7 +126,7 @@ public abstract class AbstractDdr extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.adapter.robotAdapter.robotForward(this );
+	    		it.unibo.finalTask2018.ra.robotAdapter.robotForward(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -136,7 +136,7 @@ public abstract class AbstractDdr extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.adapter.robotAdapter.robotBackward(this );
+	    		it.unibo.finalTask2018.ra.robotAdapter.robotBackward(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -146,7 +146,7 @@ public abstract class AbstractDdr extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.adapter.robotAdapter.robotLeft(this );
+	    		it.unibo.finalTask2018.ra.robotAdapter.robotLeft(this );
 	    		}
 	    	}
 	    	//onMsg 
@@ -156,7 +156,7 @@ public abstract class AbstractDdr extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.finalTask2018.adapter.robotAdapter.robotRight(this );
+	    		it.unibo.finalTask2018.ra.robotAdapter.robotRight(this );
 	    		}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"ddr_"+myselfName,false,true);

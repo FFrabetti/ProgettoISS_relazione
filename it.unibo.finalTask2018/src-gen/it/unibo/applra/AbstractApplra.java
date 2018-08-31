@@ -57,7 +57,6 @@ public abstract class AbstractApplra extends QActor {
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
 	    	stateTab.put("waitForCmd",waitForCmd);
-	    	stateTab.put("testHue",testHue);
 	    	stateTab.put("msgReceived",msgReceived);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
@@ -98,6 +97,20 @@ public abstract class AbstractApplra extends QActor {
 	          try{
 	            PlanRepeat pr1 = PlanRepeat.setUp("adhocstate",-1);
 	            //ActionSwitch for a message or event
+	             if( currentEvent.getMsg().startsWith("temperature") ){
+	            	//println("WARNING: variable substitution not yet fully implemented " ); 
+	            	printCurrentEvent(false);
+	             }
+	            repeatPlanNoTransition(pr1,"adhocstate","adhocstate",false,true);
+	          }catch(Exception e ){  
+	             println( getName() + " plan=waitForCmd WARNING:" + e.getMessage() );
+	             //QActorContext.terminateQActorSystem(this); 
+	          }
+	          },
+	           () -> {	//AD HOC state to execute an action and resumeLastPlan
+	          try{
+	            PlanRepeat pr1 = PlanRepeat.setUp("adhocstate",-1);
+	            //ActionSwitch for a message or event
 	             if( currentEvent.getMsg().startsWith("clock") ){
 	            	//println("WARNING: variable substitution not yet fully implemented " ); 
 	            	printCurrentEvent(false);
@@ -122,49 +135,73 @@ public abstract class AbstractApplra extends QActor {
 	             //QActorContext.terminateQActorSystem(this); 
 	          }
 	          },
-	           stateTab.get("testHue"), stateTab.get("msgReceived") }, 
-	          new String[]{"true","E","clock", "true","E","sonarSensor", "true","E","temperature", "true","M","cmd" },
-	          60000, "handleToutBuiltIn" );//msgTransition
+	           () -> {	//AD HOC state to execute an action and resumeLastPlan
+	          try{
+	            PlanRepeat pr1 = PlanRepeat.setUp("adhocstate",-1);
+	            //ActionSwitch for a message or event
+	             if( currentEvent.getMsg().startsWith("sonar") ){
+	            	//println("WARNING: variable substitution not yet fully implemented " ); 
+	            	printCurrentEvent(false);
+	             }
+	            repeatPlanNoTransition(pr1,"adhocstate","adhocstate",false,true);
+	          }catch(Exception e ){  
+	             println( getName() + " plan=waitForCmd WARNING:" + e.getMessage() );
+	             //QActorContext.terminateQActorSystem(this); 
+	          }
+	          },
+	           stateTab.get("msgReceived") }, 
+	          new String[]{"true","E","temperature", "true","E","clock", "true","E","sonarSensor", "true","E","frontSonar", "true","M","cmd" },
+	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForCmd){  
 	    	 println( getName() + " plan=waitForCmd WARNING:" + e_waitForCmd.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//waitForCmd
 	    
-	    StateFun testHue = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("testHue",-1);
-	    	String myselfName = "testHue";  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "lightCmd(STATE)","lightCmd(blink)", guardVars ).toString();
-	    	emit( "lightCmd", temporaryStr );
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "testHue";
-	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "lightCmd(STATE)","lightCmd(off)", guardVars ).toString();
-	    	emit( "lightCmd", temporaryStr );
-	    	repeatPlanNoTransition(pr,myselfName,"applra_"+myselfName,false,true);
-	    }catch(Exception e_testHue){  
-	    	 println( getName() + " plan=testHue WARNING:" + e_testHue.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//testHue
-	    
 	    StateFun msgReceived = () -> {	
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("msgReceived",-1);
 	    	String myselfName = "msgReceived";  
+	    	printCurrentMessage(false);
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("cmd(X)");
+	    	curT = Term.createTerm("cmd(CMD)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
-	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
+	    		pengine.unify(curT, Term.createTerm("cmd(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg="moveRobot(X)";
-	    		/* SendDispatch */
-	    		parg = updateVars(Term.createTerm("cmd(X)"),  Term.createTerm("cmd(X)"), 
+	    		String parg="moveRobot(CMD)";
+	    		/* RaiseEvent */
+	    		parg = updateVars(Term.createTerm("cmd(CMD)"),  Term.createTerm("cmd(CMD)"), 
 	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) sendExtMsg("moveRobot","ddr","ctxDdr",QActorContext.dispatch, parg ); 
+	    		if( parg != null ) emit( "robotCmd", parg );
+	    	}
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(400,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "msgReceived";
+	    	if( ! aar.getGoon() ) return ;
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("cmd(w(X))");
+	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
+	    		pengine.unify(curT, Term.createTerm("cmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg="lightCmd(on)";
+	    		/* RaiseEvent */
+	    		parg = updateVars(Term.createTerm("cmd(CMD)"),  Term.createTerm("cmd(w(X))"), 
+	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) emit( "lightCmd", parg );
+	    	}
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("cmd(h(X))");
+	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
+	    		pengine.unify(curT, Term.createTerm("cmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg="lightCmd(off)";
+	    		/* RaiseEvent */
+	    		parg = updateVars(Term.createTerm("cmd(CMD)"),  Term.createTerm("cmd(h(X))"), 
+	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) emit( "lightCmd", parg );
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"applra_"+myselfName,false,true);
 	    }catch(Exception e_msgReceived){  

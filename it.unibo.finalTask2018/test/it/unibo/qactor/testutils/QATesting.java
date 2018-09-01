@@ -1,9 +1,11 @@
 package it.unibo.qactor.testutils;
 
+import static org.junit.Assert.fail;
+
 import it.unibo.qactors.QActorUtils;
 import it.unibo.qactors.akka.QActor;
 
-public class QActorTestUtils {
+public class QATesting {
 
 	public static String getActorName(String name) {
 		return name + "_ctrl";
@@ -59,6 +61,14 @@ public class QActorTestUtils {
 	
 	public static void sendMsg(QActor sender, QActor dest, String msgname, String msgpl) throws Exception {
 		sendMsg(sender, dest.getNameNoCtrl(), msgname, msgpl);
+	}
+	
+	public static void sleep(int millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			fail(e.getMessage());
+		}
 	}
 	
 }

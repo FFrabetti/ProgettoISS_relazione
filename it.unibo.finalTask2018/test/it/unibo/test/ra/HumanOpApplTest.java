@@ -1,67 +1,46 @@
 package it.unibo.test.ra;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import it.unibo.ctxReqAnalysis.MainCtxReqAnalysis;
-import it.unibo.qactor.testutils.QActorTestUtils;
+import it.unibo.qactor.testutils.QATesting;
 import it.unibo.qactors.akka.QActor;
 
-public class HumanOpApplTest {
+public class HumanOpApplTest extends QATesting {
 
 	private static QActor ralogger;
 	private static QActor humanoperatorra;
 	
 	@BeforeClass
-	public static void setUpBeforeClass() {
-		try {
-			MainCtxReqAnalysis.initTheContext();
+	public static void setUpBeforeClass() throws Exception {
+		MainCtxReqAnalysis.initTheContext();
 
-			ralogger = QActorTestUtils.waitForQActorToStart("ralogger");
-			humanoperatorra = QActorTestUtils.waitForQActorToStart("humanoperatorra");
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		ralogger = waitForQActorToStart("ralogger");
+		humanoperatorra = waitForQActorToStart("humanoperatorra");
 	}
 
 	@Test
 	public void robotCmdEmissionTest() {
-		try {
-			Thread.sleep(2000);
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ralogger, "robotCmd", "moveRobot(w(X))"));
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ralogger, "robotCmd", "moveRobot(h(X))"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		sleep(2000);
+		assertTrue(isEventReceived(ralogger, "robotCmd", "moveRobot(w(X))"));
+		assertTrue(isEventReceived(ralogger, "robotCmd", "moveRobot(h(X))"));
 	}
 	
 	@Test
 	public void lightCmdEmissionTest() {
-		try {
-			Thread.sleep(5000);
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ralogger, "lightCmd", "lightCmd(on)"));
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ralogger, "lightCmd", "lightCmd(off)"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		sleep(5000);
+		assertTrue(isEventReceived(ralogger, "lightCmd", "lightCmd(on)"));
+		assertTrue(isEventReceived(ralogger, "lightCmd", "lightCmd(off)"));
 	}
 
 	@Test
-	public void cmdMsgEmissionTest() {
-		try {
-			QActorTestUtils.sendMsg(humanoperatorra, "applra", "cmd", "cmd(d(0))");
-			Thread.sleep(2000);
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ralogger, "robotCmd", "moveRobot(d(X))"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+	public void cmdMsgEmissionTest() throws Exception {
+		sendMsg(humanoperatorra, "applra", "cmd", "cmd(d(0))");
+		sleep(2000);
+		assertTrue(isEventReceived(ralogger, "robotCmd", "moveRobot(d(X))"));
 	}
 	
 }

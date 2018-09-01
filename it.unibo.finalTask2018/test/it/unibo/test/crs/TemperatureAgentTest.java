@@ -12,7 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import it.unibo.ctxAppl.MainCtxAppl;
-import it.unibo.qactor.testutils.QActorTestUtils;
+import it.unibo.qactor.testutils.QATesting;
 import it.unibo.qactors.akka.QActor;
 import it.unibo.sockutils.tcp.TCPServer;
 
@@ -46,8 +46,8 @@ public class TemperatureAgentTest {
 		try {
 			MainCtxAppl.initTheContext();
 
-			crslogger = QActorTestUtils.waitForQActorToStart("crslogger");
-			temperatureagent = QActorTestUtils.waitForQActorToStart("temperatureagent");
+			crslogger = QATesting.waitForQActorToStart("crslogger");
+			temperatureagent = QATesting.waitForQActorToStart("temperatureagent");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -72,7 +72,7 @@ public class TemperatureAgentTest {
 			if (serverThread != null)
 				Assert.assertFalse(receivedMsgs.isEmpty());
 
-			Assert.assertTrue(QActorTestUtils.isEventReceived(crslogger, "temperature", "temperature(D)"));
+			Assert.assertTrue(QATesting.isEventReceived(crslogger, "temperature", "temperature(D)"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());

@@ -1,6 +1,7 @@
 package it.unibo.test.ra;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -8,54 +9,46 @@ import org.junit.Test;
 
 import it.unibo.ctxDdr.MainCtxDdr;
 import it.unibo.finalTask2018.ra.robotAdapter;
-import it.unibo.qactor.testutils.QActorTestUtils;
+import it.unibo.qactor.testutils.QATesting;
 import it.unibo.qactors.akka.QActor;
 
-public class DdrTest {
+public class DdrTest extends QATesting {
 
 	private static QActor ddrlogger;
 	
 	@BeforeClass
-	public static void setUpBeforeClass() {
-		try {
-			MainCtxDdr.initTheContext();
+	public static void setUpBeforeClass() throws Exception {
+		MainCtxDdr.initTheContext();
 
-			ddrlogger = QActorTestUtils.waitForQActorToStart("ddrlogger");
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		ddrlogger = waitForQActorToStart("ddrlogger");
 	}
 
 	@Test
+	public void moveRobotReceptionTest() throws Exception {
+		sendMsg(ddrlogger, "ddr", "moveRobot", "moveRobot(d(0))");
+		sleep(2000);
+		assertEquals("right", robotAdapter.getStatus());
+	}
+	
+	@Test
 	public void robotCmdReceptionTest() {
-		try {
-			ddrlogger.emit("robotCmd", "moveRobot(a(0))");
-			Thread.sleep(2000);
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ddrlogger, "robotCmd", "moveRobot(a(X))"));
-			Assert.assertEquals("left", robotAdapter.getStatus());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		ddrlogger.emit("robotCmd", "moveRobot(a(0))");
+		sleep(2000);
+		assertTrue(isEventReceived(ddrlogger, "robotCmd", "moveRobot(a(0))"));
+		assertEquals("left", robotAdapter.getStatus());
+	}
+	
+	@Test
+	public void sonarEmissionTest() {
+		sleep(5000);
+		assertTrue(isEventReceived(ddrlogger, "sonarSensor", "sonar(N,D)"));
+		assertTrue(isEventReceived(ddrlogger, "frontSonar", "sonar(D)"));
 	}
 	
 	@Test
 	public void lightCmdReceptionTest() {
-		// sarebbe un integration test con ddr + led o ddr + hue lamp
-		fail("Not yet implemented");
+		// integration test ddr + led/hue lamp
+		Assert.fail("Not yet implemented");
 	}
 
-	@Test
-	public void sonarEmissionTest() {
-		try {
-			Thread.sleep(5000);
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ddrlogger, "sonarSensor", "sonar(N,D)"));
-			Assert.assertTrue(QActorTestUtils.isEventReceived(ddrlogger, "frontSonar", "sonar(D)"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-	}
-	
 }

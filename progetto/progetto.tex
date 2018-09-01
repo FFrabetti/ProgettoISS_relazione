@@ -357,7 +357,7 @@ emesso dall'adapter del sensore può essere percepito da chiunque sia in ascolto
 
 Si noti infine come l'interazione tra \codescript{TemperatureAgent} e il servizio che fornisce la temperatura sia a polling.
 
-\subsubsection{Clock}
+\subsubsection{ClockAgent}
 % Poiché nei requisiti non viene specificata la natura del \texttt{Clock},
 Per quanto riguarda il \texttt{Clock}, scegliamo di modellarlo come un attore a se stante, separato dalla logica applicativa specifica del problema, così che sia facilmente modificabile e riutilizzabile.%; inoltre, in questo modo in futuro potrebbe essere tranquillamente sostituito con un meccanismo di sincronizzazione distribuito (es. orologio logico di Lamport\footnote{\url{https://en.wikipedia.org/wiki/Leslie_Lamport}}).
 
@@ -366,6 +366,7 @@ Il modello di tale attore è pressoché analogo a quello visto per \texttt{Tempe
 \lstinputlisting[style=style_qa, firstline=56, lastline=71, firstnumber=56]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 \subsection{HumanOperator}
+\labelssec{humanOpRA}
 Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
 
 \lstinputlisting[style=style_qa, firstline=75, lastline=89, firstnumber=75]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
@@ -1120,8 +1121,57 @@ transition
 \section{Testing}
 \labelsec{Testing}
 
+Per quanto riguarda il testing, l'approccio adottato è principalmente a \emph{black-box}, ovvero senza assumere di avere nozione di quale sia l'effettivo comportamento interno del componente sotto esame. Questo consente di strutturare i test in maniera indipendente dalle specifiche implementazioni e, in alcuni casi, di riutilizzare gli stessi test durante le varie fasi dello sviluppo.\\
+
+I test seguono un ordine incrementale del tipo bottom-up, partendo cioè dalle singole unità (\emph{unit testing}), poi dall'integrazione di queste (\emph{integration testing}), per passare poi ai vari sottosistemi e ai servizi da essi offerti (\emph{functional testing}).
+
+Queste prime tre tipologie di test possono essere eseguite in maniera automatica facendo uso del framework \texttt{JUnit}, mentre lo \emph{user acceptance testing} viene condotto manualmente man mano che un nuovo pezzo di codice viene aggiunto al sistema.
+
 \subsection{Requirement analysis}
 \labelsssec{reqAnalTesting}
+
+\subsubsection{Led unit test}
+Il testing del led prevede di verificare semplicemente il comportamento dei metodi esposti nell'interfaccia \codescript{ILed} (\xss{actuatorsRA}). Anche se nello specifico è stato usato un oggetto mock provvisto di GUI per simulare il led fisico, il test rimane valido per qualsiasi implementazione dell'interfaccia.\\
+
+\lstinputlisting[language=Java, firstline=12, lastline=31, firstnumber=12]{../it.unibo.finalTask2018/test/it/unibo/test/ra/LedTest.java}
+
+\subsubsection{HueLampAgent unit test}
+L'\codescript{HueLampAgent} riceve eventi \codescript{lightCmd} e li traduce in comandi per la Hue Lamp remota. Poiché in questo caso l'oggetto del testing è il comportamento dell'agent e non la comunicazione tra questi e la Hue Lamp, possiamo limitarci a controllare che alla ricezione di un evento corrisponda l'effettivo cambiamento di stato nell'oggetto che simula la lampada.\\
+
+\lstinputlisting[language=Java, firstline=15, lastline=41, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HueLampAgentTest.java}
+
+\subsubsection{TemperatureAgent unit test}
+Lo scopo di \codescript{TemperatureAgent} è quello di emettere periodicamente eventi \codescript{temperature}. Dobbiamo quindi verificare che, dopo un tempo ragionevole, questi siano stati effettivamente generati e che i dati sulla temperatura in essi contenuti corrispondano a quanto rilevato dal sensore.\\
+
+\lstinputlisting[language=Java, firstline=15, lastline=28, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/TemperatureAgentTest.java}
+
+Per registrare gli eventi emessi nel sistema è stato usato un \emph{event logger}:\\
+
+\lstinputlisting[style=style_qa, firstline=121, lastline=140, firstnumber=121]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+
+\subsubsection{ClockAgent unit test}
+Un ragionamento analogo al precedente vale per \codescript{ClockAgent}:\\
+
+\lstinputlisting[language=Java, firstline=15, lastline=29, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/TemperatureAgentTest.java}
+
+\subsubsection{HumanOperator and Application logic integration test}
+Poiché lo \codescript{HumanOperator} è un attore che emette comandi per il robot nella forma di messaggi per il componente che incapsula la logica applicativa, il testing del primo è legato a quello della seconda.
+
+Nello specifico, occorre verificare che quest'ultima emetta i rispettivi eventi \codescript{robotCmd} per il robot e \codescript{lightCmd} per il led/la Hue Lamp. A tal scopo ricorriamo ancora una volta all'event logger.\\
+
+\lstinputlisting[language=Java, firstline=14, lastline=44, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HumanOpApplTest.java}
+
+Si noti come i primi due test facciano riferimento ai messaggi inviati a fine di testing direttamente nel modello dell'analisi dei requisiti (\xss{humanOpRA}).
+
+\subsubsection{Robot unit test}
+Il robot, sia fisico sia virtuale, è stato modellato come un attore in grado di interpretare messaggi \codescript{moveRobot} e tradurli in opportune azioni di movimento. Oltre a questo, il robot è sensibile agli eventi \codescript{robotCmd} generati dalla logica applicativa e mappati in messaggi da un \codescript{EventHandler}.
+
+Infine, il robot può emettere informazioni relative al sonar frontale e al proprio passaggio in corrispondenza di uno dei due sonar presenti nella stanza.\\
+
+Il testing si concentrerà quindi su questi tre aspetti, verificando lo stato del robot in seguito all'invio dei comandi (sotto forma di messaggi o eventi) e consultando la base di conoscenza dell'event logger per controllare l'effettiva emissione degli eventi \codescript{frontSonar} e \codescript{sonarSensor}.\\
+
+\lstinputlisting[language=Java, firstline=17, lastline=46, firstnumber=17]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrTest.java}
+
 %===========================================================================
 
 %===========================================================================

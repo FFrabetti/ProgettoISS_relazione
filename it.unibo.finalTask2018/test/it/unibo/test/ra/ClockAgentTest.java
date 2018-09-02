@@ -22,8 +22,8 @@ public class ClockAgentTest extends QATesting {
 	}
 
 	@Test
-	public void clockEmissionTest() {
-		sleep(6000 + 1000);
+	public void clockEmissionTest() throws Exception {
+		Thread.sleep(6000 + 1000);
 		int[] time = clockAdapter.getCurrentTime();
 		assertTrue(isEventReceived(ralogger, "clock", "clock(" + time[0] + "," + time[1] + ")"));
 	}

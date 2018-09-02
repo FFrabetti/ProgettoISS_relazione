@@ -23,15 +23,15 @@ public class HumanOpApplTest extends QATesting {
 	}
 
 	@Test
-	public void robotCmdEmissionTest() {
-		sleep(2000);
+	public void robotCmdEmissionTest() throws Exception {
+		Thread.sleep(2000);
 		assertTrue(isEventReceived(ralogger, "robotCmd", "moveRobot(w(X))"));
 		assertTrue(isEventReceived(ralogger, "robotCmd", "moveRobot(h(X))"));
 	}
 	
 	@Test
-	public void lightCmdEmissionTest() {
-		sleep(5000);
+	public void lightCmdEmissionTest() throws Exception {
+		Thread.sleep(5000);
 		assertTrue(isEventReceived(ralogger, "lightCmd", "lightCmd(on)"));
 		assertTrue(isEventReceived(ralogger, "lightCmd", "lightCmd(off)"));
 	}
@@ -39,7 +39,7 @@ public class HumanOpApplTest extends QATesting {
 	@Test
 	public void cmdMsgEmissionTest() throws Exception {
 		sendMsg(humanoperatorra, "applra", "cmd", "cmd(d(0))");
-		sleep(2000);
+		Thread.sleep(2000);
 		assertTrue(isEventReceived(ralogger, "robotCmd", "moveRobot(d(X))"));
 	}
 	

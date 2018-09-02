@@ -1,6 +1,11 @@
 package it.unibo.qactor.testutils;
 
-import static org.junit.Assert.fail;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
 import it.unibo.qactors.QActorUtils;
 import it.unibo.qactors.akka.QActor;
@@ -63,11 +68,48 @@ public class QATesting {
 		sendMsg(sender, dest.getNameNoCtrl(), msgname, msgpl);
 	}
 	
-	public static void sleep(int millis) {
-		try {
-			Thread.sleep(millis);
-		} catch (InterruptedException e) {
-			fail(e.getMessage());
+	public static Process execMain(Class<?> klass) throws IOException, InterruptedException {
+		String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+		String classpath = System.getProperty("java.class.path");
+		String className = klass.getCanonicalName();
+
+		ProcessBuilder builder = new ProcessBuilder(javaBin, "-cp", classpath, className);
+		builder.redirectErrorStream();
+		Process process = builder.start();
+
+		printOutputThread(process, "out_" + className);
+		
+		return process;
+		// process.waitFor();
+		// return process.exitValue();
+	}
+
+	private static Thread printOutputThread(Process process, String fileName) {
+		InputStream input = process.getInputStream();
+		
+		Thread t = new Thread(() -> {
+			try (PrintWriter pw = new PrintWriter(new File(fileName))) {
+				BufferedReader br = new BufferedReader(new InputStreamReader(input));
+				String line;
+				while (process.isAlive() && (line = br.readLine()) != null) {
+					pw.write(line + "\n");
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			finally {
+				System.out.println("Process output in file: " + fileName);
+			}
+		});
+		t.start();
+		
+		return t;
+	}
+	
+	public static void stopProcess(Process process) throws InterruptedException {
+		if(process!=null && process.isAlive()) {
+			process.destroyForcibly();
+			process.waitFor();
 		}
 	}
 	

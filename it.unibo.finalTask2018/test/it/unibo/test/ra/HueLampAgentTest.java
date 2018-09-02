@@ -22,21 +22,21 @@ public class HueLampAgentTest extends QATesting {
 	}
 
 	@Test
-	public void lightCmdReceptionTest() {
+	public void lightCmdReceptionTest() throws Exception {
 		huelampagentra.emit("lightCmd", "lightCmd(on)");
-		sleep(1000);
+		Thread.sleep(1000);
 		assertEquals("on", hueAdapter.getCurrentState());
 		
 		huelampagentra.emit("lightCmd", "lightCmd(off)");
-		sleep(1000);
+		Thread.sleep(1000);
 		assertEquals("off", hueAdapter.getCurrentState());
 
 		huelampagentra.emit("lightCmd", "lightCmd(wrong)");
-		sleep(1000);
+		Thread.sleep(1000);
 		assertEquals("off", hueAdapter.getCurrentState());
 		
 		huelampagentra.emit("lightCmd", "lightCmd(blink)");
-		sleep(1000);
+		Thread.sleep(1000);
 		assertEquals("blink", hueAdapter.getCurrentState());
 	}
 

@@ -26,21 +26,21 @@ public class DdrTest extends QATesting {
 	@Test
 	public void moveRobotReceptionTest() throws Exception {
 		sendMsg(ddrlogger, "ddr", "moveRobot", "moveRobot(d(0))");
-		sleep(2000);
+		Thread.sleep(2000);
 		assertEquals("right", robotAdapter.getStatus());
 	}
 	
 	@Test
-	public void robotCmdReceptionTest() {
+	public void robotCmdReceptionTest() throws Exception {
 		ddrlogger.emit("robotCmd", "moveRobot(a(0))");
-		sleep(2000);
+		Thread.sleep(2000);
 		assertTrue(isEventReceived(ddrlogger, "robotCmd", "moveRobot(a(0))"));
 		assertEquals("left", robotAdapter.getStatus());
 	}
 	
 	@Test
-	public void sonarEmissionTest() {
-		sleep(5000);
+	public void sonarEmissionTest() throws Exception {
+		Thread.sleep(5000);
 		assertTrue(isEventReceived(ddrlogger, "sonarSensor", "sonar(N,D)"));
 		assertTrue(isEventReceived(ddrlogger, "frontSonar", "sonar(D)"));
 	}

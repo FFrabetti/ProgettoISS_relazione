@@ -22,8 +22,8 @@ public class TemperatureAgentTest extends QATesting {
 	}
 
 	@Test
-	public void temperatureEmissionTest() {
-		sleep(5000 + 1000);
+	public void temperatureEmissionTest() throws Exception {
+		Thread.sleep(5000 + 1000);
 		assertTrue(isEventReceived(ralogger, "temperature", "temperature(" + temperatureAdapter.getCurrentTemp() + ")"));
 	}
 	

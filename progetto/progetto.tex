@@ -193,13 +193,19 @@ Software engineering, software development process, process representation, ...
 %===========================================================================
 \section{Introduction}
 \labelsec{intro}
+
+L'ordine di presentazione delle sezioni in questo documento è solo parzialmente cronologico, in quanto spesso, durante il processo di sviluppo, è stato necessario rivedere le scelte fatte in precedenza alla luce di nuove considerazioni.
 %===========================================================================
 
 %===========================================================================
 \section{Vision}
 \labelsec{vision}
 
-Scegliamo di procedere top-down, con zooming progressivo verso i dettagli.
+In fase di analisi e di progettazione scegliamo di procedere top-down, con zooming progressivo verso i dettagli.
+
+Il processo di sviluppo adottato è di tipo \emph{Agile}, ovvero prediligendo ad ogni step la creazione di prototipi funzionanti da sottoporre al committente al fine di ottenere dei feedback.
+
+In accordo con questa visione, anche i requisiti vengono affrontati in maniera incrementale.
 %=========================================================================== 
 
 %===========================================================================
@@ -1121,11 +1127,11 @@ transition
 \section{Testing}
 \labelsec{Testing}
 
-Per quanto riguarda il testing, l'approccio adottato è principalmente a \emph{black-box}, ovvero senza assumere di avere nozione di quale sia l'effettivo comportamento interno del componente sotto esame. Questo consente di strutturare i test in maniera indipendente dalle specifiche implementazioni e, in alcuni casi, di riutilizzare gli stessi test durante le varie fasi dello sviluppo.\\
+Per quanto riguarda il testing, l'approccio adottato è principalmente a \emph{black-box}, ovvero senza assumere di avere nozione di quale sia l'effettivo comportamento interno del componente sotto esame, concentrando invece l'attenzione sull'aspetto dell'interazione. Questo consente di strutturare i test in maniera indipendente dalle specifiche implementazioni e, in alcuni casi, di riutilizzare gli stessi test durante le varie fasi dello sviluppo.\\
 
-I test seguono un ordine incrementale del tipo bottom-up, partendo cioè dalle singole unità (\emph{unit testing}), poi dall'integrazione di queste (\emph{integration testing}), per passare poi ai vari sottosistemi e ai servizi da essi offerti (\emph{functional testing}).
+I test seguono un ordine incrementale del tipo bottom-up, partendo cioè dalle singole unità (\emph{unit testing}), per passare poi all'integrazione di queste (\emph{integration testing}) e, infine, ai vari sottosistemi e ai servizi da essi offerti (\emph{functional testing}).
 
-Queste prime tre tipologie di test possono essere eseguite in maniera automatica facendo uso del framework \texttt{JUnit}, mentre lo \emph{user acceptance testing} viene condotto manualmente man mano che un nuovo pezzo di codice viene aggiunto al sistema.
+Queste prime tre tipologie di test possono essere eseguite in maniera automatica facendo uso del framework \texttt{JUnit}, mentre lo \emph{user acceptance testing} viene condotto manualmente man mano che un nuovo componente viene aggiunto al sistema.
 
 \subsection{Requirement analysis}
 \labelsssec{reqAnalTesting}
@@ -1136,7 +1142,7 @@ Il testing del led prevede di verificare semplicemente il comportamento dei meto
 \lstinputlisting[language=Java, firstline=12, lastline=31, firstnumber=12]{../it.unibo.finalTask2018/test/it/unibo/test/ra/LedTest.java}
 
 \subsubsection{HueLampAgent unit test}
-L'\codescript{HueLampAgent} riceve eventi \codescript{lightCmd} e li traduce in comandi per la Hue Lamp remota. Poiché in questo caso l'oggetto del testing è il comportamento dell'agent e non la comunicazione tra questi e la Hue Lamp, possiamo limitarci a controllare che alla ricezione di un evento corrisponda l'effettivo cambiamento di stato nell'oggetto che simula la lampada.\\
+L'\codescript{HueLampAgent} riceve eventi \codescript{lightCmd} e li traduce in comandi per la Hue Lamp remota. Poiché in questo caso l'oggetto del testing è il comportamento dell'agent e non la comunicazione tra questi e la Hue Lamp, possiamo limitarci a controllare che alla ricezione di un evento corrisponda l'effettivo cambiamento di stato nell'oggetto Java che simula la lampada.\\
 
 \lstinputlisting[language=Java, firstline=15, lastline=41, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HueLampAgentTest.java}
 

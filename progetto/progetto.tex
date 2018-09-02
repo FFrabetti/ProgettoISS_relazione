@@ -411,6 +411,7 @@ L'emissione di tali eventi dipende dalla specifica implementazione dell'\textit{
 \lstinputlisting[language=Java, firstline=9, lastline=21, firstnumber=9]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/ra/robotAdapter.java}
 
 \subsection{System formal definition}
+\labelssec{formalRA}
 L'immagine della \xf{informalRA} può essere quindi formalmente definita dal sistema {\qa} risultante dall'integrazione tra \codescript{ddr.qa} e \codescript{requirementsAnalysis.qa}, rappresentata da un ulteriore componente il cui compito è mettere in contatto i contesti degli altri due.\\
 
 \lstinputlisting[style=style_qa, lastline=14]{../it.unibo.finalTask2018/src/raintegrator.qa}
@@ -1178,6 +1179,16 @@ Il testing si concentrerà quindi su questi tre aspetti, verificando lo stato de
 
 \lstinputlisting[language=Java, firstline=17, lastline=46, firstnumber=17]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrTest.java}
 
+\subsubsection{Robot \& Application system integration test}
+Dopo aver testato che l'applicazione sia in grado di tradurre messaggi \codescript{cmd} in opportuni eventi \codescript{robotCmd} e \codescript{lightCmd}, e che il robot interpreti correttamente tali comandi, rimane da verificare che i due componenti continuino a funzionare una volta entrati a far parte di uno stesso sistema (\xss{formalRA}).\\
+
+Per automatizzare il test occorre eseguire in processi distinti l'applicazione principale, il robot e, infine,
+%\codescript{raintegrator.qa}, che funge da
+il ``system integrator'' tra gli altri due.
+
+In particolare, l'obiettivo è controllare che all'invio di un \codescript{cmd} diretto al componente che incapsula la logica applicativa, il robot mock agisca di conseguenza grazie alla propagazione degli eventi garantita dall'infrastruttura {\qa}.\\
+
+\lstinputlisting[language=Java, firstline=20, lastline=67, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrApplIntegrationTest.java}
 %===========================================================================
 
 %===========================================================================

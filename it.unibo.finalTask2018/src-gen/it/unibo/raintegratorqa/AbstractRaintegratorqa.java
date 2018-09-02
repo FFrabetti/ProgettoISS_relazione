@@ -56,7 +56,7 @@ public abstract class AbstractRaintegratorqa extends QActor {
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
-	    	stateTab.put("end",end);
+	    	stateTab.put("testSendCmd",testSendCmd);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -76,45 +76,37 @@ public abstract class AbstractRaintegratorqa extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"raIntegrator start\"";
 	    	println( temporaryStr );  
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
-	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = "\"raIntegrator emitting cmd : cmd(s(3))\"";
-	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(s(3))", guardVars ).toString();
-	    	sendExtMsg("cmd","applra", "ctxReqAnalysis", QActorContext.dispatch, temporaryStr ); 
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
-	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = "\"raIntegrator emitting cmd : cmd(s(4))\"";
-	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(s(4))", guardVars ).toString();
-	    	sendExtMsg("cmd","applra", "ctxReqAnalysis", QActorContext.dispatch, temporaryStr ); 
-	    	//bbb
-	     msgTransition( pr,myselfName,"raintegratorqa_"+myselfName,false,
-	          new StateFun[]{stateTab.get("end") }, 
-	          new String[]{"true","E","frontSonar" },
-	          3600000, "handleToutBuiltIn" );//msgTransition
+	    	repeatPlanNoTransition(pr,myselfName,"raintegratorqa_"+myselfName,false,false);
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//init
 	    
-	    StateFun end = () -> {	
+	    StateFun testSendCmd = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("end",-1);
-	    	String myselfName = "end";  
+	     PlanRepeat pr = PlanRepeat.setUp("testSendCmd",-1);
+	    	String myselfName = "testSendCmd";  
+	    	temporaryStr = "\"raIntegrator sending cmd : cmd(s(3)) to applra\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(s(3))", guardVars ).toString();
+	    	sendExtMsg("cmd","applra", "ctxReqAnalysis", QActorContext.dispatch, temporaryStr ); 
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(1000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "testSendCmd";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = "\"raIntegrator sending cmd : cmd(h(3)) to applra\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(h(3))", guardVars ).toString();
+	    	sendExtMsg("cmd","applra", "ctxReqAnalysis", QActorContext.dispatch, temporaryStr ); 
 	    	temporaryStr = "\"raIntegrator end\"";
 	    	println( temporaryStr );  
 	    	repeatPlanNoTransition(pr,myselfName,"raintegratorqa_"+myselfName,false,false);
-	    }catch(Exception e_end){  
-	    	 println( getName() + " plan=end WARNING:" + e_end.getMessage() );
+	    }catch(Exception e_testSendCmd){  
+	    	 println( getName() + " plan=testSendCmd WARNING:" + e_testSendCmd.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//end
+	    };//testSendCmd
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

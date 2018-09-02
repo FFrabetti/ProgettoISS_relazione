@@ -15,18 +15,39 @@ Context ctxReqAnalysis ip [ host="localhost" port=8888 ] -standalone
 
 QActor raintegratorqa context ctxRaIntegrator {
 	Plan init normal [
-		println("raIntegrator start");
-		delay 1000;
-		println("raIntegrator emitting cmd : cmd(s(3))");
-		sendto applra in ctxReqAnalysis -m cmd : cmd(s(3));
-		delay 1000;
-		println("raIntegrator emitting cmd : cmd(s(4))");
-		sendto applra in ctxReqAnalysis -m cmd : cmd(s(4))
+		println("raIntegrator start")
 	]
-	transition stopAfter 3600000
-		whenEvent frontSonar -> end
-	
-	Plan end [
+//	switchTo testSendCmd
+
+	// for manual testing
+	Plan testSendCmd [
+		println("raIntegrator sending cmd : cmd(s(3)) to applra");
+		sendto applra in ctxReqAnalysis -m cmd : cmd(s(3));
+		
+		delay 1000;
+		
+		println("raIntegrator sending cmd : cmd(h(3)) to applra");
+		sendto applra in ctxReqAnalysis -m cmd : cmd(h(3));
+		
 		println("raIntegrator end")
 	]
 }
+
+// -------- TEST{ --------
+QActor raintlogger context ctxRaIntegrator {
+	Plan init normal [ ]
+	transition stopAfter 3600000
+		whenEvent sonarSensor -> dologevent,
+		whenEvent frontSonar -> dologevent,
+		whenEvent robotCmd -> dologevent,
+		whenEvent lightCmd -> dologevent
+	finally repeatPlan
+	
+	Plan dologevent resumeLastPlan [
+		onEvent sonarSensor : sonar(N,D) -> addRule logevent(sonarSensor,sonar(N,D));
+		onEvent frontSonar : sonar(D) -> addRule logevent(frontSonar,sonar(D));
+		onEvent robotCmd : moveRobot(CMD) -> addRule logevent(robotCmd,moveRobot(CMD));
+		onEvent lightCmd : lightCmd(CMD) -> addRule logevent(lightCmd,lightCmd(CMD))
+	]
+}
+// -------- }TEST --------

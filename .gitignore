@@ -99,3 +99,6 @@ local.properties
 .cache-main
 .scala_dependencies
 .worksheet
+
+# file di output di execMain (QATesting)
+out_*

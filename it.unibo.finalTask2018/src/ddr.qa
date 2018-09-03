@@ -10,6 +10,11 @@ Context ctxDdr ip [ host="localhost" port=8882 ]
 EventHandler evhddr for robotCmd {
 	forwardEvent ddr -m moveRobot // event -> msg (stesso payload)
 };
+EventHandler evhddrlogger for sonarSensor, frontSonar, robotCmd, lightCmd /*-print*/ {
+	memoCurrentEvent -lastonly for ddrlogger;
+	demo dologevent for ddrlogger
+};
+
 // see: raintegrator.qa
 //Context ctxReqAnalysis ip [ host="localhost" port=8888 ] -standalone 
 
@@ -38,19 +43,10 @@ QActor ddr context ctxDdr {
 
 // -------- TEST{ --------
 QActor ddrlogger context ctxDdr {
-	Plan init normal [ ]
-	transition stopAfter 3600000
-		whenEvent sonarSensor -> dologevent,
-		whenEvent frontSonar -> dologevent,
-		whenEvent robotCmd -> dologevent,
-		whenEvent lightCmd -> dologevent
-	finally repeatPlan
-	
-	Plan dologevent resumeLastPlan [
-		onEvent sonarSensor : sonar(N,D) -> addRule logevent(sonarSensor,sonar(N,D));
-		onEvent frontSonar : sonar(D) -> addRule logevent(frontSonar,sonar(D));
-		onEvent robotCmd : moveRobot(CMD) -> addRule logevent(robotCmd,moveRobot(CMD));
-		onEvent lightCmd : lightCmd(CMD) -> addRule logevent(lightCmd,lightCmd(CMD))
+	Plan init normal [
+		demo consult("./logger.pl")
 	]
+	transition stopAfter 3600000
+	finally repeatPlan
 }
 // -------- }TEST --------

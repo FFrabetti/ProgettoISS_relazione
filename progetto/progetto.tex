@@ -335,7 +335,7 @@ L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committ
 
 Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp} remota: per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.\\
 
-\lstinputlisting[style=style_qa, firstline=15, lastline=34, firstnumber=15]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=18, lastline=37, firstnumber=18]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 Si noti come la scelta di utilizzare l'evento \codescript{lightCmd} consenta di controllare più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
 
@@ -356,7 +356,7 @@ Scegliamo di adottare la terza strategia, poiché meno costosa in termini di dat
 
 Nell'ambiente distribuito in cui operano i QActor, la pubblicazione (\textit{publish}) di informazioni avviene tramite l'emissione di \textbf{eventi} che per essere rilevati necessitano che il consumatore si sia preventivamente messo in ascolto (operazione logicamente equivalente alla \textit{subscribe}).\\
 
-\lstinputlisting[style=style_qa, firstline=38, lastline=52, firstnumber=38]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=41, lastline=55, firstnumber=41]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 Come per \codescript{lightCmd}, anche in questo caso l'evento \codescript{temperature}% : temperature(T)}
 emesso dall'adapter del sensore può essere percepito da chiunque sia in ascolto, senza dover specificare a priori i possibili componenti interessati.\\
@@ -369,13 +369,13 @@ Per quanto riguarda il \texttt{Clock}, scegliamo di modellarlo come un attore a 
 
 Il modello di tale attore è pressoché analogo a quello visto per \texttt{TemperatureAgent}.\\
 
-\lstinputlisting[style=style_qa, firstline=56, lastline=71, firstnumber=56]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=59, lastline=74, firstnumber=59]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 \subsection{HumanOperator}
 \labelssec{humanOpRA}
 Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
 
-\lstinputlisting[style=style_qa, firstline=75, lastline=89, firstnumber=75]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=78, lastline=92, firstnumber=78]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 Il sistema deve inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'applicazione, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con un server più sofisticato (ad esempio per realizzare l'autenticazione degli utenti).\\
 
@@ -388,7 +388,7 @@ Per poter attuare la logica applicativa stabilita dai requisiti, l'applicazione 
 
 Sempre in accordo con i requisiti, l'applicazione deve gestire ed emettere, quando opportuno, gli eventi contenenti i comandi che regolano il \texttt{Led}, presente sul robot fisico, e la \texttt{Hue Lamp} remota, gestita da quello virtuale.\\
 
-\lstinputlisting[style=style_qa, firstline=93, lastline=117, firstnumber=93]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=96, lastline=120, firstnumber=96]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 \subsection{Robot}
 Ci viene fornito un modello del robot espresso nel linguaggio \qa
@@ -400,7 +400,7 @@ Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ric
 
 Poiché l'attore che incarna la logica applicativa emette comandi sotto forma di eventi \codescript{robotCmd}, è necessario introdurre un ulteriore componente che effettui il mapping di questi nei rispettivi messaggi \codescript{moveRobot} gestiti dal robot. In questo caso, dal momento che vogliamo evitare che i comandi per pilotare il robot vadano persi, facciamo ricorso per tale scopo ad un componente \emph{event-driven} (\texttt{EventHandler}).\\
 
-\lstinputlisting[style=style_qa, lastline=37]{../it.unibo.finalTask2018/src/ddr.qa}
+\lstinputlisting[style=style_qa, lastline=42]{../it.unibo.finalTask2018/src/ddr.qa}
 
 L'implementazione delle varie mosse viene delegata ad un'opportuna classe Java, così che questa possa essere modificata senza alterare il modello del robot. Questa soluzione permette inoltre di riutilizzare lo stesso modello per entrambe le tipologie di robot, reale e virtuale.\\
 
@@ -1132,7 +1132,11 @@ Per quanto riguarda il testing, l'approccio adottato è principalmente a \emph{b
 
 I test seguono un ordine incrementale del tipo bottom-up, partendo cioè dalle singole unità (\emph{unit testing}), per passare poi all'integrazione di queste (\emph{integration testing}) e, infine, ai vari sottosistemi e ai servizi da essi offerti (\emph{functional testing}).
 
-Queste prime tre tipologie di test possono essere eseguite in maniera automatica facendo uso del framework \texttt{JUnit}, mentre lo \emph{user acceptance testing} viene condotto manualmente man mano che un nuovo componente viene aggiunto al sistema.
+Queste prime tre tipologie di test possono essere eseguite in maniera automatica facendo uso del framework \texttt{JUnit}, mentre lo \emph{user acceptance testing} viene condotto manualmente man mano che un nuovo componente viene aggiunto al sistema.\\
+
+Una struttura ricorrente nei test è la verifica, in seguito al verificarsi di alcune circostanze, di cosa è presente o no nella base di conoscenza di certi attori. Nonostante per fare ciò tali QActor vengano trattati come dei semplici oggetti Java, occorre tenere presente che in realtà ognuno di essi rappresenta un flusso di controllo autonomo, pertanto è caratterizzato da tempi di avvio propri, da tempi di transizione da uno stato all'altro, eccetera.
+
+L'utilizzo estensivo di opportune \codescript{sleep} non preclude quindi la possibilità di eventuali fallimenti dovuti all'impredicibilità dell'ordine di scheduling.
 
 \subsection{Requirement analysis}
 \labelsssec{reqAnalTesting}
@@ -1143,7 +1147,7 @@ Il testing del led prevede di verificare semplicemente il comportamento dei meto
 \lstinputlisting[language=Java, firstline=12, lastline=31, firstnumber=12]{../it.unibo.finalTask2018/test/it/unibo/test/ra/LedTest.java}
 
 \subsubsection{HueLampAgent unit test}
-L'\codescript{HueLampAgent} riceve eventi \codescript{lightCmd} e li traduce in comandi per la Hue Lamp remota. Poiché in questo caso l'oggetto del testing è il comportamento dell'agent e non la comunicazione tra questi e la Hue Lamp, possiamo limitarci a controllare che alla ricezione di un evento corrisponda l'effettivo cambiamento di stato nell'oggetto Java che simula la lampada.\\
+L'\codescript{HueLampAgent} riceve eventi \codescript{lightCmd} e li traduce in comandi per la Hue Lamp remota. Poiché in questo caso l'oggetto del testing è il comportamento dell'agent e non la comunicazione tra questi e la Hue Lamp, possiamo limitarci a controllare che alla ricezione di un evento corrisponda un effettivo cambiamento di stato nell'oggetto Java che simula la lampada.\\
 
 \lstinputlisting[language=Java, firstline=15, lastline=41, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HueLampAgentTest.java}
 
@@ -1152,12 +1156,23 @@ Lo scopo di \codescript{TemperatureAgent} è quello di emettere periodicamente e
 
 \lstinputlisting[language=Java, firstline=15, lastline=28, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/TemperatureAgentTest.java}
 
-Per registrare gli eventi emessi nel sistema è stato usato un \emph{event logger}:\\
+Per registrare gli eventi emessi nel sistema è stato usato un \emph{event logger} event-driven:\\
 
-\lstinputlisting[style=style_qa, firstline=121, lastline=140, firstnumber=121]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=12, lastline=15, firstnumber=12]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+
+\lstinputlisting[style=style_qa, firstline=124, lastline=130, firstnumber=124]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+
+Il comportamento da attuare alla ricezione di un evento è precisato in un file Prolog esterno, così che possa essere condiviso da più event logger.\\
+
+\begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={it.unibo.finalTask2018/logger.pl}]
+dologevent :-
+	msg(EVID,'event',EMITTER,none,EVPL,NUM),
+	assert(logevent(EVID,EVPL)).
+	% actorPrintln(loggedev(EVID,EVPL)).
+\end{lstlisting}
 
 \subsubsection{ClockAgent unit test}
-Un ragionamento analogo al precedente vale per \codescript{ClockAgent}:\\
+Un ragionamento analogo al precedente vale anche per il testing di \codescript{ClockAgent}:\\
 
 \lstinputlisting[language=Java, firstline=15, lastline=29, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/TemperatureAgentTest.java}
 
@@ -1175,7 +1190,7 @@ Il robot, sia fisico sia virtuale, è stato modellato come un attore in grado di
 
 Infine, il robot può emettere informazioni relative al sonar frontale e al proprio passaggio in corrispondenza di uno dei due sonar presenti nella stanza.\\
 
-Il testing si concentrerà quindi su questi tre aspetti, verificando lo stato del robot in seguito all'invio dei comandi (sotto forma di messaggi o eventi) e consultando la base di conoscenza dell'event logger per controllare l'effettiva emissione degli eventi \codescript{frontSonar} e \codescript{sonarSensor}.\\
+Il testing si concentrerà quindi su questi tre aspetti, verificando lo stato del robot in seguito all'invio di comandi sotto forma di messaggi ed eventi, e consultando la base di conoscenza dell'event logger per controllare l'effettiva emissione degli eventi \codescript{frontSonar} e \codescript{sonarSensor}.\\
 
 \lstinputlisting[language=Java, firstline=17, lastline=46, firstnumber=17]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrTest.java}
 

@@ -1,7 +1,1 @@
-plan(1,dologevent, sentence(true,eventswitch(temperature, »temperature( T), addRule( logevent( temperature,temperature( T)) ) ),'','' ))
-plan(2,dologevent, sentence(true,eventswitch(clock, »clock( H,M), addRule( logevent( clock,clock( H,M)) ) ),'','' ))
-plan(3,dologevent, sentence(true,eventswitch(sonarSensor, »sonar( D), addRule( logevent( sonarSensor,sonar( D)) ) ),'','' ))
-plan(4,dologevent, sentence(true,eventswitch(frontSonar, »sonar( N,D), addRule( logevent( frontSonar,sonar( N,D)) ) ),'','' ))
-plan(5,dologevent, sentence(true,eventswitch(lightCmd, »lightCmd( CMD), addRule( logevent( lightCmd,lightCmd( CMD)) ) ),'','' ))
-plan(6,dologevent, sentence(true,eventswitch(robotCmd, »moveRobot( CMD), addRule( logevent( robotCmd,moveRobot( CMD)) ) ),'','' ))
-plan(7,dologevent, sentence(true,move(resumeplan),'','' ))
+plan(1,init, sentence(true,move(solve,consult( "./logger.pl"),0,""),'','' ))

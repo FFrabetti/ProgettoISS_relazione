@@ -16,5 +16,6 @@ qactor( applra_ctrl , ctxreqanalysis, "it.unibo.applra.Applra"   ). %%control-dr
 qactor( ralogger , ctxreqanalysis, "it.unibo.ralogger.MsgHandle_Ralogger"   ). %%store msgs 
 qactor( ralogger_ctrl , ctxreqanalysis, "it.unibo.ralogger.Ralogger"   ). %%control-driven 
 %%% -------------------------------------------
+eventhandler(evhralogger,ctxreqanalysis,"it.unibo.ctxReqAnalysis.Evhralogger","clock,temperature,sonarSensor,frontSonar,robotCmd,lightCmd").  
 %%% -------------------------------------------
 

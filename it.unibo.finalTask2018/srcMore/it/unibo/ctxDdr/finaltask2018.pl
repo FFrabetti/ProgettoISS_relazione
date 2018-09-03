@@ -9,5 +9,6 @@ qactor( ddrlogger , ctxddr, "it.unibo.ddrlogger.MsgHandle_Ddrlogger"   ). %%stor
 qactor( ddrlogger_ctrl , ctxddr, "it.unibo.ddrlogger.Ddrlogger"   ). %%control-driven 
 %%% -------------------------------------------
 eventhandler(evhddr,ctxddr,"it.unibo.ctxDdr.Evhddr","robotCmd").  
+eventhandler(evhddrlogger,ctxddr,"it.unibo.ctxDdr.Evhddrlogger","sonarSensor,frontSonar,robotCmd,lightCmd").  
 %%% -------------------------------------------
 

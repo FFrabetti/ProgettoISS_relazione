@@ -5,11 +5,14 @@ Event temperature : temperature(T)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
 Event lightCmd : lightCmd(CMD)
-Dispatch cmd : cmd(CMD)
 Event robotCmd : moveRobot(CMD) // Dispatch moveRobot : moveRobot(CMD)
+Dispatch cmd : cmd(CMD)
 
 Context ctxReqAnalysis ip [ host="localhost" port=8888 ] -httpserver
-//Context ctxDdr ip [ host="localhost" port=8882 ] -standalone 
+EventHandler evhralogger for clock, temperature, sonarSensor, frontSonar, robotCmd, lightCmd /*-print*/ {
+	memoCurrentEvent -lastonly for ralogger;
+	demo dologevent for ralogger
+};
 
 // -------------------------- HUE LAMP AGENT --------------------------
 // Event lightCmd : lightCmd(CMD)
@@ -119,23 +122,10 @@ QActor applra context ctxReqAnalysis {
 
 // -------- TEST{ --------
 QActor ralogger context ctxReqAnalysis {
-	Plan init normal [ ]
-	transition stopAfter 3600000
-		whenEvent temperature -> dologevent,
-		whenEvent clock -> dologevent,
-		whenEvent sonarSensor -> dologevent,
-		whenEvent frontSonar -> dologevent,
-		whenEvent lightCmd -> dologevent,
-		whenEvent robotCmd -> dologevent
-	finally repeatPlan
-		
-	Plan dologevent resumeLastPlan [
-		onEvent temperature : temperature(T) -> addRule logevent(temperature,temperature(T));
-		onEvent clock : clock(H,M) -> addRule logevent(clock,clock(H,M));
-		onEvent sonarSensor : sonar(D) -> addRule logevent(sonarSensor,sonar(D));
-		onEvent frontSonar : sonar(N,D) -> addRule logevent(frontSonar,sonar(N,D));
-		onEvent lightCmd : lightCmd(CMD) -> addRule logevent(lightCmd,lightCmd(CMD));
-		onEvent robotCmd : moveRobot(CMD) -> addRule logevent(robotCmd,moveRobot(CMD))
+	Plan init normal [
+		demo consult("./logger.pl")
 	]
+	transition stopAfter 3600000
+	finally repeatPlan
 }
 // -------- }TEST --------

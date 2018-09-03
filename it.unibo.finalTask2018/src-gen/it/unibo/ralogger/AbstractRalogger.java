@@ -56,7 +56,6 @@ public abstract class AbstractRalogger extends QActor {
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
-	    	stateTab.put("dologevent",dologevent);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -75,99 +74,19 @@ public abstract class AbstractRalogger extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_init",0);
 	     pr.incNumIter(); 	
 	    	String myselfName = "init";  
+	    	parg = "consult(\"./logger.pl\")";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	//bbb
 	     msgTransition( pr,myselfName,"ralogger_"+myselfName,false,
-	          new StateFun[]{stateTab.get("dologevent"), stateTab.get("dologevent"), stateTab.get("dologevent"), stateTab.get("dologevent"), stateTab.get("dologevent"), stateTab.get("dologevent") }, 
-	          new String[]{"true","E","temperature", "true","E","clock", "true","E","sonarSensor", "true","E","frontSonar", "true","E","lightCmd", "true","E","robotCmd" },
+	          new StateFun[]{}, 
+	          new String[]{},
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//init
-	    
-	    StateFun dologevent = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("dologevent",-1);
-	    	String myselfName = "dologevent";  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("temperature(T)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("temperature") && 
-	    		pengine.unify(curT, Term.createTerm("temperature(T)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="logevent(temperature,temperature(T))";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("temperature(T)"),  Term.createTerm("temperature(T)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("clock(H,M)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("clock") && 
-	    		pengine.unify(curT, Term.createTerm("clock(H,M)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="logevent(clock,clock(H,M))";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("clock(H,M)"),  Term.createTerm("clock(H,M)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonar(D)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarSensor") && 
-	    		pengine.unify(curT, Term.createTerm("sonar(NAME,DISTANCE)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="logevent(sonarSensor,sonar(D))";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("sonar(NAME,DISTANCE)"),  Term.createTerm("sonar(D)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonar(N,D)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("frontSonar") && 
-	    		pengine.unify(curT, Term.createTerm("sonar(DISTANCE)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="logevent(frontSonar,sonar(N,D))";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("sonar(DISTANCE)"),  Term.createTerm("sonar(N,D)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("lightCmd(CMD)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
-	    		pengine.unify(curT, Term.createTerm("lightCmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="logevent(lightCmd,lightCmd(CMD))";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("lightCmd(CMD)"),  Term.createTerm("lightCmd(CMD)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("moveRobot(CMD)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("robotCmd") && 
-	    		pengine.unify(curT, Term.createTerm("moveRobot(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="logevent(robotCmd,moveRobot(CMD))";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("moveRobot(CMD)"),  Term.createTerm("moveRobot(CMD)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	repeatPlanNoTransition(pr,myselfName,"ralogger_"+myselfName,false,true);
-	    }catch(Exception e_dologevent){  
-	    	 println( getName() + " plan=dologevent WARNING:" + e_dologevent.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//dologevent
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

@@ -493,7 +493,7 @@ Il sistema deve inoltre fornire un'interfaccia grafica per permettere l'interazi
 
 \lstinputlisting[style=style_qa, firstline=14, lastline=14, firstnumber=14]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
-La GUI web ottenuta tramite il flag \codescript{-httpserver} è dotata di bottoni che, quando vengono premuti, scatenano eventi \codescript{usercmd : usercmd(X)}. Lo \texttt{HumanOperator} deve quindi catturare questi eventi e inoltrarli sotto forma di messaggi \codescript{cmd : cmd(X)} al \texttt{Controller}.
+La GUI web ottenuta tramite il flag \codescript{-httpserver} è dotata di bottoni che, quando vengono premuti, scatenano eventi \codescript{usercmd : usercmd(robotgui(X))}. Lo \texttt{HumanOperator} deve quindi catturare questi eventi e inoltrarli sotto forma di messaggi \codescript{cmd : cmd(X)} al \texttt{Controller}.
 
 Lo \texttt{HumanOperator} è ancora un emettitore di comandi per il robot come visto nella sezione precedente, tuttavia ora è in grado di generarli in base ai pulsanti premuti dall'utilizzatore umano sulla console.\\
 
@@ -1210,6 +1210,27 @@ il ``system integrator'' tra gli altri due.
 In particolare, l'obiettivo è controllare che all'invio di un \codescript{cmd} diretto al componente che incapsula la logica applicativa, il robot mock agisca di conseguenza grazie alla propagazione degli eventi garantita dall'infrastruttura {\qa}.\\
 
 \lstinputlisting[language=Java, firstline=20, lastline=67, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrApplIntegrationTest.java}
+
+\subsection{Problem analysis}
+
+\subsubsection{Controller unit test}
+Gran parte della logica del \texttt{Controller} è espressa sotto forma di regole Prolog inserite all'interno della base di conoscenza del relativo attore. Per testare queste regole dobbiamo quindi, come fatto in precedenza, sfruttare i metodi dell'oggetto Java corrispondente.\\
+
+\lstinputlisting[language=Java, firstline=15, lastline=111, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
+
+Il \texttt{Controller} interagisce con l'esterno tramite gli eventi \codescript{ctrlEvent} (alcuni dei quali sono convertiti in \codescript{lightCmd} da un apposito EventHandler), \codescript{inputCtrlEvent} e i messaggi \codescript{cmd}.\\
+
+\lstinputlisting[language=Java, firstline=113, lastline=147, firstnumber=113]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
+
+\subsubsection{Software Agent unit test}
+Per il testing di \texttt{SoftwareAgent} occorre verificare che, in seguito all'emissione degli eventi generati dai sonar (quello frontale e i due fissi), vengano recapitati al controller opportuni messaggi \codescript{cmd}. L'effetto di questi si ripercuote poi sullo stato del modello del robot e sugli eventi \codescript{ctrlEvent} emessi per pilotarlo.\\
+
+\lstinputlisting[language=Java, firstline=14, lastline=47, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/pa/SwAgentTest.java}
+
+\subsubsection{HumanOperator unit test}
+Un ragionamento simile può essere fatto per \texttt{HumanOperator}: questa volta è all'emissione di eventi \codescript{usercmd} -- gli stessi originati dalla web GUI -- che deve seguire l'invio dei relativi messaggi \codescript{cmd}.\\
+
+\lstinputlisting[language=Java, firstline=14, lastline=34, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/pa/HumanOpTest.java}
 %===========================================================================
 
 %===========================================================================

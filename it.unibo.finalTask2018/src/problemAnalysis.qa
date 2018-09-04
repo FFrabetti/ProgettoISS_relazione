@@ -6,7 +6,7 @@ Event temperature : temperature(T)
 Event clock : clock(H,M)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
-Event moveRobot : moveRobot(CMD)
+//Event moveRobot : moveRobot(CMD)
 Event lightCmd : lightCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
@@ -19,6 +19,10 @@ EventHandler evadapter for temperature, clock {
 };
 EventHandler evled for ctrlEvent { // filter ctrlEvent by CATEGORY and NAME
 	emit lightCmd fromContent ctrlEvent(led,l1,CMD) to lightCmd(CMD)
+};
+EventHandler evhpalogger for /*usercmd, clock, temperature, sonarSensor, frontSonar,*/ ctrlEvent, lightCmd /*-print*/ {
+	memoCurrentEvent -lastonly for palogger;
+	demo dologevent for palogger
 };
 
 // -------------------------- CONTROLLER --------------------------
@@ -251,3 +255,13 @@ QActor huelampagentpa context ctxApplPA {
 	]
 }
 // -------------------------- HUE LAMP AGENT --------------------------
+
+// -------- TEST{ --------
+QActor palogger context ctxApplPA {
+	Plan init normal [
+		demo consult("./logger.pl")
+	]
+	transition stopAfter 3600000
+	finally repeatPlan
+}
+// -------- }TEST --------

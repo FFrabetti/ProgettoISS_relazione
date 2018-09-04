@@ -15,8 +15,11 @@ qactor( temperatureagentpa , ctxapplpa, "it.unibo.temperatureagentpa.MsgHandle_T
 qactor( temperatureagentpa_ctrl , ctxapplpa, "it.unibo.temperatureagentpa.Temperatureagentpa"   ). %%control-driven 
 qactor( huelampagentpa , ctxapplpa, "it.unibo.huelampagentpa.MsgHandle_Huelampagentpa"   ). %%store msgs 
 qactor( huelampagentpa_ctrl , ctxapplpa, "it.unibo.huelampagentpa.Huelampagentpa"   ). %%control-driven 
+qactor( palogger , ctxapplpa, "it.unibo.palogger.MsgHandle_Palogger"   ). %%store msgs 
+qactor( palogger_ctrl , ctxapplpa, "it.unibo.palogger.Palogger"   ). %%control-driven 
 %%% -------------------------------------------
 eventhandler(evadapter,ctxapplpa,"it.unibo.ctxApplPA.Evadapter","temperature,clock").  
 eventhandler(evled,ctxapplpa,"it.unibo.ctxApplPA.Evled","ctrlEvent").  
+eventhandler(evhpalogger,ctxapplpa,"it.unibo.ctxApplPA.Evhpalogger","ctrlEvent,lightCmd").  
 %%% -------------------------------------------
 

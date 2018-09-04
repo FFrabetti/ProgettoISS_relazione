@@ -11,6 +11,7 @@ import it.unibo.qactors.akka.QActor;
 
 public class robotAdapter {
 
+	private static final String PACKAGE = "it.unibo.finalTask2018.robot";
 	private static final String HOST = "localhost";
 	private static final int PORT = 8999;
 	private static final DDRobot DEFAULT = new MockRobot();
@@ -22,10 +23,17 @@ public class robotAdapter {
 	}
 	
 	public static void useImpl(QActor qa, String name) {
-		if("node".equals(name))
-			map.put(qa.getName(), new NodeRobot());
-		else if("realmock".equals(name))
-			map.put(qa.getName(), new RealRobotMock());
+//		if("node".equals(name))
+//			map.put(qa.getName(), new NodeRobot());
+//		else if("realmock".equals(name))
+//			map.put(qa.getName(), new RealRobotMock());
+		
+		try {
+			Class<DDRobot> c = (Class<DDRobot>) Class.forName(PACKAGE + "." + name);
+			map.put(qa.getName(), c.newInstance());
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	// ---------------------------------------------------------

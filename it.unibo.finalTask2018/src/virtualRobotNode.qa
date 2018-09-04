@@ -1,60 +1,65 @@
 System finalTask2018            
 
 Event frontSonar : sonar(DISTANCE)
-Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
+Event sonarSensor : sonar(NAME,DISTANCE)
 Dispatch moveRobot : moveRobot(CMD)
 
-Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
-Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD) // broker -> robot
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
+//Dispatch ctrlMsg : ctrlEvent(CATEG,NAME,CMD) // broker -> robot
+Event local_robotCmd : moveRobot(CMD)
 
 Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
 EventHandler evhnode for ctrlEvent {
-	forwardEvent nodebroker -m ctrlMsg		// stesso payload
+//	forwardEvent nodebroker -m ctrlMsg		// stesso payload
+	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
 };
-//Context ctxApplPA ip [ host="localhost"  port=8018 ] -standalone 
-Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
+EventHandler evhnodebroker for local_robotCmd {
+	forwardEvent robotnode -m moveRobot		// stesso payload
+};
+
+Context ctxApplPA ip [ host="localhost" port=8018 ] -standalone 
+//Context ctxAppl ip [ host="localhost" port=8018 ] -standalone 
 
 QActor robotnode context ctxVirtualRobotNode {
 	Rules {
 		robotConfig("localhost", 8999).
 	}
 	
-	Plan init normal [       
-	    println("robotnode start");
-	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.useImpl("node");
-	    
-	    [ !? robotConfig(A,P) ]
-	    	javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment(A, P)
+	Plan init normal [
+		println("robotnode start");
+		javaRun it.unibo.finalTask2018.adapter.robotAdapter.useImpl("NodeRobot");
+	
+		[ !? robotConfig(ADDR,PORT) ]
+			javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment(ADDR,PORT)
 		else
 			javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
-  	]
-    switchTo waitForCmd
+	]
+	switchTo waitForCmd
 		
-   	Plan waitForCmd[
-   		println("robotnode waiting for commands")
-   	]  
-  	transition stopAfter 3600000 
- 		whenMsg moveRobot -> execMove 
-   	finally repeatPlan    
+	Plan waitForCmd [
+		println("robotnode waiting for commands")
+	]
+	transition stopAfter 3600000
+		whenMsg moveRobot -> execMove
+	finally repeatPlan
 	   
-  	Plan execMove resumeLastPlan[
-//  	onMsg moveRobot : moveRobot(CMD) -> println(moveRobot(CMD));
-  		printCurrentMessage;
-  		
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();  
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();    
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward(); 
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();  
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
-   	]
+	Plan execMove resumeLastPlan [
+		printCurrentMessage;
+		
+		onMsg moveRobot : moveRobot(h(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();
+		onMsg moveRobot : moveRobot(w(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();
+		onMsg moveRobot : moveRobot(s(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward();
+		onMsg moveRobot : moveRobot(a(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();
+		onMsg moveRobot : moveRobot(d(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
+	]
 }
 
-QActor nodebroker context ctxVirtualRobotNode {
-	Plan init normal [ ]
-	transition stopAfter 3600000
-		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward robotnode -m moveRobot : moveRobot(CMD)
-	finally repeatPlan
-}
+//QActor nodebroker context ctxVirtualRobotNode {
+//	Plan init normal [ ]
+//	transition stopAfter 3600000
+//		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward robotnode -m moveRobot : moveRobot(CMD)
+//	finally repeatPlan
+//}
 
 //QActor testerrobotnode context ctxVirtualRobotNode {
 //	Plan init normal [

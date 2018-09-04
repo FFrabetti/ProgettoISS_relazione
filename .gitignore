@@ -100,5 +100,10 @@ local.properties
 .scala_dependencies
 .worksheet
 
+
 # file di output di execMain (QATesting)
 out_*
+
+# use just top-level .gitignore
+.gitignore
+!/.gitignore

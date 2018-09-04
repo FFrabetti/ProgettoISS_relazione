@@ -77,9 +77,9 @@ public abstract class AbstractRobotnode extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"robotnode start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.robotAdapter.useImpl( myself ,"node"  );
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?robotConfig(A,P)" )) != null ){
-	    	it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself ,guardVars.get("A"), guardVars.get("P")  );
+	    	it.unibo.finalTask2018.adapter.robotAdapter.useImpl( myself ,"NodeRobot"  );
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?robotConfig(ADDR,PORT)" )) != null ){
+	    	it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself ,guardVars.get("ADDR"), guardVars.get("PORT")  );
 	    	}
 	    	else{ it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself  );
 	    	}

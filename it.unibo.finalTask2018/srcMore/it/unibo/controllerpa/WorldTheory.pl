@@ -142,8 +142,6 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %-------------------------------------------------
 %  User static rules about controllerpa
 %------------------------------------------------- 
-limitTemperatureValue( 25).
-timeInterval( h( 7,0),h( 10,0)).
 changedModelAction( temperature,t1,V):-limitTemperatureValue( MAX),eval( ge,V,MAX),changeModelItem( robot,r1,h( 0)).
 changedModelAction( clock,c1,h( HC,MC)):-non( inTime( HC,MC)),changeModelItem( robot,r1,h( 0)).
 changedModelAction( robot,R,CMD):-emitevent( ctrlEvent,ctrlEvent( robot,R,CMD)),fail.

@@ -18,15 +18,13 @@ protected IEventItem event;
 	public void handleCurrentEvent() throws Exception {
 		event = this.currentEvent; //AKKA getEventItem();
 		if( event == null ) return;
-		{
-		Term msgt       = Term.createTerm(event.getMsg());
-		Term msgPattern = Term.createTerm("ctrlEvent(CATEG,NAME,CMD)");
-				boolean b = this.pengine.unify(msgt, msgPattern);
-				if( b ) {
-			  		sendMsg("ctrlMsg","nodebroker", QActorContext.dispatch, msgt.toString() ); 
-				}else{
-					println("non unifiable");
-				}
+		//RaiseOtherEvent
+		{String newcontent = "moveRobot(CMD)";
+		newcontent =  updateVars( Term.createTerm("ctrlEvent(robot,r1,CMD)"), 
+			                Term.createTerm("ctrlEvent(robot,r1,CMD)"), 
+			                Term.createTerm( event.getMsg() ), newcontent);
+		//println("newcontent="+newcontent);
+		if( newcontent != null ){ emit( "local_robotCmd", newcontent ); }
 		}
 	}//handleCurrentEvent
 	

@@ -77,7 +77,7 @@ public abstract class AbstractRealrobotmock extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"realrobotmock start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.robotAdapter.useImpl( myself ,"realmock"  );
+	    	it.unibo.finalTask2018.adapter.robotAdapter.useImpl( myself ,"MockRobot"  );
 	    	it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment( myself  );
 	    	//switchTo waitForCmd
 	        switchToPlanAsNextState(pr, myselfName, "realrobotmock_"+myselfName, 

@@ -1,0 +1,3 @@
+plan(1,init, sentence(true,not here StateMoveNormal,'','' ))
+plan(1,handleCmd, sentence(true,eventswitch(lightCmd, »lightCmd( CMD), not here StateMoveNormal ),'','' ))
+plan(2,handleCmd, sentence(true,move(resumeplan),'','' ))

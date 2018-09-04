@@ -1,11 +1,11 @@
 %==============================================
-% WorldTheory.pl for actor swag
+% WorldTheory.pl for actor ledrobotmock
 %==============================================
 /*
 For a QActor as a singleton statically degined in the model
 */
-myname(qatuswag).	%%old version (deprecated)
-actorobj(qatuswag).	%% see registerActorInProlog18 in QActor
+myname(qatuledrobotmock).	%%old version (deprecated)
+actorobj(qatuledrobotmock).	%% see registerActorInProlog18 in QActor
 
 /*
 For a QActor instance of name=Name dynamically created
@@ -81,7 +81,7 @@ evalGuard( G ) :-
 
 output( M ):-stdout <- println( M ).
 %-------------------------------------------------
-%  TuProlo FEATURES of the QActor swag
+%  TuProlo FEATURES of the QActor ledrobotmock
 %-------------------------------------------------
 dialog( FileName ) :-  
 	java_object('javax.swing.JFileChooser', [], Dialog),
@@ -89,7 +89,7 @@ dialog( FileName ) :-
 	Dialog <- getSelectedFile returns File,
 	File <- getName returns FileName. 		 
 
-%% :- stdout <- println(  "hello from world theory of swag" ). 
+%% :- stdout <- println(  "hello from world theory of ledrobotmock" ). 
 
 %-------------------------------------------------
 %  UTILITIES for TuProlog computations
@@ -140,10 +140,8 @@ inc(I,K,N):-
 actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 
 %-------------------------------------------------
-%  User static rules about swag
+%  User static rules about ledrobotmock
 %------------------------------------------------- 
-isClose:-sonarDetect( _,D),eval( gt,D,0), ! ,eval( lt,D,5).
-isClose:-sonarDetect( _,D),eval( minus,0,D,R),eval( lt,R,5).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

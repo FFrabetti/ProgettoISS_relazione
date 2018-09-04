@@ -1,158 +1,158 @@
 System finalTask2018 
  
-Dispatch cmd : cmd(X)
-Event usercmd : usercmd(X)
-Event temperature : temperature(T)	
-Event clock : clock(H,M) 
+Dispatch cmd : cmd(CMD)
+Event usercmd : usercmd(CMD)
+Event temperature : temperature(T)
+Event clock : clock(H,M)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
-Event moveRobot : moveRobot(C)
+Event moveRobot : moveRobot(CMD)
 Event lightCmd : lightCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
 
 Context ctxApplPA ip [ host="localhost"  port=8018 ] -httpserver
-EventHandler evadapter for temperature,clock  { //maps temperature and clock into inputCtrlEvent
-	emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature,t1,T );
-	emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock,c1,h(H,M) )
+EventHandler evadapter for temperature, clock {
+	// maps temperature and clock into inputCtrlEvent
+	emit inputCtrlEvent fromContent temperature(T) to inputEvent(temperature,t1,T);
+	emit inputCtrlEvent fromContent clock(H,M) to inputEvent(clock,c1,h(H,M))
 };
-EventHandler evled for ctrlEvent  { // filter ctrlEvent by CATEGORY and NAME
-	emit lightCmd fromContent ctrlEvent( led,l1,blink ) to lightCmd(blink);
-	emit lightCmd fromContent ctrlEvent( led,l1,on ) to lightCmd(on);
-	emit lightCmd fromContent ctrlEvent( led,l1,off ) to lightCmd(off)
+EventHandler evled for ctrlEvent { // filter ctrlEvent by CATEGORY and NAME
+	emit lightCmd fromContent ctrlEvent(led,l1,CMD) to lightCmd(CMD)
 };
 
 // -------------------------- CONTROLLER --------------------------
 QActor controllerpa context ctxApplPA {
-Rules{ //The model is in the theory resourceModel. 
-	//fatti
-	limitTemperatureValue( 25 ).
-	timeInterval(h(7,0),h(10,0)).
-	
-	//se cambia il modello della temperatura
+Rules{ // The model is in the theory resourceModel.pl
+	// se cambia il modello della temperatura
 	//	R-TempKo: fermo il robot se temperatura >= limite
-	changedModelAction( temperature, t1, V  ):-
-			limitTemperatureValue( MAX ), 
-			eval( ge, V , MAX ),   
-			changeModelItem(robot,r1,h(0)).		      			
+	changedModelAction(temperature,t1,V) :-
+			limitTemperatureValue(MAX),
+			eval(ge,V,MAX),
+			changeModelItem(robot,r1,h(0)).
 
- 	//se cambia il modello del clock
+ 	// se cambia il modello del clock
  	//	R-TimeKo: fermo il robot se il tempo non e' nell'intervallo
- 	changedModelAction(clock,c1,h(HC,MC)):-
+ 	changedModelAction(clock,c1,h(HC,MC)) :-
  			non(inTime(HC,MC)),
  			changeModelItem(robot,r1,h(0)).
  			 	
- 	//se cambia il modello del robot
- 	changedModelAction(robot,R,CMD):-
- 			emitevent(ctrlEvent, ctrlEvent(robot,R,CMD)), fail.	
- 	changedModelAction(robot,R, w(X)):-
- 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
- 	changedModelAction(robot,R, s(X)):-
- 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
- 	changedModelAction(robot,R, h(X)):-
- 			changeModelItem(led,l1,off).	// R-BlinkLed/R-BlinkHue
- 	//dopo una svolta il modello deve risultare fermo
- 	changedModelAction(robot,R, a(X)):-
- 			changeModelItem(robot,R,h(X)).		
- 	changedModelAction(robot,R, d(X)):-
+ 	// se cambia il modello del robot
+ 	changedModelAction(robot,R,CMD) :-
+ 			emitevent(ctrlEvent,ctrlEvent(robot,R,CMD)),
+ 			fail. // prosegui...
+ 	
+ 	// R-BlinkLed/R-BlinkHue
+ 	changedModelAction(robot,R,w(X)) :-
+ 			changeModelItem(led,l1,blink).
+ 	changedModelAction(robot,R,s(X)) :-
+ 			changeModelItem(led,l1,blink).
+ 	changedModelAction(robot,R,h(X)) :-
+ 			changeModelItem(led,l1,off).
+ 	
+ 	// dopo una svolta il modello del robot deve risultare fermo
+ 	changedModelAction(robot,R,a(X)) :- 
+ 			changeModelItem(robot,R,h(X)).
+ 	changedModelAction(robot,R,d(X)) :-
  			changeModelItem(robot,R,h(X)).
  	
- 	//se cambia il modello del led		
- 	changedModelAction(led,L,X):-
+ 	// se cambia il modello del led		
+ 	changedModelAction(led,L,X) :-
  			emitevent(ctrlEvent,ctrlEvent(led,L,X)).
  	
- 	//utility: restituisce vero se il primo tempo e' precedente al secondo		
- 	timeBefore(H1,_,H2,_):-
- 			eval(lt,H1,H2),!.
- 	timeBefore(H,M1,H,M2):-
+ 	// UTILITIES
+ 	// vero se il primo tempo e' precedente al secondo		
+ 	timeBefore(H1,_,H2,_) :-
+ 			eval(lt,H1,H2), !.
+ 	timeBefore(H,M1,H,M2) :-
  			eval(lt,M1,M2).
  	
- 	//vero se HC,MC e' dentro all'intervallo di tempo consentito		
- 	inTime(HC,MC):-
+ 	// vero se HC,MC e' dentro all'intervallo di tempo consentito		
+ 	inTime(HC,MC) :-
  			timeInterval(h(H1,M1),h(H2,M2)),
  			timeBefore(H1,M1,HC,MC),
  			timeBefore(HC,MC,H2,M2).
  			
- 	//possibilita' di muovere il robot (R-TempOk e R-TimeOk)
- 	canMove:-
+ 	// possibilita' di muovere il robot (R-TempOk e R-TimeOk)
+ 	canMove :-
  			limitTemperatureValue(MAX),
  			getModelItem(sensor,temperature,t1,T),
  			eval(lt,T,MAX),
  			getModelItem(sensor,clock,c1,h(HC,MC)),
  			inTime(HC,MC).
  			
- 	//R-TempOk e R-TimeOk: cambio il modello solo se il robot puo' muoversi
- 	changeRobotModel(CMD):-
+ 	// R-TempOk e R-TimeOk: cambio il modello solo se il robot puo' muoversi
+ 	changeRobotModel(CMD) :-
  			canMove,
- 			changeModelItem(robot,r1,CMD).		
+ 			changeModelItem(robot,r1,CMD).
 }
  
 	Plan init normal [         
-		demo consult("./resourceModel.pl");  //contains the models and related rules
-   		println( qacontrol(starts)  )   
+		demo consult("./resourceModel.pl");
+   		println( controllerqa(starts) )
    	]
    	switchTo waitForInputEvent      
  
-    Plan waitForInputEvent[
-    	[ !? getModelItem(robots, robot, r1, VALUE) ] println(model(r1, VALUE));
-    	[ !? getModelItem(actuator, led, l1, VALUE) ] println(model(l1, VALUE));
-    	[ !? getModelItem(sensor, temperature, t1, VALUE) ] println(model(t1, VALUE));
-    	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
-    	println("---------------------------------------")
-    ]  
-    transition stopAfter 6000000 
-     	whenEvent inputCtrlEvent -> handleInputEvent,
-     	whenMsg cmd -> handleCmd
-    finally repeatPlan	
-       
-    Plan handleInputEvent resumeLastPlan [
-     	printCurrentEvent;
-    	onEvent inputCtrlEvent : inputEvent( CATEG, NAME, VALUE ) ->  //change the model
-    		demo changeModelItem( CATEG, NAME, VALUE )
-    ]
-    
-    Plan handleCmd resumeLastPlan[
-    	onMsg cmd : cmd(X) -> println(ricevuto(X));
-    	onMsg cmd : cmd(X) -> demo changeRobotModel(X)
-    ]
+	Plan waitForInputEvent [ // debug: print model
+		[ !? getModelItem(r1,VALUE) ] println(model(r1,VALUE));
+		[ !? getModelItem(l1,VALUE) ] println(model(l1,VALUE));
+		[ !? getModelItem(t1,VALUE) ] println(model(t1,VALUE));
+		[ !? getModelItem(c1,VALUE) ] println(model(c1,VALUE));
+		println("---------------------------------------")
+	]
+	transition stopAfter 3600000
+		whenEvent inputCtrlEvent -> handleInputEvent,
+		whenMsg cmd -> handleCmd
+	finally repeatPlan
+	
+	Plan handleInputEvent resumeLastPlan [
+		printCurrentEvent;
+		onEvent inputCtrlEvent : inputEvent(CATEG,NAME,VALUE) -> 
+			demo changeModelItem(CATEG,NAME,VALUE)
+	]
+	
+	Plan handleCmd resumeLastPlan [
+		onMsg cmd : cmd(X) -> println(ricevuto(cmd(X)));
+		onMsg cmd : cmd(X) -> demo changeRobotModel(X)
+	]
 }
 // -------------------------- CONTROLLER --------------------------
 
 // -------------------------- SOFTWARE AGENT --------------------------
 QActor swagpa context ctxApplPA {
 	Rules{
-		// for testing
 		isClose :-
 			sonarDetect(_,D),
-			eval(gt,D,0),!,
+			eval(gt,D,0), !,
 			eval(lt,D,5).
 		
 		isClose :-
 			sonarDetect(_,D),
 			eval(minus,0,D,R),
 			eval(lt,R,5).
-	}	
+	}
 
-	Plan init normal [         
-   		println("swag start")
-   	]
-   	switchTo waitForSonar   // testing  
-  
-    Plan waitForSonar[  ]  
-    transition stopAfter 3600000 
-     	whenEvent frontSonar -> handleFront,
-     	whenEvent sonarSensor -> handleSensor
-    finally repeatPlan	
-   	 
-	Plan handleFront resumeLastPlan[
-  		printCurrentEvent;
+	Plan init normal [
+		println("swag start")
+	]
+	switchTo waitForSonar
+	
+	Plan waitForSonar [ ]
+	transition stopAfter 3600000
+		whenEvent frontSonar -> handleFront,
+		whenEvent sonarSensor -> handleSensor
+	finally repeatPlan
+	
+	Plan handleFront resumeLastPlan [
+		printCurrentEvent;
 		onEvent frontSonar : sonar(D) -> forward controllerpa -m cmd : cmd(h(0))
 	]
 	
-	Plan handleSensor resumeLastPlan[
-  		printCurrentEvent;
-  		// testing: robot close to sonars makes some moves
+	Plan handleSensor resumeLastPlan [
+		printCurrentEvent;
 		onEvent sonarSensor : sonar(N,D) -> addRule sonarDetect(N,D);
+
+		// testing: robot close to a sonar makes some moves
 		[ !? isClose ] {
 			forward controllerpa -m cmd : cmd(d(0));
 			delay 250;
@@ -166,14 +166,13 @@ QActor swagpa context ctxApplPA {
 			delay 250;
 			forward controllerpa -m cmd : cmd(h(0))
 		};
-		[ ?? sonarDetect(N,D) ] println( removing(N,D) )
+		[ ?? sonarDetect(N,D) ] println(removing(sonarDetect(N,D)))
 	]
 }
 // -------------------------- SOFTWARE AGENT --------------------------
 
 // -------------------------- HUMAN OPERATOR --------------------------
 QActor humanoperatorpa context ctxApplPA {
-	
 	Plan init normal [
 		println("humanOperator start")
 	]
@@ -185,8 +184,8 @@ QActor humanoperatorpa context ctxApplPA {
 	finally repeatPlan
 
 	Plan sendCmd resumeLastPlan [
-		onEvent usercmd : usercmd( robotgui(CMD) ) -> println(robotgui(CMD));
-		onEvent usercmd : usercmd( robotgui(CMD) ) -> forward controllerpa -m cmd : cmd(CMD)
+		onEvent usercmd : usercmd(robotgui(CMD)) -> println(robotgui(CMD));
+		onEvent usercmd : usercmd(robotgui(CMD)) -> forward controllerpa -m cmd : cmd(CMD)
 	]
 }
 // -------------------------- HUMAN OPERATOR --------------------------
@@ -201,7 +200,8 @@ QActor clockagentpa context ctxApplPA {
 	
 	Plan emitTime [
 		delay 6000;
-		javaRun it.unibo.finalTask2018.adapter.clockAdapter.emitTime()
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
+		[ ?? currentTime(H,M) ] emit clock : clock(H,M)
 	]
 	finally repeatPlan
 }
@@ -212,12 +212,12 @@ QActor temperatureagentpa context ctxApplPA {
 	Plan init normal [
 		println("temperatureAgent start")
 	]
-	switchTo checkTemperature 
+	switchTo checkTemperature
 	
 	Plan checkTemperature [
 		delay 5000;
 		javaRun it.unibo.finalTask2018.adapter.temperatureAdapter.getTemperature();
-		[ !? currentTemp(T) ] println(currentTemperature(T));
+		[ !? currentTemp(T) ] println(currentTemp(T));
 		[ ?? currentTemp(T) ] emit temperature : temperature(T)
 	]
 	finally repeatPlan
@@ -226,26 +226,26 @@ QActor temperatureagentpa context ctxApplPA {
 
 // -------------------------- HUE LAMP AGENT --------------------------
 QActor huelampagentpa context ctxApplPA {
-	Plan init normal [         
-   		println("hueLampAgent start");
+	Plan init normal [
+		println("hueLampAgent start");
 
-   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.init();
-   		//lampeggia per prova
-   		delay 1000;
-   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
-   		delay 1000;
-   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
-   	]
-   	switchTo waitForCommand     
-  
-    Plan waitForCommand[ ]
-    transition stopAfter 3600000 
-     	whenEvent lightCmd -> handleCmd
-    finally repeatPlan	
-   	 
-	Plan handleCmd resumeLastPlan[
- 		printCurrentEvent;
- 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("blink");
+		javaRun it.unibo.finalTask2018.adapter.lampAdapter.init();
+		// lampeggia per prova
+		delay 1000;
+		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
+		delay 1000;
+		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
+	]
+	switchTo waitForCommand
+	
+	Plan waitForCommand [ ]
+	transition stopAfter 3600000
+		whenEvent lightCmd -> handleCmd
+	finally repeatPlan
+	
+	Plan handleCmd resumeLastPlan [
+		printCurrentEvent;
+		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("blink");
 		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
 		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
 	]

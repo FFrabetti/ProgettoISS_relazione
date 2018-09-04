@@ -373,24 +373,23 @@ Il modello di tale attore è pressoché analogo a quello visto per \texttt{Tempe
 
 \subsection{HumanOperator}
 \labelssec{humanOpRA}
-Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.\\
+Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.
+
+Si noti come tale disaccoppiamento funziona anche al contrario: gli eventuali robot possono essere pilotati il maniera uniforme da molteplici sorgenti di comandi, tutte facenti riferimento alla stessa application logic. Nel nostro caso ciò si verifica per l'utilizzatore umano (\texttt{HumanOperator}) e per l'agente software che muove il robot in autonomia per la pulizia della stanza (\texttt{SoftwareAgent}, vedi \xss{swagPA}).\\
 
 \lstinputlisting[style=style_qa, firstline=78, lastline=92, firstnumber=78]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
-Il sistema deve inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'applicazione, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con un server più sofisticato (ad esempio per realizzare l'autenticazione degli utenti).\\
-
-\lstinputlisting[style=style_qa, firstline=11, lastline=11, firstnumber=11]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
-
-\todo{La console Web è raggiungibile tramite browser all'indirizzo ... ed emette eventi/msg ... alla pressione dei pulsanti. Ecc...}
+In questa prima fase di modellazione, lo \texttt{HumanOperator} va a generare programmaticamente i comandi per il robot. In un secondo momento questi saranno invece originati da un effettivo utente umano che utilizza una console grafica (\xss{humanOpPA}).
 
 \subsection{Application logic}
 Per poter attuare la logica applicativa stabilita dai requisiti, l'applicazione deve ricevere i dati della temperatura, del tempo e dei vari sonar, emessi sotto forma di eventi; oltre a questi, deve mettersi in attesa dei comandi di movimento inviati dallo \texttt{HumanOperator}, così da poterli inoltrare a tutti i robot disponibili (reali e virtuali): a tal fine è stato introdotto l'evento \codescript{robotCmd : moveRobot(CMD)}.
 
 Sempre in accordo con i requisiti, l'applicazione deve gestire ed emettere, quando opportuno, gli eventi contenenti i comandi che regolano il \texttt{Led}, presente sul robot fisico, e la \texttt{Hue Lamp} remota, gestita da quello virtuale.\\
 
-\lstinputlisting[style=style_qa, firstline=96, lastline=120, firstnumber=96]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=96, lastline=119, firstnumber=96]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 \subsection{Robot}
+\labelssec{robotRA}
 Ci viene fornito un modello del robot espresso nel linguaggio \qa
 \footnote{iss2018Lab/it.unibo.mbot.divide/src/realRobotExecutor.qa e virtualRobotExecutor.qa}: questi è in grado di ricevere messaggi \codescript{moveRobot : moveRobot(CMD)} e di interpretarli come comandi di movimento (forward, backward, left, right, stop).
 
@@ -428,11 +427,11 @@ Poiché abbiamo utilizzato un \emph{modello eseguibile}, questo ci fornisce anch
 %===========================================================================
 \section{Problem analysis}
 \labelsec{ProblemAnalysis}
-Il problema definito dai requisiti si colloca nell'ambito dell'IoT, dove è diffuso l'utilizzo della cosiddetta \emph{architettura esagonale} come design pattern per gestire il rapporto tra input, elaborazione ed output nei sistemi distribuiti. Un ruolo centrale viene rivestito dalla business logic e dal modello delle risorse (\emph{Resource Model}), mentre gli altri componenti del sistema vengono visti tramite degli adapter verso le varie tecnologie ed implementazioni.\\
+Il problema definito dai requisiti si colloca nell'ambito dell'IoT, dove è diffuso l'utilizzo della cosiddetta \emph{architettura esagonale} come design pattern per gestire il rapporto tra input, elaborazione ed output nei sistemi distribuiti. In tale pattern, un ruolo centrale viene rivestito dalla \emph{business logic} e dal modello delle risorse (\emph{resource model}), mentre gli altri componenti del sistema vengono visti tramite degli adapter verso le varie tecnologie ed implementazioni.
 
-Il modello delle risorse è un disaccoppiatore del mondo fisico dal mondo della logica applicativa, che deve essere indipendente dalla tecnologia. Nello specifico:
+Il modello delle risorse è quindi un disaccoppiatore del mondo fisico da quello della logica applicativa, che deve essere indipendente dalla tecnologia. Nello specifico:
 \begin{enumerate}
-\item un cambiamento del sensore fisico causa un cambiamento nello stato del modello del sensore stesso
+\item un cambiamento dello stato del sensore fisico causa un cambiamento dello stato del modello del sensore stesso
 \item al cambiamento del modello, l'informazione viene notificata al controller (è un observer del modello)
 \item il controller modifica quindi il modello dell'attuatore in base alla logica applicativa
 \item l'aggiornamento del modello dell'attuatore comporta infine un aggiornamento dell'attuatore fisico
@@ -443,10 +442,10 @@ Come analisti riteniamo vantaggioso introdurre un modello delle risorse così da
 \subsection{Resource Model}
 Per la definizione del modello delle risorse usiamo un linguaggio dichiarativo che consenta di esprimere sia lo stato di ciascun componente, sia le operazioni primitive su di esso. A tal fine, introduciamo il seguente modello scritto in Prolog:\\
 
-\lstinputlisting[language=Prolog, keywordstyle=\color{black}]{../it.unibo.finalTask2018/resourceModel.pl}
+\lstinputlisting[language=Prolog, keywordstyle=\color{black}, lastline=36]{../it.unibo.finalTask2018/resourceModel.pl}
 
 \subsection{Logical architecture}
-In seguito all'introduzione del \emph{Resource Model} possiamo definire l'architettura logica del sistema in modo informale tramite la \xf{informalLA}.
+In seguito all'introduzione del modello delle risorse possiamo definire l'architettura logica del sistema in modo informale tramite la \xf{informalLA}.
 
 \begin{figure}[!htb]
 \centering
@@ -454,69 +453,79 @@ In seguito all'introduzione del \emph{Resource Model} possiamo definire l'archit
 \caption{Architettura logica informale}\labelfig{informalLA}
 \end{figure}
 
-Rispetto all'architettura risultante dall'analisi dei requisiti, sono stati inoltre aggiunti i componenti \texttt{Controller} e \texttt{SoftwareAgent}.
+Rispetto all'architettura risultante dall'analisi dei requisiti sono stati inoltre aggiunti i componenti \texttt{Controller} e \texttt{SoftwareAgent}.
 
 \subsection{Controller}
-Il ruolo del \texttt{Controller} è quello di gestire il modello delle risorse in base agli eventi ricevuti dai sensori e alla logica applicativa. Ci viene naturale utilizzare il pattern MVC: Resource Model, sensori/attuatori e Controller.
+Il ruolo del \texttt{Controller} è quello di gestire il modello delle risorse in base ai dati ricevuti dai sensori e alla logica applicativa, in accordo con il pattern MVC: resource model, sensori/attuatori e controller.
 
-Modelliamo il \texttt{Controller} come un attore in grado di ricevere informazioni di input dagli altri componenti del sistema (vedi righe 3-9) ed emettere comandi di output sotto forma di eventi \codescript{ctrlEvent : ctrlEvent(CATEG,NAME,CMD)}.\\
+Modelliamo quindi il \texttt{Controller} come un attore in grado di ricevere in input informazioni dagli altri componenti del sistema ed emettere in output comandi sotto forma di eventi \codescript{ctrlEvent : ctrlEvent(CATEG,NAME,CMD)}.\\
 
-\lstinputlisting[style=style_qa, lastline=18]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+\lstinputlisting[style=style_qa, lastline=19]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
-Tramite un \emph{EventHandler} ogni evento emesso dai sensori viene mappato in un evento \codescript{inputCtrlEvent : inputEvent( CATEG, NAME, VALUE )} ad uso interno del \texttt{Controller}. In questo modo gli eventi provenienti da sensori fisici diversi vengono trattati allo stesso modo e non vengono mai persi (a meno che le operazioni compiute dal \texttt{Controller} non richiedano troppo tempo), essendo l'\emph{EventHandler} un componente event-driven. Per discriminare la natura di questi eventi vengono usati i campi \codescript{CATEG} e \codescript{NAME} presenti nel payload.
+Tramite un \emph{EventHandler}, ogni evento emesso dai sensori viene mappato in un evento \codescript{inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)} ad uso interno del \texttt{Controller}, così che eventi provenienti da sensori fisici diversi possano essere trattati allo stesso modo e non venire mai persi, % (a meno che le operazioni compiute dal \texttt{Controller} non richiedano troppo tempo),
+essendo l'\emph{EventHandler} un componente event-driven.
 
-Ad ogni modifica del Resource Model relativa allo stato di un attuatore, il \texttt{Controller} emette a sua volta degli eventi \codescript{ctrlEvent} per notificare il cambiamento ai vari attuatori fisici.\\
+Per discriminare la natura degli eventi ricevuti, il \texttt{Controller} può usare i campi \codescript{CATEG} e \codescript{NAME} presenti nel payload.\\
 
-\lstinputlisting[style=style_qa, firstline=26, lastline=118, firstnumber=26]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+Come già anticipato, ad ogni modifica del Resource Model relativa allo stato di un attuatore, il \texttt{Controller} emette a sua volta degli eventi \codescript{ctrlEvent} per notificare il cambiamento ai vari attuatori fisici.\\
 
-Attualmente sono soddisfatti i requisiti \code{R-TempOk} e \code{R-TimeOk} in quanto il \texttt{Controller} blocca ogni modifica allo stato del robot al di fuori di un certo intervallo temporale o in presenza di temperature troppo elevate. Il robot viene inoltre fermato non appena queste condizioni non sono più verificate (\code{R-TempKo} e \code{R-TimeKo}).
+\lstinputlisting[style=style_qa, firstline=25, lastline=118, firstnumber=25]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
-Oltre a questo, sono anche soddisfatti i requisiti relativi al lampeggiamento del \texttt{Led} e della \texttt{HueLamp} (\code{R-BlinkLed} e \code{R-BlinkHue}), dal momento che alla modifica del modello del robot segue l'emissione di un opportuno evento \codescript{ctrlEvent} ad uso degli attuatori della categoria \emph{''led''}.
+Attualmente sono soddisfatti i requisiti \code{R-TempOk} e \code{R-TimeOk}, in quanto il \texttt{Controller} blocca ogni modifica allo stato del robot al di fuori di un certo intervallo temporale o in presenza di temperature troppo elevate. Il robot viene inoltre fermato non appena queste condizioni non sono più verificate (\code{R-TempKo} e \code{R-TimeKo}).
+
+Oltre a questo, sono anche soddisfatti i requisiti relativi al lampeggiamento del \texttt{Led} e della \texttt{HueLamp} (\code{R-BlinkLed} e \code{R-BlinkHue}), dal momento che alla modifica del modello del robot segue l'emissione di un opportuno evento \codescript{ctrlEvent} ad uso degli attuatori della categoria ``led'', mappato poi da un apposito \emph{EventHandler} nel rispettivo evento \codescript{lightCmd}.\\
+
+\lstinputlisting[style=style_qa, firstline=20, lastline=22, firstnumber=20]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 \subsection{Software Agent}
-Il \texttt{SoftwareAgent} realizza la logica applicativa in collaborazione col \texttt{Controller}, occupandosi di manovrare il robot secondo il vincolo \code{R-FloorClean}. Decidiamo quindi di modellarlo come un attore nel suo stesso contesto.
+\labelssec{swagPA}
+\texttt{SoftwareAgent} realizza la logica applicativa in collaborazione con il \texttt{Controller}, occupandosi di manovrare il robot secondo il vincolo \code{R-FloorClean}. Decidiamo quindi di modellarlo come un attore nel suo stesso contesto.
 
-L'agent si mette in ascolto degli eventi provenienti dai vari sonar e invia opportuni messaggi \codescript{cmd} al controller, gli stessi utilizzati dallo \texttt{HumanOperator} per muovere il robot.\\
+L'agent si mette in ascolto degli eventi provenienti dai vari sonar e invia opportuni messaggi \codescript{cmd} al controller, gli stessi utilizzati da \texttt{HumanOperator} per muovere il robot.\\
 
-In una fase preliminare, per motivi di testing, il \texttt{SoftwareAgent} fa semplicemente ruotare il robot quando esso viene rilevato dai sonar a distanza ravvicinata.\\
+In una fase preliminare, per motivi di testing, \texttt{SoftwareAgent} fa semplicemente ruotare il robot quando esso viene rilevato dai sonar a distanza ravvicinata.\\
 
 \lstinputlisting[style=style_qa, firstline=122, lastline=171, firstnumber=122]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 \subsection{Changes to HumanOperator}
-Rispetto al modello precedente, la \emph{web GUI} realizzata tramite il flag \codescript{-httpserver} è stata dotata di bottoni che, quando vengono premuti, scatenano eventi \codescript{usercmd : usercmd(X)}. Lo \texttt{HumanOperator} cattura questi eventi e li inoltra sotto forma di messaggi \codescript{cmd : cmd(X)} al \texttt{Controller}.
+\labelssec{humanOpPA}
+Il sistema deve inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'applicazione, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con un server più sofisticato (ad esempio per realizzare l'autenticazione degli utenti richiesta nei requisiti \code{R-Start} e \code{R-Stop}).\\
+
+\lstinputlisting[style=style_qa, firstline=14, lastline=14, firstnumber=14]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+
+La GUI web ottenuta tramite il flag \codescript{-httpserver} è dotata di bottoni che, quando vengono premuti, scatenano eventi \codescript{usercmd : usercmd(X)}. Lo \texttt{HumanOperator} deve quindi catturare questi eventi e inoltrarli sotto forma di messaggi \codescript{cmd : cmd(X)} al \texttt{Controller}.
 
 Lo \texttt{HumanOperator} è ancora un emettitore di comandi per il robot come visto nella sezione precedente, tuttavia ora è in grado di generarli in base ai pulsanti premuti dall'utilizzatore umano sulla console.\\
 
-\lstinputlisting[style=style_qa, firstline=175, lastline=191, firstnumber=175]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=175, lastline=190, firstnumber=175]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
-L'attuale \emph{GUI} in futuro potrà essere sostituita da un'implementazione differente per soddisfare i requisiti \code{R-Start} e \code{R-Stop}.
+\subsection{Changes to Robot}
+Il robot si mette in attesa di messaggi \codescript{moveRobot} e li interpreta come comandi di movimento, tuttavia i cambiamenti nel modello del robot vengono notificati all'esterno dal controller sotto forma di eventi \codescript{ctrlEvent}.
 
-\subsection{Virtual Robot with Node.js}
-Il robot virtuale si mette in attesa di messaggi \codescript{moveRobot} e li interpreta come comandi di movimento, tuttavia i cambiamenti nel modello del robot vengono notificati all'esterno sotto forma di eventi \codescript{ctrlEvent}.
+Similmente a quanto fatto nella \xss{robotRA}, per effettuare la conversione da \codescript{ctrlEvent} a messaggi abbiamo utilizzato un \emph{EventHandler}, così da accodare gli eventi senza il rischio di perderne qualcuno.\\ % (il robot è quindi, nel suo complesso, un componente \emph{event-driven}).\\
 
-Per effettuare la conversione da \codescript{ctrlEvent} a messaggi abbiamo utilizzato un \emph{EventHandler}: questo permette di accodare gli eventi senza il rischio di perderne qualcuno (il robot virtuale è quindi, nel suo complesso, un componente \emph{event-driven}).\\
+\lstinputlisting[style=style_qa, lastline=20]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
 
-\lstinputlisting[style=style_qa, lastline=13]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
+Poiché gli \emph{EventHandler} possono solo convertire eventi in messaggi con lo stesso payload, introduciamo un ulteriore evento \codescript{local\_robotCmd : moveRobot(CMD)} ad uso interno dei due \emph{EventHandler} che effettuano il mapping.
+%l'attore \texttt{nodebroker}, il cui compito è quello di convertire i messaggi \codescript{ctrlMsg : ctrlEvent(CATEG, NAME, CMD)} inviati dall'\emph{EventHandler} in messaggi \codescript{moveRobot : moveRobot(CMD)} per il robot virtuale.\\
 
-Poichè gli \emph{EventHandler} possono solo convertire eventi in messaggi con lo stesso payload, introduciamo l'attore \texttt{nodebroker}, il cui compito è quello di convertire i messaggi \codescript{ctrlMsg : ctrlEvent(CATEG, NAME, CMD)} inviati dall'\emph{EventHandler} in messaggi \codescript{moveRobot : moveRobot(CMD)} per il robot virtuale.\\
+%\lstinputlisting[style=style_qa, firstline=52, lastline=57, firstnumber=52]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
 
-\lstinputlisting[style=style_qa, firstline=52, lastline=57, firstnumber=52]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
+\subsubsection{Virtual Robot with Node.js}
+Concettualmente, il modello del robot virtuale è esattamente lo stesso della \xss{robotRA}. L'unica differenza risiede nella diversa implementazione dei metodi Java chiamati con il comando \codescript{javaRun}: in questo caso la classe Java dovrà connettersi con il server Node (dopo averlo avviato) e tradurre i comandi di movimento ricevuti in opportuni messaggi da inviare sulla connessione TCP. Sempre dalla stessa connessione riceverà, in un certo formato, i dati relativi ai vari sonar.
 
-\subsection{Real Robot with a mock object}
-Per quanto riguarda il robot fisico, al momento viene simulato tramite un attore che usa un oggetto Java, il quale si limita a stampare a video i comandi ricevuti. Tale attore deve anche gestire il lampeggiamento del led che sarà collocato sul robot fisico: nel rispetto delle considerazioni fatte durante l'analisi dei requisiti, questi viene visto attraverso l'interfaccia Java precedentemente definita (\xss{actuatorsRA}).
+Si rimanda questo argomento più nel dettaglio nella \xss{robotImpl}.
 
-Il modello di questo robot è quindi equivalente a quello del robot virtuale, discostandosi unicamente per l'implementazione dei metodi della classe Java utilizzati per realizzare le varie mosse.\\
+\subsubsection{Real Robot mock}
+Per quanto riguarda il robot fisico, questi viene al momento simulato tramite un oggetto Java che si limita a stampare a video i comandi ricevuti.
 
-\lstinputlisting[language=Java, firstline=11, lastline=36, firstnumber=11]{../it.unibo.finalTask2018/src/it/unibo/finalTask2018/robot/RealRobotMock.java}
+Un attore a parte si occupa invece di gestire lo stato del led, anch'esso rappresentato da un oggetto mock.\\
+
+\lstinputlisting[style=style_qa, firstline=46, lastline=57, firstnumber=46]{../it.unibo.finalTask2018/src/realRobotMock.qa}
+
+\vspace{8px}
 
 Da notare come entrambi i robot, reagendo agli stessi eventi \codescript{ctrlEvent} generati al cambiamento del modello del robot, possono eseguire in contemporanea le medesime mosse.
-
-\subsection{Changes to HueLampAgent}
-Come per il robot, anche il modello della \texttt{HueLamp} dev'essere aggiornato per poter lavorare con gli eventi \codescript{ctrlEvent} emessi dal controller. Analogamente a quanto fatto prima, abbiamo utilizzato un \emph{EventHandler} per convertire tali eventi in \codescript{lightCmd}, ovvero nel formato degli eventi gestiti dalla lampada.\\
-
-\lstinputlisting[style=style_qa, firstline=19, lastline=23, firstnumber=19]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
-
-Il resto del modello non ha subito variazioni rispetto a quello precedentemente mostrato. L'attuale implementazione della classe Java che viene utilizzata (tramite \codescript{javaRun}) non è altro che un oggetto mock che mostra un'interfaccia grafica in grado di ''lampeggiare''.
 %===========================================================================
 
 %===========================================================================
@@ -1122,6 +1131,8 @@ transition
 %===========================================================================
 \section{Implementation}
 \labelsec{Implementation}
+
+\labelssec{robotImpl}
 %===========================================================================
 
 %===========================================================================
@@ -1164,12 +1175,7 @@ Per registrare gli eventi emessi nel sistema è stato usato un \emph{event logge
 
 Il comportamento da attuare alla ricezione di un evento è precisato in un file Prolog esterno, così che possa essere condiviso da più event logger.\\
 
-\begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={it.unibo.finalTask2018/logger.pl}]
-dologevent :-
-	msg(EVID,'event',EMITTER,none,EVPL,NUM),
-	assert(logevent(EVID,EVPL)).
-	% actorPrintln(loggedev(EVID,EVPL)).
-\end{lstlisting}
+\lstinputlisting[language=Prolog, keywordstyle=\color{black}, firstline=6]{../it.unibo.finalTask2018/logger.pl}
 
 \subsubsection{ClockAgent unit test}
 Un ragionamento analogo al precedente vale anche per il testing di \codescript{ClockAgent}:\\

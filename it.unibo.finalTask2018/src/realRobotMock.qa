@@ -1,47 +1,67 @@
 System finalTask2018            
 
 Event frontSonar : sonar(DISTANCE)
-Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
-Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)
 Dispatch moveRobot : moveRobot(CMD)
 
+Event lightCmd : lightCmd(STATE)
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
+//Dispatch ctrlMsg : ctrlEvent(CATEG,NAME,CMD) // broker -> robot
+Event local_robotCmd : moveRobot(CMD)
+
 Context ctxRealRobotMock ip [ host="localhost" port=8866 ]
-EventHandler evhnode for ctrlEvent /*-print*/ {
-	forwardEvent realrobotbroker -m ctrlMsg // stesso payload
+EventHandler evhrealmock for ctrlEvent /*-print*/ {
+//	forwardEvent realrobotbroker -m ctrlMsg // stesso payload
+	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
+};
+EventHandler evhrealmockbroker for local_robotCmd {
+	forwardEvent realrobotmock -m moveRobot		// stesso payload
 };
 
-Context ctxApplPA ip [ host="localhost"  port=8018 ] -standalone 
+Context ctxApplPA ip [ host="localhost" port=8018 ] -standalone 
 
 QActor realrobotmock context ctxRealRobotMock {
-	Plan init normal [       
-	    println("realrobotmock start");
-	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.useImpl("realmock");
-	    javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
-  	]
-    switchTo waitForCmd        
-		
-   	Plan waitForCmd[
-   		println("realrobotmock waiting for commands")
-   	]  
-  	transition stopAfter 3600000 
- 		whenMsg moveRobot -> execMove 
-   	finally repeatPlan    
-
-  	Plan execMove resumeLastPlan[     
-     	onMsg moveRobot : moveRobot( h(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();
-  		onMsg moveRobot : moveRobot( w(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();
-    	onMsg moveRobot : moveRobot( s(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward();
-  		onMsg moveRobot : moveRobot( a(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();
-   		onMsg moveRobot : moveRobot( d(X) ) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
-   	]
-}
-
-QActor realrobotbroker context ctxRealRobotMock {
-	Plan init normal [ ]
+	Plan init normal [
+		println("realrobotmock start");
+		javaRun it.unibo.finalTask2018.adapter.robotAdapter.useImpl("MockRobot");
+		javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
+	]
+	switchTo waitForCmd
+	
+	Plan waitForCmd [
+		println("realrobotmock waiting for commands")
+	]
 	transition stopAfter 3600000
-		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward realrobotmock -m moveRobot : moveRobot(CMD)
+		whenMsg moveRobot -> execMove
 	finally repeatPlan
+
+	Plan execMove resumeLastPlan [
+		onMsg moveRobot : moveRobot(h(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();
+		onMsg moveRobot : moveRobot(w(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();
+		onMsg moveRobot : moveRobot(s(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward();
+		onMsg moveRobot : moveRobot(a(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();
+		onMsg moveRobot : moveRobot(d(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
+	]
 }
+
+QActor ledrobotmock context ctxRealRobotMock {
+	Plan init normal [
+		javaRun it.unibo.finalTask2018.adapter.lampAdapter.init()
+	]
+	transition stopAfter 3600000
+		whenEvent lightCmd -> handleCmd
+	finally repeatPlan
+	
+	Plan handleCmd resumeLastPlan [
+		onEvent lightCmd : lightCmd(CMD) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp(CMD)
+	]
+}
+
+//QActor realrobotbroker context ctxRealRobotMock {
+//	Plan init normal [ ]
+//	transition stopAfter 3600000
+//		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward realrobotmock -m moveRobot : moveRobot(CMD)
+//	finally repeatPlan
+//}
 
 //QActor testerrealrobotmock context ctxRealRobotMock{
 //	Plan init normal [

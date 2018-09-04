@@ -7,9 +7,9 @@ import it.unibo.is.interfaces.IOutputEnvView;
 import it.unibo.qactors.QActorContext;
 import it.unibo.qactors.QActorUtils;
 
-public abstract class AbstractEvhnode extends EventHandlerComponent { 
+public abstract class AbstractEvhrealmockbroker extends EventHandlerComponent { 
 protected IEventItem event;
-	public AbstractEvhnode(String name, QActorContext myCtx, IOutputEnvView outEnvView, String[] eventIds ) throws Exception {
+	public AbstractEvhrealmockbroker(String name, QActorContext myCtx, IOutputEnvView outEnvView, String[] eventIds ) throws Exception {
 		super(name, myCtx, eventIds, outEnvView);
   	}
 	@Override
@@ -20,10 +20,10 @@ protected IEventItem event;
 		if( event == null ) return;
 		{
 		Term msgt       = Term.createTerm(event.getMsg());
-		Term msgPattern = Term.createTerm("ctrlEvent(CATEG,NAME,CMD)");
+		Term msgPattern = Term.createTerm("moveRobot(CMD)");
 				boolean b = this.pengine.unify(msgt, msgPattern);
 				if( b ) {
-			  		sendMsg("ctrlMsg","realrobotbroker", QActorContext.dispatch, msgt.toString() ); 
+			  		sendMsg("moveRobot","realrobotmock", QActorContext.dispatch, msgt.toString() ); 
 				}else{
 					println("non unifiable");
 				}

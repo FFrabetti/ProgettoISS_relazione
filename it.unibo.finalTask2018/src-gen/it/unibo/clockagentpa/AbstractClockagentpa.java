@@ -95,7 +95,11 @@ public abstract class AbstractClockagentpa extends QActor {
 	    	aar = delayReactive(6000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "emitTime";
 	    	if( ! aar.getGoon() ) return ;
-	    	it.unibo.finalTask2018.adapter.clockAdapter.emitTime( myself  );
+	    	it.unibo.finalTask2018.adapter.clockAdapter.getTime( myself  );
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??currentTime(H,M)" )) != null ){
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "clock(H,M)","clock(H,M)", guardVars ).toString();
+	    	emit( "clock", temporaryStr );
+	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"clockagentpa_"+myselfName,true,false);
 	    }catch(Exception e_emitTime){  
 	    	 println( getName() + " plan=emitTime WARNING:" + e_emitTime.getMessage() );

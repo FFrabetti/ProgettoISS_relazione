@@ -8,7 +8,7 @@ Event lightCmd : lightCmd(CMD)
 Event robotCmd : moveRobot(CMD) // Dispatch moveRobot : moveRobot(CMD)
 Dispatch cmd : cmd(CMD)
 
-Context ctxReqAnalysis ip [ host="localhost" port=8888 ] -httpserver
+Context ctxReqAnalysis ip [ host="localhost" port=8888 ] // -httpserver
 EventHandler evhralogger for clock, temperature, sonarSensor, frontSonar, robotCmd, lightCmd /*-print*/ {
 	memoCurrentEvent -lastonly for ralogger;
 	demo dologevent for ralogger
@@ -30,9 +30,9 @@ QActor huelampagentra context ctxReqAnalysis {
 	finally repeatPlan
 	
 	Plan commandLamp resumeLastPlan [
-		onEvent lightCmd : lightCmd( blink )-> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("blink");
-		onEvent lightCmd : lightCmd( on ) 	-> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("on");
-		onEvent lightCmd : lightCmd ( off ) -> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("off")
+		onEvent lightCmd : lightCmd(blink)	-> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("blink");
+		onEvent lightCmd : lightCmd(on) 	-> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("on");
+		onEvent lightCmd : lightCmd(off)	-> javaRun it.unibo.finalTask2018.ra.hueAdapter.setLight("off")
 	]
 }
 // -------------------------- HUE LAMP AGENT --------------------------
@@ -113,7 +113,6 @@ QActor applra context ctxReqAnalysis {
 		onMsg cmd: cmd(CMD) -> emit robotCmd : moveRobot(CMD);
 		
 		// for testing
-		delay 400;
 		onMsg cmd: cmd(w(X)) -> emit lightCmd : lightCmd(on);
 		onMsg cmd: cmd(h(X)) -> emit lightCmd : lightCmd(off)
 	]

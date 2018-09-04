@@ -146,42 +146,42 @@ public abstract class AbstractSwagpa extends QActor {
 	    	}
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?isClose" )) != null ){
 	    	{//actionseq
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(0))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(d(0))", guardVars ).toString();
 	    	sendMsg("cmd","controllerpa", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(250,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "handleSensor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(0))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(d(0))", guardVars ).toString();
 	    	sendMsg("cmd","controllerpa", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(250,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "handleSensor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(0))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(d(0))", guardVars ).toString();
 	    	sendMsg("cmd","controllerpa", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(250,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "handleSensor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(d(0))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(d(0))", guardVars ).toString();
 	    	sendMsg("cmd","controllerpa", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(250,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "handleSensor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(s(0))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(s(0))", guardVars ).toString();
 	    	sendMsg("cmd","controllerpa", QActorContext.dispatch, temporaryStr ); 
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(250,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "handleSensor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(X)","cmd(h(0))", guardVars ).toString();
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(h(0))", guardVars ).toString();
 	    	sendMsg("cmd","controllerpa", QActorContext.dispatch, temporaryStr ); 
 	    	};//actionseq
 	    	}
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??sonarDetect(N,D)" )) != null ){
-	    	temporaryStr = "removing(N,D)";
+	    	temporaryStr = "removing(sonarDetect(N,D))";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}

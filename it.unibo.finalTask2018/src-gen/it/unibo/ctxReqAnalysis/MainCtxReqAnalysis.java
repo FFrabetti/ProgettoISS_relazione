@@ -8,7 +8,7 @@ public class MainCtxReqAnalysis  {
 //MAIN
 public static QActorContext initTheContext() throws Exception{
 	IOutputEnvView outEnvView = SituatedSysKb.standardOutEnvView;
-	String webDir = "./srcMore/it/unibo/ctxReqAnalysis";
+	String webDir = null;
 	return QActorContext.initQActorSystem(
 		"ctxreqanalysis", "./srcMore/it/unibo/ctxReqAnalysis/finaltask2018.pl", 
 		"./srcMore/it/unibo/ctxReqAnalysis/sysRules.pl", outEnvView,webDir,false);

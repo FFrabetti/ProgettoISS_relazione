@@ -79,7 +79,7 @@ public abstract class AbstractControllerpa extends QActor {
 	    	parg = "consult(\"./resourceModel.pl\")";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = "qacontrol(starts)";
+	    	temporaryStr = "controllerqa(starts)";
 	    	println( temporaryStr );  
 	    	//switchTo waitForInputEvent
 	        switchToPlanAsNextState(pr, myselfName, "controllerpa_"+myselfName, 
@@ -95,22 +95,22 @@ public abstract class AbstractControllerpa extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_waitForInputEvent",0);
 	     pr.incNumIter(); 	
 	    	String myselfName = "waitForInputEvent";  
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(robots,robot,r1,VALUE)" )) != null ){
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(r1,VALUE)" )) != null ){
 	    	temporaryStr = "model(r1,VALUE)";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(actuator,led,l1,VALUE)" )) != null ){
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(l1,VALUE)" )) != null ){
 	    	temporaryStr = "model(l1,VALUE)";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(sensor,temperature,t1,VALUE)" )) != null ){
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(t1,VALUE)" )) != null ){
 	    	temporaryStr = "model(t1,VALUE)";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(sensor,clock,c1,VALUE)" )) != null ){
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?getModelItem(c1,VALUE)" )) != null ){
 	    	temporaryStr = "model(c1,VALUE)";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
@@ -121,7 +121,7 @@ public abstract class AbstractControllerpa extends QActor {
 	     msgTransition( pr,myselfName,"controllerpa_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleInputEvent"), stateTab.get("handleCmd") }, 
 	          new String[]{"true","E","inputCtrlEvent", "true","M","cmd" },
-	          6000000, "handleToutBuiltIn" );//msgTransition
+	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForInputEvent){  
 	    	 println( getName() + " plan=waitForInputEvent WARNING:" + e_waitForInputEvent.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -172,11 +172,11 @@ public abstract class AbstractControllerpa extends QActor {
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("cmd(X)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
-	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
+	    		pengine.unify(curT, Term.createTerm("cmd(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg = "ricevuto(X)";
+	    		String parg = "ricevuto(cmd(X))";
 	    		/* Print */
-	    		parg =  updateVars( Term.createTerm("cmd(X)"), 
+	    		parg =  updateVars( Term.createTerm("cmd(CMD)"), 
 	    		                    Term.createTerm("cmd(X)"), 
 	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
 	    		if( parg != null ) println( parg );
@@ -185,11 +185,11 @@ public abstract class AbstractControllerpa extends QActor {
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("cmd(X)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("cmd") && 
-	    		pengine.unify(curT, Term.createTerm("cmd(X)")) && 
+	    		pengine.unify(curT, Term.createTerm("cmd(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		String parg="changeRobotModel(X)";
 	    		/* PHead */
-	    		parg =  updateVars( Term.createTerm("cmd(X)"), 
+	    		parg =  updateVars( Term.createTerm("cmd(CMD)"), 
 	    		                    Term.createTerm("cmd(X)"), 
 	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
 	    			if( parg != null ) {

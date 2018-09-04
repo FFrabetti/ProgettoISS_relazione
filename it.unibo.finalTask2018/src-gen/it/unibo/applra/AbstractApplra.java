@@ -175,10 +175,6 @@ public abstract class AbstractApplra extends QActor {
 	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
 	    		if( parg != null ) emit( "robotCmd", parg );
 	    	}
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(400,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "msgReceived";
-	    	if( ! aar.getGoon() ) return ;
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("cmd(w(X))");

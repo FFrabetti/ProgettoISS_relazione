@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import it.unibo.qactors.akka.QActor;
 import it.unibo.utils.JSONParser;
 import it.unibo.utils.RESTfulClient;
 
@@ -22,14 +23,7 @@ public class hueLampAdapter {
 	private static String lamp;
 	private static String username;
 
-	public static void setUp(/* QActor qa */) throws ClientProtocolException, IOException {
-		// 1) controllare se esiste il file
-		// 2a) esiste -> check bridge, check lamp
-		// 2b) non esiste -> trova bridge, get username, trova lamp
-		// 3aa) bridge ok, lamp ok
-		// 3ab) bridge ok, trova lamp
-		// 3ac) trova bridge, get username, trova lamp
-
+	public static void setUp(QActor qa) throws ClientProtocolException, IOException {
 		File f = new File("lamp_settings.txt");
 		if (f.exists()) { // controllo esistenza file
 			BufferedReader br = new BufferedReader(new FileReader(f));
@@ -38,7 +32,7 @@ public class hueLampAdapter {
 			lamp = br.readLine();
 			br.close();
 			if (checkBridge()) { // controllo bridge
-				if(!checkLamp()) { // lamp non valida, ne cerco un'altra
+				if (!checkLamp()) { // lamp non valida, ne cerco un'altra
 					findLamp();
 					updateSettingsFile(f);
 				}
@@ -57,21 +51,23 @@ public class hueLampAdapter {
 		}
 	}
 
-	public static void setLampState(/* QActor qa, */String state) throws ClientProtocolException, IOException {
-		// IF STATE==ON -> PUT "on": true
-		// ELSE IF STATE==OFF -> PUT "on": false
+	public static void setLampState(QActor qa, String state) throws ClientProtocolException, IOException {
 		JSONObject obj = new JSONObject();
 		if (state.equals("on")) {
 			obj.accumulate("on", true);
+			obj.accumulate("effect", "none");
 			RESTfulClient.execPUT("http://" + bridge + "/api/" + username + "/lights/" + lamp + "/state",
 					obj.toString());
 		} else if (state.equals("off")) {
 			obj.accumulate("on", false);
+			obj.accumulate("effect", "none");
 			RESTfulClient.execPUT("http://" + bridge + "/api/" + username + "/lights/" + lamp + "/state",
 					obj.toString());
+		} else if (state.equals("blink")) {
+			obj.accumulate("on", true);
+			obj.accumulate("effect", "colorloop"); // -> multicolor blinking :)
 		}
 	}
-
 
 	private static void findBridge() throws ClientProtocolException, IOException {
 		HttpResponse response = RESTfulClient.execGET("https://discovery.meethue.com");
@@ -91,13 +87,13 @@ public class hueLampAdapter {
 		}
 		return check;
 	}
-	
+
 	private static void findLamp() throws ClientProtocolException, IOException {
 		HttpResponse response = RESTfulClient.execGET("http://" + bridge + "/api/" + username + "/lights");
 		JSONObject obj = JSONParser.parseJSONObject(response.getEntity().getContent());
 		lamp = obj.keySet().toArray()[0].toString();
 	}
-	
+
 	private static boolean checkLamp() throws ClientProtocolException, IOException {
 		HttpResponse response = RESTfulClient.execGET("http://" + bridge + "/api/" + username + "/lights/" + lamp);
 		JSONObject obj = JSONParser.parseJSONObject(response.getEntity().getContent());
@@ -111,12 +107,15 @@ public class hueLampAdapter {
 		JSONArray arr = JSONParser.parseJSONArray(response.getEntity().getContent());
 		username = arr.getJSONObject(0).getJSONObject("success").getString("username");
 	}
-	
+
 	private static void updateSettingsFile(File settings) throws IOException {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(settings));
-		bw.write(bridge); bw.newLine();
-		bw.write(username); bw.newLine();
-		bw.write(lamp); bw.newLine();
+		bw.write(bridge);
+		bw.newLine();
+		bw.write(username);
+		bw.newLine();
+		bw.write(lamp);
+		bw.newLine();
 		bw.close();
 	}
 

@@ -1,0 +1,31 @@
+\subsubsection{R-TimeOk and R-TimeKo}
+Il robot può svolgere il suo lavoro solo durante un certo intervallo temporale [7 a.m. - 10 a.m]. Per poter verificare questo requisito è semplicemente sufficiente la presenza di un qualunque tipo di orologio all'interno del sistema, ad esempio quello di un computer, piuttosto che un servizio web remoto o un qualsiasi altro \emph{escamotage}.
+
+\subsubsection{R-TempOk and R-TempKo}
+Per poter utilizzare il robot, la temperatura non può essere superiore ad una certa soglia (25 °C). Analogamente alla sezione precendete, anche qui è sufficiente includere nel sistema un termometro, sia esso un servizio remoto o un sensore fisico, per poter monitorare la temperatura durante la pulizia.
+
+\subsubsection{R-BlinkLed}
+Mentre è all'opera, il robot fisico deve far lampeggiare un led posto su di esso. Essendo il led un attuatore luminoso estremamente semplice ( solitamente dotato di due soli stati on/off), è consigliato delegare ad un altro componente la responsabilità di accenderlo e spegnerlo ripetutamente durante la pulizia, così da ottenere l'effetto intermittente richiesto dal requisito.
+
+\subsubsection{R-BlinkHue}
+Contrariamente al led, la Hue Lamp Philips è una \emph{smart thing} estremamente versatile dal punto di vista del comportamento.
+Da analisti non riteniamo essere necessaria quindi l'introduzione di un ulteriore componente per eseguire il lampeggiamento, in quanto essa stessa possiede già una analoga funzione built-in. 
+
+\subsubsection{R-AvoidFix, R-AvoidMobile and R-Obstacle}
+Durante l'esecuzione della sua attività, il robot può incontrare degli ostacoli sul suo cammino. Nel caso puramente astratto di una stanza vuota, gli unici ostacoli sono le pareti, ma esse sono ostacoli positivi in quanto aiutano il robot a capire la sua posizione attuale.
+In un caso realistico però ci possono essere altri ostacoli che il robot deve affrontare e dunque risulta necessaria un'analisi più attenta delle situazioni in cui esso può trovarsi. \\
+
+Possiamo dividere gli ostacoli in due categorie: fissi e mobili.
+I primi vanno necessariamente aggirati in qualche modo, mentre i secondi possono essere aggirati a loro volta, oppure il robot può aspettare che l'ostacolo si sposti per poi proseguire il proprio percorso di pulizia.
+Inoltre ci sono alcuni tipi di ostacoli che il robot potrebbe essere incapace di superare (\code{R-Obstacle}), come ad esempio una campana posta su di esso o una barriera imprevista da parete a parete che separa in due la stanza. \\
+
+Dal punto di vista teorico gli ostacoli insuperabili sono casi remoti che difficilmente si possono presentare. Come analisti però riteniamo che anche gli ostacoli il cui superamente richieda un numero di mosse superiore ad una certa soglia, vadano considerati invalicabili, in modo da semplificare la logica applicativa.
+Questo ragionamento tiene inoltre conto del fatto che lo stesso robot è estremamente impreciso nelle misure e nei movimente e che dunque anche uno sforzo di progettazione per ottenere un sistema preciso per l'\emph{obstacle avoidance} potrebbe ugualmente risultare inefficace.
+
+\subsubsection{R-Start and R-Stop}
+Per avviare la pulizia della stanza, è necessario l'invio dell'apposito comando da parte di un utente autorizzato che si interfaccia al sistema mediante una \code{console}. Tale utente può anche richiedere la terminazione prematura dell'operazione. \\
+Ci domandiamo come si possa diventare \emph{utenti autorizzati}.
+Sembra chiaro che sia necessario offrire un servizio di login che, supportato da un meccanismo per la persistenza dei dati, possa permettere di ottenere credenziali per accedere al sistema. Inoltre i requisiti riferiscono esplicitamente la presenza di una \code{console} utilizzabile da remoto, ad esempio tramite \pc o smartphone. \\
+
+Si delinea dunque la necessità un componente raggiungibile via web che offra i servizi necessari al pilataggio del robot, ma solo per gli utenti precedentemente registrati nel sistema e che abbiano effettuato l'accesso. \\
+Certamente se la console ed il login fossero collocati all'interno dello stesso componente, da punto di vista dell'utente, l'uso del sistema risulterebbe semplificato.

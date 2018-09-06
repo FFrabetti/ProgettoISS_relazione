@@ -544,9 +544,10 @@ Poiché gli \emph{EventHandler} possono solo convertire eventi in messaggi con l
 %\lstinputlisting[style=style_qa, firstline=52, lastline=57, firstnumber=52]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
 
 \subsubsection{Virtual Robot with Node.js}
+\labelssec{virtualRobotPA}
 Concettualmente, il modello del robot virtuale è esattamente lo stesso della \xss{robotRA}. L'unica differenza risiede nella diversa implementazione dei metodi Java chiamati con il comando \codescript{javaRun}: in questo caso la classe Java dovrà connettersi con il server Node (dopo averlo avviato) e tradurre i comandi di movimento ricevuti in opportuni messaggi da inviare sulla connessione TCP. Sempre dalla stessa connessione riceverà, in un certo formato, i dati relativi ai vari sonar.
 
-Si rimanda questo argomento più nel dettaglio nella \xss{robotImpl}.
+Si rimanda questo argomento più nel dettaglio nella \xss{robotNodeImpl}.
 
 \subsubsection{Real Robot mock}
 Per quanto riguarda il robot fisico, questi viene al momento simulato tramite un oggetto Java che si limita a stampare a video i comandi ricevuti.
@@ -1178,7 +1179,48 @@ Tale classe espone i due metodi statici \codescript{setUp()} e \codescript{setLa
 Dal momento che sia l'interazione con la lampada, sia le operazioni preliminari per individuare l'indirizzo IP del bridge nella rete e per l'ottenimento dello username sono gestite attraverso comunicazione RESTful, abbiamo implementato una classe Java di utilità\footnote{RESTfulClient.java} che, sfruttando un'apposita libreria, semplifichi tali operazioni.
 Anche per quanto riguarda la scrittura/lettura dei dati in JSON ci siamo appoggiati ad una libreria.
 
-\labelssec{robotImpl}
+\subsection{Virtual Robot with Node.js}
+\labelssec{robotNodeImpl}
+L'implementazione del robot virtuale si basa sul progetto \texttt{configurable-threejs-app}\footnote{\url{https://github.com/PierfrancescoSoffritti/configurable-threejs-app}} di Pierfrancesco Soffritti, il quale fa uso di un server Node.js che può essere raggiunto sia tramite browser, sia tramite una semplice connessione TCP.
+
+Come prima cosa quindi, il nostro robot modellato tramite il linguaggio \qa (\xss{virtualRobotPA}) deve occuparsi di avviare il server e stabilire con questi una connessione.\\
+
+\lstinputlisting[style=style_qa, firstline=21, lastline=35, firstnumber=21]{../it.unibo.finaltask2018/src/virtualRobotNode.qa}
+
+La classe Java fa uso di un file \texttt{.bat} per eseguire il server in un nuovo terminale, appositamente aperto, evitando così che questa operazione debba essere fatta manualmente dall'utente, ma allo stesso tempo lasciando all'utilizzatore il controllo per poterlo terminare.\\
+
+\lstinputlisting[language=Java, firstline=6, lastline=30, firstnumber=6]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/robot/NodeRobot.java}
+
+L'implementazione dei metodi che corrispondono alle varie mosse fa uso della classe di utilità \codescript{it.unibo.utils.clientTcp}, la quale costruisce i messaggi nel giusto formato accettato dal server e li invia sulla connessione TCP.
+
+Inoltre, da questa un thread dedicato legge continuamente i dati in arrivo, corrispondenti alle informazioni emesse dai sonar fissi e mobili, per poi emettere i relativi eventi \codescript{sonarSensor} e \codescript{frontSonar}.
+
+\subsection{Real Robot with Arduino+RaspberryPi}
+Il robot fisico che si trova sul RaspberryPi\footnote{progetto: \texttt{it.unibo.raspRobot}} interagisce con il resto del sistema tramite l'invio e la ricezione di eventi (propagati dall'infrastruttura \qa via rete) e con Arduino -- dove sono collegati sensori e attuatori -- tramite una connessione seriale.
+
+L'architettura del sistema può essere quindi riassunta dalla \todo{riferimento}.
+
+In realtà, il robot non comunica direttamente con Arduino, in quanto abbiamo scelto di introdurre un ulteriore strato software che esponga una visione di alto livello dei dispositivi fisici collegati alla board di Arduino: questi sono presentati come servizi accessibili via rete (TCP) e gestiti da un opportuno server Python, il quale è l'unico a leggere e scrivere dati sulla seriale (lato Raspberry).
+
+Questa soluzione scarica dal robot fisico la responsabilità di conoscere i dettagli della comunicazione con Arduino, a favore di un'interazione tra entità di alto livello (micro-servizi).\\
+
+\lstinputlisting[style=style_qa]{../it.unibo.raspRobot/src/realrobot.qa}
+
+L'attore che rappresenta il robot utilizza un'apposita classe Java che si comporta come un client nei confronti del server Python, inviando i comandi di movimento e ricevendo da questi i dati relativi al sonar frontale.
+
+L'architettura risultante è rappresentata nella \todo{riferimento}.
+
+% .qa, differenze (minime) rispetto al modello della PA
+% spiegare mapping comandi?
+
+\subsubsection{Temperature from a real sensor}
+Una possibile implementazione del servizio che fornisce la temperatura può essere basata su un sensore fisico collegato ad uno degli ingressi analogici di Arduino.
+
+Anche in questo caso si tratta sempre del gestore della connessione seriale scritto in Python a fornire i dati all'esterno, mettendo a disposizione degli utilizzatori un server in grado di rispondere, su richiesta, con l'informazione della temperatura corrente.
+
+% listing python?
+
+% subsubsection arduino?
 %===========================================================================
 
 %===========================================================================

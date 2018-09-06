@@ -1,19 +1,23 @@
 System finalTask2018            
 
 Event frontSonar : sonar(DISTANCE)				// out
-Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)	// in
 Event lightCmd : lightCmd(STATE)				// in
-Dispatch ctrlMsg : ctrlEvent(CATEG, NAME, CMD)	// internal
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)		// in
+Event local_robotCmd : moveRobot(CMD)			// internal
 Dispatch moveRobot : moveRobot(CMD)				// internal
 
-// RICORDA: inserire host e port giusti
+// RICORDA: inserire host addr giusto
+//Context ctxRealRobotRasp ip [ host="10.0.3.14" port=8888 ]
 Context ctxRealRobotRasp ip [ host="localhost" port=8888 ]
-EventHandler evhnode for ctrlEvent {
-	forwardEvent realrobotbroker -m ctrlMsg // stesso payload
+EventHandler evhreal for ctrlEvent {
+	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
+};
+EventHandler evhrealbroker for local_robotCmd {
+	forwardEvent realrobotrasp -m moveRobot		// stesso payload
 };
 
-// RICORDA: inserire host e port giusti
-// Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
+// RICORDA: inserire host addr giusto
+Context ctxAppl ip [ host="localhost" port=8018 ] -standalone 
 
 QActor realrobotrasp context ctxRealRobotRasp {
 	Plan init normal [
@@ -31,23 +35,11 @@ QActor realrobotrasp context ctxRealRobotRasp {
    	finally repeatPlan
 
   	Plan execMove resumeLastPlan [
-  		// -------- TEST{ --------
-  		onMsg moveRobot : moveRobot(CMD) -> addRule logmsg(moveRobot,moveRobot(CMD));
-  		// -------- }TEST --------
-  		
 //  	printCurrentMessage;
      	onMsg moveRobot : moveRobot(CMD) -> addRule receivedCmd(CMD);
      	[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
-     	
    		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
    	]
-}
-
-QActor realrobotbroker context ctxRealRobotRasp {
-	Plan init normal [ ]
-	transition stopAfter 3600000
-		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward realrobotrasp -m moveRobot : moveRobot(CMD)
-	finally repeatPlan
 }
 
 QActor ledagent context ctxRealRobotRasp {
@@ -64,27 +56,9 @@ QActor ledagent context ctxRealRobotRasp {
     finally repeatPlan
    	 
 	Plan switchLed resumeLastPlan [
-  		// -------- TEST{ --------
-  		onEvent lightCmd : lightCmd(CMD) -> addRule logevent(lightCmd,lightCmd(CMD));
-  		// -------- }TEST --------
-		
 // 		printCurrentEvent;
  		onEvent lightCmd : lightCmd(CMD) -> addRule receivedCmd(CMD);
  		[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
-
    		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
 	]
 }
-
-// -------- TEST{ --------
-QActor realrobottest context ctxRealRobotRasp {
-	Plan init normal [ ]
-	transition stopAfter 3600000
-		whenEvent frontSonar -> dologevent
-	finally repeatPlan
-		
-	Plan dologevent resumeLastPlan [
-		onEvent frontSonar : sonar(D) -> addRule logevent(frontSonar,sonar(D))
-	]
-}
-// -------- }TEST --------

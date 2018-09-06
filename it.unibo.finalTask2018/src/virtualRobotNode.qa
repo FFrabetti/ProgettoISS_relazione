@@ -20,7 +20,7 @@ Context ctxApplPA ip [ host="localhost" port=8018 ] -standalone
 
 QActor robotnode context ctxVirtualRobotNode {
 	Rules {
-		robotConfig("localhost", 8999).
+		robotConfig("localhost", 8999).	// Node server
 	}
 	
 	Plan init normal [

@@ -2,7 +2,6 @@ package it.unibo.raspRobot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 import it.unibo.qactors.akka.QActor;
 import it.unibo.sockutils.tcp.TCPClient;
@@ -11,7 +10,7 @@ public class robotClient {
 	
 	private static TCPClient client;
 	
-	public static void init(QActor qa, String host, String port) throws NumberFormatException, UnknownHostException, IOException {
+	public static void init(QActor qa, String host, String port) throws Exception {
 		// "host" dot-notation conversion: addr(X,Y,W,Z) -> X.Y.W.Z
 		int index = host.indexOf('(');
 		if(index>=0) {
@@ -25,7 +24,6 @@ public class robotClient {
 		new Thread(() -> {
 			try {
 				BufferedReader br = client.getBufferedReader();
-	
 				String line;
 				while((line = br.readLine()) != null) {
 					System.out.println("emitting frontSonar : sonar(" + line + ")");

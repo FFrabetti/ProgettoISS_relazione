@@ -1,0 +1,28 @@
+System mockappl
+
+Event frontSonar : sonar(DISTANCE)				// in
+Event lightCmd : lightCmd(STATE)				// out
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)		// out
+
+Context ctxAppl ip [ host="localhost" port=8018 ]
+
+QActor testappl context ctxAppl {
+	Plan init normal [
+		println("testappl start")
+	]
+	// manual testing
+//	switchTo emitEvents
+	
+	Plan emitEvents [
+		delay 10000; // wait for realrobotrasp
+		emit ctrlEvent : ctrlEvent(robot,r1,w(0));
+		delay 1000;
+		emit ctrlEvent : ctrlEvent(robot,r1,h(0));
+		delay 1000;
+		emit lightCmd : lightCmd(on);
+		delay 1000;
+		emit lightCmd : lightCmd(off)
+	]
+	transition stopAfter 3600000
+		whenEvent frontSonar : sonar(D) do printCurrentEvent
+}

@@ -25,7 +25,6 @@ public class NodeRobot implements DDRobot {
 			clientTcp.initClientConn(qa, host, port);	
 		} catch (Exception e) {
 			e.printStackTrace();
-			
 			throw new RuntimeException(e);
 		}
 	}

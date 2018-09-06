@@ -422,6 +422,38 @@ Questa seconda opzione è meno conveniente dal punto di vista del testing automa
 \vspace{8px}
 
 Poiché abbiamo utilizzato un \emph{modello eseguibile}, questo ci fornisce anche un primo \textbf{prototipo} funzionante della nostra applicazione.
+
+\subsection{Cleaning the room}
+Ora che l'architettura del sistema è formalmente definita, passiamo ad analizzare il requisito fondamentale: \code{R-FloorClean}.\\
+
+Pulire la stanza significa trovare un percorso da un punto di partenza (\code{start-point}) ad un punto di arrivo (\code{end-point}) predefiniti che copra l'intera superficie disponibile. Ciò può essere fatto in svariati modi, tuttavia si considera desiderabile impiegare il minor tempo possibile e quindi limitare il passaggio ripetuto per le stesse posizioni già pulite in precedenza.
+
+Consideriamo inizialmente una stanza rettangolare e priva di ostacoli. In questo caso esistono più percorsi che consentono di non passare mai due volte per lo stesso punto: ad esempio procedendo a spirale lungo le pareti e proseguendo verso il centro della stanza, oppure a ``zig-zag'' parallelamente ad una parete, avvicinandosi via via a quella opposta.
+
+La differenza sostanziale tra le due risiede nella posizione finale: nella prima questa si trova al centro della stanza, mentre nella seconda lungo la parete opposta a quella di partenza. Da notare come nella seconda alternativa, data la specifica della stanza e la collocazione dei due sonar fissi, il punto di arrivo coincida con \code{sonar2}.\\
+
+\begin{center}
+\includegraphics[scale=0.4]{img/roomMap.png}
+\end{center}
+
+L'assunzione relativa alla forma rettangolare della stanza non è assolutamente restrittiva, mentre la presenza di eventuali ostacoli riguarda i requisiti trattati di seguito.
+
+\subsubsection{R-End}
+Il robot deve fermarsi quando ha terminato la pulizia dell'intera stanza. Ciò significa, in altre parole, aver percorso almeno una volta tutti i punti della superficie. Ci chiediamo come sia possibile verificare questo requisito.
+
+Se conoscessimo le dimensioni della stanza, basterebbe tenere traccia del percorso seguito per controllare la superficie coperta dal robot. Un modo per fare ciò potrebbe essere rappresentare la stanza come una scacchiera composta da un reticolo di celle quadrate che il robot può percorrere con una mossa elementare (un ``passo''). La dimensione delle celle deve essere sufficientemente piccola per essere vicina a un numero divisibile per le due dimensioni della stanza, così da limitare la presenza di ``mezzi-passi'', ma anche abbastanza grande da essere misurabile dal robot.
+
+L'unico modo che il robot ha a disposizione per misurare le distanze è tramite il tempo, ovvero, assumendo di muoversi a velocità costante (trascurando l'accelerazione dovuta alla partenza e allo stop), lo spazio percorso è dato dalla legge:
+\[s = v t \]
+
+Il robot quindi, muovendosi all'interno della griglia, può tenere traccia di tutti i passi fatti così da poter verificare in seguito di essere passato almeno una volta su ogni casella. Questo comporta però di conoscere prima la dimensione della stanza.\\
+
+Un'alternativa è assumere che, adottando il movimento a ``zig-zag'', quando il robot viene rilevato molto vicino a \code{sonar2} questi abbia pulito l'intera stanza. Ciò è sicuramente vero nel caso di una semplice stanza rettangolare e priva di ostacoli, la cui lunghezza è multiplo pari del ``passo laterale'' compiuto dal robot al termine di ogni rettilineo.
+
+\subsubsection{R-Start and R-Stop}
+% cosa vuol dire utente autorizzato
+
+% console utilizzabile da qualsiasi dispositivo -> web server
 %===========================================================================
 
 %===========================================================================
@@ -1131,6 +1163,20 @@ transition
 %===========================================================================
 \section{Implementation}
 \labelsec{Implementation}
+
+\subsection{Hue Lamp Interaction}
+L'interazione con la Hue Lamp Philips avviene mediante un'interfaccia di API RESTful\footnote{\url{https://it.wikipedia.org/wiki/Representational_State_Transfer}} fornita dall'apposito bridge.
+
+Prima di interagire con la lampada, è quindi necessario individuare il bridge nella rete ed ottenere uno username. Sempre grazie alla documentazione apprendiamo che entrambe le operazioni possono essere facilmente svolte con messaggi HTTP: la prima attraverso una GET ad un preciso url (\url{https://discovery.meethue.com/}), mentre la seconda grazie alle API del bridge individuato con la prima.\\
+
+Attualmente il nostro sistema simula la lampada Wi-Fi con un oggetto mock scritto in Java; ci viene quindi facile sostituirlo mediante un'altra classe Java che funga da adapter per le API del sistema Hue Lamp Philips.\\
+
+\lstinputlisting[language=Java, firstline=20, lastline=70, firstnumber=20]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/adapter/hueLampAdapter.java}
+
+Tale classe espone i due metodi statici \codescript{setUp()} e \codescript{setLamp(String state)}: il primo esegue le operazioni per stabilire una connessione col bridge ed ottenere le credenziali, mentre il secondo è un metodo adapter per chiamare le API che permettono di cambiare lo stato della lampadina (on/off/blink).\\
+
+Dal momento che sia l'interazione con la lampada, sia le operazioni preliminari per individuare l'indirizzo IP del bridge nella rete e per l'ottenimento dello username sono gestite attraverso comunicazione RESTful, abbiamo implementato una classe Java di utilità\footnote{RESTfulClient.java} che, sfruttando un'apposita libreria, semplifichi tali operazioni.
+Anche per quanto riguarda la scrittura/lettura dei dati in JSON ci siamo appoggiati ad una libreria.
 
 \labelssec{robotImpl}
 %===========================================================================

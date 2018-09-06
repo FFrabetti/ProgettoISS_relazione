@@ -16,13 +16,15 @@ public class MockRobot implements DDRobot {
 		server.runOnThread();
 		
 		// testing the emission of a sonarSensor event
-		try {
-			Thread.sleep(1000);
-			qa.emit("sonarSensor", "sonar(envAdapter, 8)");
-			System.out.println("emitting event sonarSensor : sonar(envAdapter, 8)");
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		new Thread(() -> {
+			try {
+				Thread.sleep(1000);
+				qa.emit("sonarSensor", "sonar(envAdapter, 8)");
+				System.out.println("emitting event sonarSensor : sonar(envAdapter, 8)");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
 
 	private String getState() {

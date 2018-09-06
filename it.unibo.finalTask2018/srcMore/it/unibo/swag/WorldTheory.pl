@@ -142,8 +142,25 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %-------------------------------------------------
 %  User static rules about swag
 %------------------------------------------------- 
-isClose:-sonarDetect( _,D),eval( gt,D,0), ! ,eval( lt,D,5).
-isClose:-sonarDetect( _,D),eval( minus,0,D,R),eval( lt,R,5).
+isCloseTo( S):-sonarDetect( S,D),eval( gt,D,0), ! ,eval( lt,D,5).
+isCloseTo( S):-sonarDetect( S,D),eval( minus,0,D,R),eval( lt,R,5).
+increment( C):-counter( C,N), ! ,N2 is N + 1,retract( counter( C,N)),assert( counter( C,N2)).
+increment( C):-assert( counter( C,1)).
+increment( C,1):- ! ,increment( C).
+increment( C,N):-increment( C),eval( minus,N,1,N2),increment( C,N2).
+decrement( C):-counter( C,1), ! ,retract( counter( C,1)).
+decrement( C):-counter( C,N), ! ,eval( minus,N,1,N2),retract( counter( C,N)),assert( counter( C,N2)).
+avoidFixTry:-increment( foundFix).
+avoidFixGiveUp:-counter( foundFix,3).
+decremFoundFix:-decrement( foundFix).
+switchExplorationDir:-exploring( r),retract( exploring( r)),assert( exploring( l)).
+isInWallProximity:-counter( steps,N),counter( roomLen,M),eval( minus,M,N,R),eval( lt,R,4).
+wait( short,300).
+wait( medium,800).
+wait( long,2000).
+nwait( TYPE,1,W):- ! ,wait( TYPE,W).
+nwait( TYPE,N,W):-eval( minus,N,1,N2),wait( TYPE,W1),nwait( TYPE,N2,W2),eval( plus,W1,W2,W).
+test.
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

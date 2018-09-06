@@ -1262,11 +1262,11 @@ In particolare, l'obiettivo è controllare che all'invio di un \codescript{cmd} 
 \subsubsection{Controller unit test}
 Gran parte della logica del \texttt{Controller} è espressa sotto forma di regole Prolog inserite all'interno della base di conoscenza del relativo attore. Per testare queste regole dobbiamo quindi, come fatto in precedenza, sfruttare i metodi dell'oggetto Java corrispondente.\\
 
-\lstinputlisting[language=Java, firstline=15, lastline=111, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
+\lstinputlisting[language=Java, firstline=15, lastline=98, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
 
-Il \texttt{Controller} interagisce con l'esterno tramite gli eventi \codescript{ctrlEvent} (alcuni dei quali sono convertiti in \codescript{lightCmd} da un apposito EventHandler), \codescript{inputCtrlEvent} e i messaggi \codescript{cmd}.\\
+Un'altra serie di test riguardano l'aspetto dell'interazione. Nell'effettivo, il \texttt{Controller} interagisce con l'esterno tramite gli eventi \codescript{ctrlEvent} (alcuni dei quali sono convertiti in \codescript{lightCmd} da un apposito EventHandler), \codescript{inputCtrlEvent} e i messaggi \codescript{cmd}.\\
 
-\lstinputlisting[language=Java, firstline=113, lastline=147, firstnumber=113]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
+\lstinputlisting[language=Java, firstline=100, lastline=134, firstnumber=100]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
 
 \subsubsection{Software Agent unit test}
 Per il testing di \texttt{SoftwareAgent} occorre verificare che, in seguito all'emissione degli eventi generati dai sonar (quello frontale e i due fissi), vengano recapitati al controller opportuni messaggi \codescript{cmd}. L'effetto di questi si ripercuote poi sullo stato del modello del robot e sugli eventi \codescript{ctrlEvent} emessi per pilotarlo.\\
@@ -1287,11 +1287,19 @@ In altre parole, simulando il cambiamento di stato di un sensore ci aspettiamo c
 
 In questo caso si è simulata la pressione di un pulsante sulla console, per poi controllare sia lo stato della lampada, sia quello del robot, in entrambi i casi facendo uso di oggetti mock. Da notare come quest'ultimo, poiché si trova in un contesto diverso, offra, a fine di testing, un semplice server TCP per permettere di verificare dall'esterno il proprio stato.
 
-\subsubsection{Time \& temperature functional test}
+\subsubsection{Time, temperature and blinking functional test}
+Il passo successivo è testare la correttezza dei requisiti ad ora soddisfatti: \code{R-TempOk}, \code{R-TempKo}, \code{R-TimeOk}, \code{R-TimeKo}, \code{R-BlinkLed} e \code{R-BlinkHue}.
 
+Per farlo inviamo una serie di comandi di movimento al robot e, sotto opportune condizioni, verifichiamo che:
+\begin{itemize}
+\item Il robot si muova quando la temperatura è al di sotto della soglia (e l'orario entro l'intervallo), viceversa non si deve muovere (\code{R-TempOk}).
+\item Il robot si muova quando l'orario è all'interno dell'intervallo (e la temperatura al di sotto della soglia), viceversa non si deve muovere (\code{R-TimeOk}).
+\item Non appena la temperatura sale al di sopra della soglia, il robot deve fermarsi (\code{R-TempKo}).
+\item Non appena l'orario esce dall'intervallo consentito, il robot deve fermarsi (\code{R-TimeKo}).
+\item La lampada deve lampeggiare quando il robot è in movimento, altrimenti deve essere spenta (\code{R-BlinkHue}).
+\end{itemize}
 
-\subsubsection{Blinking led \& lamp functional test}
-
+\lstinputlisting[language=Java, firstline=22, lastline=102, firstnumber=22]{../it.unibo.finalTask2018/test/it/unibo/test/pa/TimeTempFunctionalTest.java}
 
 %===========================================================================
 

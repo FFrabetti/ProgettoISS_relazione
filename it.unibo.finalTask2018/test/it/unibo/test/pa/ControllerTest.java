@@ -23,19 +23,6 @@ public class ControllerTest extends QATesting {
 		logger = waitForQActorToStart("palogger");
 	}
 
-	// utilities
-	private static SolveInfo contrSolve(String goal) {
-		return controller.solveGoal(goal);
-	}
-	
-	private static SolveInfo contrGetModel(String s) {
-		return contrSolve("getModelItem(" + s + ")");
-	}
-	
-	private static SolveInfo contrChangeModel(String s) {
-		return contrSolve("changeModelItem(" + s + ")");
-	}
-	
 	@Test
 	public void changeGetModelItemTest() throws Exception {
 		String t = "10";
@@ -144,6 +131,19 @@ public class ControllerTest extends QATesting {
 
 		assertTrue(contrGetModel("r1,w(0)").isSuccess());
 		controller.removeRule("canMove");
+	}
+	
+	// utilities
+	private static SolveInfo contrSolve(String goal) {
+		return controller.solveGoal(goal);
+	}
+	
+	private static SolveInfo contrGetModel(String s) {
+		return contrSolve("getModelItem(" + s + ")");
+	}
+	
+	private static SolveInfo contrChangeModel(String s) {
+		return contrSolve("changeModelItem(" + s + ")");
 	}
 	
 }

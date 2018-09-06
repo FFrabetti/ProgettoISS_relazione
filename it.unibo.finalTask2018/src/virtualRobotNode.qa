@@ -5,12 +5,10 @@ Event sonarSensor : sonar(NAME,DISTANCE)
 Dispatch moveRobot : moveRobot(CMD)
 
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
-//Dispatch ctrlMsg : ctrlEvent(CATEG,NAME,CMD) // broker -> robot
 Event local_robotCmd : moveRobot(CMD)
 
 Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
 EventHandler evhnode for ctrlEvent {
-//	forwardEvent nodebroker -m ctrlMsg		// stesso payload
 	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
 };
 EventHandler evhnodebroker for local_robotCmd {
@@ -54,6 +52,10 @@ QActor robotnode context ctxVirtualRobotNode {
 	]
 }
 
+//Dispatch ctrlMsg : ctrlEvent(CATEG,NAME,CMD) // broker -> robot
+//EventHandler evhnode for ctrlEvent {
+//	forwardEvent nodebroker -m ctrlMsg		// stesso payload
+//}
 //QActor nodebroker context ctxVirtualRobotNode {
 //	Plan init normal [ ]
 //	transition stopAfter 3600000

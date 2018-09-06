@@ -5,10 +5,10 @@ Event temperature : temperature(T)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
 Event lightCmd : lightCmd(CMD)
-Event robotCmd : moveRobot(CMD) // Dispatch moveRobot : moveRobot(CMD)
+Event robotCmd : moveRobot(CMD)
 Dispatch cmd : cmd(CMD)
 
-Context ctxReqAnalysis ip [ host="localhost" port=8888 ] // -httpserver
+Context ctxReqAnalysis ip [ host="localhost" port=8888 ]
 EventHandler evhralogger for clock, temperature, sonarSensor, frontSonar, robotCmd, lightCmd /*-print*/ {
 	memoCurrentEvent -lastonly for ralogger;
 	demo dologevent for ralogger

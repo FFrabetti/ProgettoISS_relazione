@@ -5,12 +5,10 @@ Dispatch moveRobot : moveRobot(CMD)
 
 Event lightCmd : lightCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
-//Dispatch ctrlMsg : ctrlEvent(CATEG,NAME,CMD) // broker -> robot
 Event local_robotCmd : moveRobot(CMD)
 
 Context ctxRealRobotMock ip [ host="localhost" port=8866 ]
-EventHandler evhrealmock for ctrlEvent /*-print*/ {
-//	forwardEvent realrobotbroker -m ctrlMsg // stesso payload
+EventHandler evhrealmock for ctrlEvent -print {
 	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
 };
 EventHandler evhrealmockbroker for local_robotCmd {
@@ -55,25 +53,3 @@ QActor ledrobotmock context ctxRealRobotMock {
 		onEvent lightCmd : lightCmd(CMD) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp(CMD)
 	]
 }
-
-//QActor realrobotbroker context ctxRealRobotMock {
-//	Plan init normal [ ]
-//	transition stopAfter 3600000
-//		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward realrobotmock -m moveRobot : moveRobot(CMD)
-//	finally repeatPlan
-//}
-
-//QActor testerrealrobotmock context ctxRealRobotMock{
-//	Plan init normal [
-//		println("testerrealrobotmock start");
-//		delay 4000;
-//		forward realrobotmock -m moveRobot : moveRobot(w(1));
-//		delay 4000;
-//		forward realrobotmock -m moveRobot : moveRobot(d(1));
-//		delay 4000;
-//		forward realrobotmock -m moveRobot : moveRobot(s(1));
-//		delay 4000;
-//		forward realrobotmock -m moveRobot : moveRobot(h(1));
-//		println("test finito")
-//	]
-//}

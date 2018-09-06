@@ -469,7 +469,7 @@ Per discriminare la natura degli eventi ricevuti, il \texttt{Controller} può us
 
 Come già anticipato, ad ogni modifica del Resource Model relativa allo stato di un attuatore, il \texttt{Controller} emette a sua volta degli eventi \codescript{ctrlEvent} per notificare il cambiamento ai vari attuatori fisici.\\
 
-\lstinputlisting[style=style_qa, firstline=25, lastline=118, firstnumber=25]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=29, lastline=122, firstnumber=29]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 Attualmente sono soddisfatti i requisiti \code{R-TempOk} e \code{R-TimeOk}, in quanto il \texttt{Controller} blocca ogni modifica allo stato del robot al di fuori di un certo intervallo temporale o in presenza di temperature troppo elevate. Il robot viene inoltre fermato non appena queste condizioni non sono più verificate (\code{R-TempKo} e \code{R-TimeKo}).
 
@@ -485,7 +485,7 @@ L'agent si mette in ascolto degli eventi provenienti dai vari sonar e invia oppo
 
 In una fase preliminare, per motivi di testing, \texttt{SoftwareAgent} fa semplicemente ruotare il robot quando esso viene rilevato dai sonar a distanza ravvicinata.\\
 
-\lstinputlisting[style=style_qa, firstline=122, lastline=171, firstnumber=122]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=126, lastline=175, firstnumber=126]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 \subsection{Changes to HumanOperator}
 \labelssec{humanOpPA}
@@ -497,14 +497,14 @@ La GUI web ottenuta tramite il flag \codescript{-httpserver} è dotata di botton
 
 Lo \texttt{HumanOperator} è ancora un emettitore di comandi per il robot come visto nella sezione precedente, tuttavia ora è in grado di generarli in base ai pulsanti premuti dall'utilizzatore umano sulla console.\\
 
-\lstinputlisting[style=style_qa, firstline=175, lastline=190, firstnumber=175]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=179, lastline=194, firstnumber=179]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
 \subsection{Changes to Robot}
 Il robot si mette in attesa di messaggi \codescript{moveRobot} e li interpreta come comandi di movimento, tuttavia i cambiamenti nel modello del robot vengono notificati all'esterno dal controller sotto forma di eventi \codescript{ctrlEvent}.
 
 Similmente a quanto fatto nella \xss{robotRA}, per effettuare la conversione da \codescript{ctrlEvent} a messaggi abbiamo utilizzato un \emph{EventHandler}, così da accodare gli eventi senza il rischio di perderne qualcuno.\\ % (il robot è quindi, nel suo complesso, un componente \emph{event-driven}).\\
 
-\lstinputlisting[style=style_qa, lastline=20]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
+\lstinputlisting[style=style_qa, lastline=18]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
 
 Poiché gli \emph{EventHandler} possono solo convertire eventi in messaggi con lo stesso payload, introduciamo un ulteriore evento \codescript{local\_robotCmd : moveRobot(CMD)} ad uso interno dei due \emph{EventHandler} che effettuano il mapping.
 %l'attore \texttt{nodebroker}, il cui compito è quello di convertire i messaggi \codescript{ctrlMsg : ctrlEvent(CATEG, NAME, CMD)} inviati dall'\emph{EventHandler} in messaggi \codescript{moveRobot : moveRobot(CMD)} per il robot virtuale.\\
@@ -521,7 +521,7 @@ Per quanto riguarda il robot fisico, questi viene al momento simulato tramite un
 
 Un attore a parte si occupa invece di gestire lo stato del led, anch'esso rappresentato da un oggetto mock.\\
 
-\lstinputlisting[style=style_qa, firstline=46, lastline=57, firstnumber=46]{../it.unibo.finalTask2018/src/realRobotMock.qa}
+\lstinputlisting[style=style_qa, firstline=44, lastline=55, firstnumber=44]{../it.unibo.finalTask2018/src/realRobotMock.qa}
 
 \vspace{8px}
 
@@ -1171,7 +1171,7 @@ Per registrare gli eventi emessi nel sistema è stato usato un \emph{event logge
 
 \lstinputlisting[style=style_qa, firstline=12, lastline=15, firstnumber=12]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
-\lstinputlisting[style=style_qa, firstline=124, lastline=130, firstnumber=124]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
+\lstinputlisting[style=style_qa, firstline=123, lastline=129, firstnumber=123]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
 Il comportamento da attuare alla ricezione di un evento è precisato in un file Prolog esterno, così che possa essere condiviso da più event logger.\\
 
@@ -1180,7 +1180,7 @@ Il comportamento da attuare alla ricezione di un evento è precisato in un file 
 \subsubsection{ClockAgent unit test}
 Un ragionamento analogo al precedente vale anche per il testing di \codescript{ClockAgent}:\\
 
-\lstinputlisting[language=Java, firstline=15, lastline=29, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/TemperatureAgentTest.java}
+\lstinputlisting[language=Java, firstline=15, lastline=29, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/ClockAgentTest.java}
 
 \subsubsection{HumanOperator and Application logic integration test}
 Poiché lo \codescript{HumanOperator} è un attore che emette comandi per il robot nella forma di messaggi per il componente che incapsula la logica applicativa, il testing del primo è legato a quello della seconda.
@@ -1231,6 +1231,22 @@ Per il testing di \texttt{SoftwareAgent} occorre verificare che, in seguito all'
 Un ragionamento simile può essere fatto per \texttt{HumanOperator}: questa volta è all'emissione di eventi \codescript{usercmd} -- gli stessi originati dalla web GUI -- che deve seguire l'invio dei relativi messaggi \codescript{cmd}.\\
 
 \lstinputlisting[language=Java, firstline=14, lastline=34, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/pa/HumanOpTest.java}
+
+\subsubsection{Architecture integration test}
+Dopo aver testato separatamente i vari componenti definiti nell'analisi del problema, passiamo a testare il sistema nel suo complesso. In particolare, siamo interessati a verificare che l'introduzione del resource model e del relativo controller abbia rispettato i quattro punti descritti nella \xs{ProblemAnalysis}.
+
+In altre parole, simulando il cambiamento di stato di un sensore ci aspettiamo che questo venga correttamente notificato al controller, così che questi possa aggiornarne il modello. Poi, in accordo con la logica applicativa, deve seguire una modifica del modello degli attuatori, la loro notifica da parte del controller e un effettivo riscontro sugli attuatori ``reali''.\\
+
+\lstinputlisting[language=Java, firstline=20, lastline=55, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ArchIntegrationTest.java}
+
+In questo caso si è simulata la pressione di un pulsante sulla console, per poi controllare sia lo stato della lampada, sia quello del robot, in entrambi i casi facendo uso di oggetti mock. Da notare come quest'ultimo, poiché si trova in un contesto diverso, offra, a fine di testing, un semplice server TCP per permettere di verificare dall'esterno il proprio stato.
+
+\subsubsection{Time \& temperature functional test}
+
+
+\subsubsection{Blinking led \& lamp functional test}
+
+
 %===========================================================================
 
 %===========================================================================

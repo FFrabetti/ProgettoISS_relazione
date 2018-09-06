@@ -18,6 +18,9 @@ protected IEventItem event;
 	public void handleCurrentEvent() throws Exception {
 		event = this.currentEvent; //AKKA getEventItem();
 		if( event == null ) return;
+//showMsg( "---------------------------------------------------------------------" );	
+showMsg( event.getPrologRep()  );				 
+//showMsg( "---------------------------------------------------------------------" );	
 		//RaiseOtherEvent
 		{String newcontent = "moveRobot(CMD)";
 		newcontent =  updateVars( Term.createTerm("ctrlEvent(robot,r1,CMD)"), 

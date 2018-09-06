@@ -1,13 +1,13 @@
 System finalTask2018 
  
 Dispatch cmd : cmd(CMD)
-Event usercmd : usercmd(CMD)
 Event temperature : temperature(T)
 Event clock : clock(H,M)
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
-//Event moveRobot : moveRobot(CMD)
 Event lightCmd : lightCmd(STATE)
+
+Event usercmd : usercmd(CMD)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
 
@@ -67,7 +67,7 @@ Rules{ // The model is in the theory resourceModel.pl
  	// UTILITIES
  	// vero se il primo tempo e' precedente al secondo		
  	timeBefore(H1,_,H2,_) :-
- 			eval(lt,H1,H2), !.
+ 			eval(lt,H1,H2). //, !.
  	timeBefore(H,M1,H,M2) :-
  			eval(lt,M1,M2).
  	

@@ -1,0 +1,20 @@
+// TEST OBSTACLE AVOINDANCE
+
+Tutti i test devono cominciare col robot che sta o in forwardCleaning, o in countSteps (i due stati della pulizia durante i quali il robot è sensibile agli eventi frontSonar)
+
+AVOID MOBILE:
+ - inviare un evento frontSonar ed accertarsi che il robot transiti nello stato corretto (prima handleFront, poi avoidMobile)
+ 
+ AVOID FIX: 
+ - inviare due eventi frontSonar in tempo breve e verificare che il robot vada in AvoidFix -> checkDoor -> doorFound -> goToPrevLevel
+ - settare ad 1 il numero massimo di tentativi per superare l'ostacolo ed inviare un terzo evento frontSonar per verificare che si attraversi la giusta sequenza di stati anche mentre si evita l'ostacolo passando da sinistra
+ - mandare in giveUp il robot, settando a 1 i tentativi massimi e inviando un quarto eventoFront sonar mentre il robot si trova in checkDoor con direzione sinistra
+ 
+ - durante tutti questi test si possono controllare i valori dei contatori, come il numero di tentativi, e l'attuale direzione di esplorazione del robot
+
+// TEST AUTENTICAZIONE
+
+ - inserimento di un utente e select dal database per controllare che sia avvenuto con successo
+ - tentare di inserire due volte lo stesso utente e vedere che non viene fatto
+ - provare ad accedere alla pagina del tastierino senza autenticarsi e vedere l'effetto che fa
+ - riprovare dopo essersi autenticati

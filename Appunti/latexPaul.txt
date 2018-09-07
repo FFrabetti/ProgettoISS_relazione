@@ -1,0 +1,35 @@
+\subsubsection{R-Start and R-Stop}
+Deve essere possibile per determinati utenti \emph{autorizzati} accedere ad un'interfaccia grafica che permetta di avviare (\code{R-Start}) o fermare (\code{R-Stop}) la pulizia della stanza ad opera del robot.\\
+Un utente è autorizzato se è dotato di un username e una password con cui accedere al servizio. Ci dovrà quindi essere un meccanismo di iscrizione e uno di autenticazione all'interfaccia.
+La console che permette l'invio dei comandi deve poter essere utilizzabile da qualsiasi dispositivo (computer, smartphone, tablet) quindi sarà disponibile come web sever.
+% cosa vuol dire utente autorizzato
+
+% console utilizzabile da qualsiasi dispositivo -> web server
+
+
+
+
+
+
+
+
+
+
+\subsection{Frontend Server}
+Fin'ora per permettere l'interazione fra utente e robot, abbiamo utilizzato il flag \codescript{-httpserver} offerto dal linguaggio QActor che, se settato per un certo contesto, crea un web server HTTP alla porta 8080. Collegandocisi via browser, appare quindi una console dalla quale è possibile inviare i comandi desiderati al robot.\\
+
+Tale scelta è stata fatta però in una fase prototipale per questioni di rapidità. Stando ai requisiti \code{R-Start} e \code{R-Stop}, solo gli utenti autorizzati possono accedere alla console, quindi per integrare una maggiore personalizzazione dell'interfaccia con l'accesso autorizzato abbiamo costruito un \emph{Frontend Server}.\\
+
+Per renderlo accessibile da più dispositivi, è stato comodo realizzarlo come un web server. Abbiamo quindi utilizzato la tecnologia \emph{Node.js} perchè permette di scrivere in \emph{Javascript} applicazioni web veloci e scalabili lato server, in particolare il suo framework \emph{Express} fornisce dei template per la generazione di pagine web, utility per il routing, ecc.\\
+
+Per quanto riguarda l'autenticazione degli utenti, la tecnologia che abbiamo utilizzato è \emph{MongoDB}, un DBMS non relazionale. Questa scelta è stata fatta per l'ottima interazione presente tra Mongo e Node.js: esiste infatti un'estensione per gestire database Mongo, chiamata \emph{Mongoose}, proprio in Node.\\
+
+Il Frontend Server utilizza un modello del robot virtuale, che descrive lo stato in cui si trova (come "fermo" o "andando avanti"). Questo stato può ovviamente cambiare in base ai comandi inviati dalla console.\\
+
+INTEGRAZIONE CON VERO MODELLO.\\
+
+Prima di poter utilizzare la console grafica, è necessario autenticarsi o  registrarsi. Le pagine html per consentire ciò sono state realizzate grazie al framework Express, mentre gli utenti vengono memorizzati in un database Mongo al quale il Frontend Server è connesso (tramite Mongoose).\\
+
+Per quanto riguarda l'interazione tra il server e il robot erano possibili diversi approcci. Un esempio poteva essere utilizzare un server Mqtt tramite il quale comunicare messaggi con il modello publish-subscribe. La soluzione scelta è però stata quella di aprire una connessione TCP mediante una socket tra il Frontend Server(scritto in javascript) e il contesto dove si trova l'applicazione(scritto in linguaggio QActor). In particolare il Frontend Server si occupa di inviare all'applicazione eventi del tipo \codescript{usercmd : usercmd(robotgui(CMD))} alla pressione dei tasti di movimento della console ed eventi come \codescript{alarm : usercmd(clean|stop))} alla pressione dei tasti per l'avvio e l'interruzione della pulizia. La scelta di usare questi eventi deriva dal fatto che sono gli stessi che emetteva l'interfaccia grafica ottenuta col flag \codescript{-httpserver} in precedenza. E' quindi possibile passare da un frontend all'altro rapidamente.
+
+\lstinputlisting[language=java, firstline=148, lastline=179, firstnumber=148]{../it.unibo.finaltask2018/nodeCode/frontend/applCodeRobot.js}

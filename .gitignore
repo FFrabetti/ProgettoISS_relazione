@@ -6,6 +6,7 @@
 *.out
 *~
 *.gz
+*.toc
 
 # no pdf "compilati" se ci sono già i sorgenti (.tex) 
 /progetto/*.pdf

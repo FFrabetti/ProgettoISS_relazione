@@ -21,9 +21,9 @@ digraph finite_state_machine {
 	
 	waitForGodot -> backCleaning [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	detectedByFinal -> end [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	leftTurn -> backCleaning [ label = "switch" ][ color = black ][ fontcolor = black ]
 	backCleaning -> rightTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
 	countRoomLen -> leftTurn [ label = "frontSonar" ][ color = black ][ fontcolor = black ]
-	leftTurn -> waitForGodot [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
 	startCleaning -> countRoomLen [ label = "switch" ][ color = black ][ fontcolor = black ]
 	countRoomLen -> countRoomLen [ label = "timeout(200)" ][ color = green ][ fontcolor = green ]
 	rightTurn -> forwardCleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]

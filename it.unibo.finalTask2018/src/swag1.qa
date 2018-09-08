@@ -1,0 +1,143 @@
+System finalTask2018 
+
+Event usercmd : usercmd(X)
+Event alarm : usercmd(X)
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME,DISTANCE)
+Dispatch swagmsg : cmd(CMD)
+Dispatch externalcmd : usercmd(CMD)
+
+Context ctxSwag1 ip [ host="localhost"  port=8016 ]
+EventHandler evhswag1 for usercmd, alarm {
+	forwardEvent swag1 -m externalcmd
+};
+
+QActor swag1 context ctxSwag1 {
+	Rules{
+		// for testing
+		isCloseTo(S) :-
+			sonarDetect(S,D),
+			eval(gt,D,0),!,
+			eval(lt,D,5).
+		
+		isCloseTo(S) :-
+			sonarDetect(S,D),
+			eval(minus,0,D,R),
+			eval(lt,R,5).
+			
+		obstacleDetected(D) :-
+			foundObstacle(C), !,
+			C2 is C+1,
+			retract(foundObstacle(X)),
+			assert(foundObstacle(C2)).
+		
+		obstacleDetected(D) :-
+			assert(foundObstacle(1)).
+			
+		isFixObstacle :- foundObstacle(2).
+		
+		avoidFixTry :-
+			foundFix(C), !,
+			C2 is C+1,
+			retract(foundFix(C)),
+			assert(foundFix(C2)).
+			
+		avoidFixTry :-
+			assert(foundFix(1)).
+			
+		avoidFixGiveUp :-
+			foundFix(2).
+		
+		decremFoundFix :-
+			foundFix(1), !,
+			retract(foundFix(1)).
+			
+		decremFoundFix :-
+			foundFix(C), !,
+			eval(minus,C,1,R),
+			retract(foundFix(C)),
+			assert(foundFix(R)).
+			
+		// for testing
+		setCurrentState(S) :-
+	 		replaceRule( currentState(_), currentState(S) ).
+	 		
+	 	removeLogMsg :-
+	  		logmsg(NAME,PL),
+	 		retract(logmsg(NAME,PL)),
+	  		removeLogMsg.
+	}
+
+	Plan init normal [         
+   		println("swag start");
+   		demo setCurrentState(init);
+   		onMsg swagmsg : cmd(CMD) -> addRule logmsg(swagmsg,cmd(CMD))
+   	]
+	transition stopAfter 3600000
+//		whenMsg swagmsg -> receivedCmd
+		whenMsg externalcmd -> receivedCmd
+	finally repeatPlan
+   	
+   	Plan receivedCmd [
+   		onMsg externalcmd : usercmd(CMD) -> addRule logmsg(externalcmd,usercmd(CMD));
+   		
+		// R-Start
+//   		onMsg swagmsg : cmd(start) -> {
+//   			println("ricevuto cmd(start)");
+//   			addRule startCmd
+//   		};
+		onMsg externalcmd : usercmd(clean) -> {
+   			println("ricevuto clean");
+   			addRule startCmd
+   		};
+   		// R-Stop
+//   	onMsg swagmsg : cmd(halt) -> println("ricevuto cmd(halt)")
+   		onMsg externalcmd : usercmd(halt) -> println("ricevuto halt")
+   	]
+   	transition whenTime 800 -> init
+    	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
+    	
+  	Plan detectedBySonar [
+		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
+	
+		[ !? isCloseTo(sonar1) ] {
+			println("close to sonar1");
+			selfMsg swagmsg : cmd(clean) // R-Start
+		}
+		else
+			println("NOT close to sonar1!");
+			
+		removeRule sonarDetect(sonar1,D)
+	]
+	transition whenTime 800 -> init
+		whenMsg swagmsg -> cleaning
+
+	Plan cleaning [
+		onMsg swagmsg : cmd(CMD) -> addRule logmsg(swagmsg,cmd(CMD));
+		demo setCurrentState(cleaning);
+		println("cleaning")
+		// do something
+	]
+    transition stopAfter 3600000 
+//     	whenEvent frontSonar -> handleFront,
+     	whenEvent sonarSensor -> detectedByFinal,
+     	whenMsg externalcmd -> receivedCmd
+    
+    // R-End
+    Plan detectedByFinal [
+		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);
+	
+		[ !? isCloseTo(sonar2) ] {
+			println("close to sonar2, end of cleaning");
+			selfMsg swagmsg : cmd(halt) // R-End
+		}
+		else
+			println("NOT close to sonar2!");
+			
+		removeRule sonarDetect(sonar2,D)
+	]
+	transition whenTime 800 -> cleaning
+		whenMsg swagmsg -> init   
+}

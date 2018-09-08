@@ -1,15 +1,15 @@
 System finalTask2018
 
 Event frontSonar : sonar(DISTANCE)
-Event sonarSensor : sonar(NAME, DISTANCE)	// da sonar virtuali
-Dispatch moveRobot : moveRobot(CMD)
-
+Event sonarSensor : sonar(NAME, DISTANCE)
 Event ctrlEvent : ctrlEvent(CATEG, NAME, CMD)
 
 Dispatch swagmsg : usercmd(CMD) // internal
 
+// solo floor cleaning (+ count room length e waiting for godot)
+
 Context ctxSwag3 ip [ host="localhost"  port=8066 ]
-Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ] -standalone 
+//Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ] -standalone 
 
 QActor swag3 context ctxSwag3 {
 	Rules{
@@ -41,7 +41,10 @@ QActor swag3 context ctxSwag3 {
 
 	Plan startCleaning normal [         
    		println("swag3 start cleaning");
-   		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
+   		demo consult("./swagtest.pl");
+   		demo addState(startCleaning);
+   		
+   		emit ctrlEvent : ctrlEvent(robot,r1,w(1))
    	]
    	switchTo countRoomLen
 //	transition stopAfter 3600000 // non fermarti per sonar1
@@ -56,8 +59,10 @@ QActor swag3 context ctxSwag3 {
 		
 	Plan forwardCleaning [
 		println("cleaning forward");
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
+		demo addState(forwardCleaning);
+		
+		emit ctrlEvent : ctrlEvent(robot,r1,d(1) );
+		emit ctrlEvent : ctrlEvent(robot,r1,w(1) )
 	]
 	transition stopAfter 3600000
 		// la parete di fondo e' segnalata da sonar2
@@ -82,15 +87,19 @@ QActor swag3 context ctxSwag3 {
 	
 	Plan leftTurn [
 		println("left turn");
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(1) );
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
+		demo addState(leftTurn);
+		
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1));
+		emit ctrlEvent : ctrlEvent(robot,r1,a(1));
+		emit ctrlEvent : ctrlEvent(robot,r1,w(1));
 		delay 400;
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) )
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1))
 	]
-	transition
+	switchTo backCleaning
+//	transition
 		// tutto ok, no ostacoli a sinistra
-		whenTime 800 -> waitForGodot // backCleaning
+//		whenTime 800 -> waitForGodot // backCleaning
+
 
 	// "consumo" eventuali eventi frontSonar residui...		
 	Plan waitForGodot [
@@ -104,19 +113,23 @@ QActor swag3 context ctxSwag3 {
 	
 	Plan backCleaning [
 		println("cleaning back");
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( a(1) );
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) )
+		demo addState(backCleaning);
+		
+		emit ctrlEvent : ctrlEvent(robot,r1,a(1) );
+		emit ctrlEvent : ctrlEvent(robot,r1,w(1) )
 	]
 	transition stopAfter 3600000
 		whenEvent frontSonar -> rightTurn
 	
 	Plan rightTurn [
 		println("right turn");
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) );
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( d(1) );
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( w(1) );
+		demo addState(rightTurn);
+		
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1) );
+		emit ctrlEvent : ctrlEvent(robot,r1,d(1) );
+		emit ctrlEvent : ctrlEvent(robot,r1,w(1) );
 		delay 400;
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) )
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1) )
 	]
 	transition
 		// tutto ok, no ostacoli a destra
@@ -124,6 +137,8 @@ QActor swag3 context ctxSwag3 {
 		
 	Plan end [
 		println("end");
-		sendto robotnode in ctxVirtualRobotNode -m moveRobot : moveRobot( h(1) )
+		demo addState(end);
+		
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1) )
 	]
 }

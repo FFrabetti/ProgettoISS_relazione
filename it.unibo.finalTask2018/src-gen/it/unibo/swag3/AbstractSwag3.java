@@ -83,8 +83,14 @@ public abstract class AbstractSwag3 extends QActor {
 	    	String myselfName = "startCleaning";  
 	    	temporaryStr = "\"swag3 start cleaning\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "consult(\"./swagtest.pl\")";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	parg = "addState(startCleaning)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//switchTo countRoomLen
 	        switchToPlanAsNextState(pr, myselfName, "swag3_"+myselfName, 
 	              "countRoomLen",false, false, null); 
@@ -118,10 +124,13 @@ public abstract class AbstractSwag3 extends QActor {
 	    	String myselfName = "forwardCleaning";  
 	    	temporaryStr = "\"cleaning forward\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "addState(forwardCleaning)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,d(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
 	          new StateFun[]{stateTab.get("detectedByFinal") }, 
@@ -180,23 +189,24 @@ public abstract class AbstractSwag3 extends QActor {
 	    	String myselfName = "leftTurn";  
 	    	temporaryStr = "\"left turn\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "addState(leftTurn)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(400,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "leftTurn";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	//bbb
-	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
-	          new StateFun[]{}, 
-	          new String[]{},
-	          800, "waitForGodot" );//msgTransition
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	//switchTo backCleaning
+	        switchToPlanAsNextState(pr, myselfName, "swag3_"+myselfName, 
+	              "backCleaning",false, false, null); 
 	    }catch(Exception e_leftTurn){  
 	    	 println( getName() + " plan=leftTurn WARNING:" + e_leftTurn.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -231,10 +241,13 @@ public abstract class AbstractSwag3 extends QActor {
 	    	String myselfName = "backCleaning";  
 	    	temporaryStr = "\"cleaning back\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "addState(backCleaning)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
 	          new StateFun[]{stateTab.get("rightTurn") }, 
@@ -252,18 +265,21 @@ public abstract class AbstractSwag3 extends QActor {
 	    	String myselfName = "rightTurn";  
 	    	temporaryStr = "\"right turn\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "addState(rightTurn)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,d(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(400,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "rightTurn";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag3_"+myselfName,false,
 	          new StateFun[]{}, 
@@ -281,8 +297,11 @@ public abstract class AbstractSwag3 extends QActor {
 	    	String myselfName = "end";  
 	    	temporaryStr = "\"end\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(1))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "addState(end)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(1))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	repeatPlanNoTransition(pr,myselfName,"swag3_"+myselfName,false,false);
 	    }catch(Exception e_end){  
 	    	 println( getName() + " plan=end WARNING:" + e_end.getMessage() );

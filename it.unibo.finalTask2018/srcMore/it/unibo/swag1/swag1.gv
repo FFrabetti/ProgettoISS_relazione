@@ -1,0 +1,30 @@
+/*
+*
+* A GraphViz DOT FSM description 
+* Please use a GraphViz visualizer (like http://www.webgraphviz.com)
+*  
+*/
+
+digraph finite_state_machine {
+	rankdir=LR
+	size="8,5"
+	
+	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	cleaning [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedByFinal [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	detectedBySonar [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	receivedCmd [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	
+	init -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	detectedByFinal -> init [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	cleaning -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
+	detectedBySonar -> cleaning [ label = "swagmsg" ][ color = black ][ fontcolor = black ]
+	init -> init [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
+	receivedCmd -> init [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	cleaning -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	receivedCmd -> detectedBySonar [ label = "[ ?? startCmd ], sonarSensor" ][ color = black ][ fontcolor = black ]
+	detectedByFinal -> cleaning [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	detectedBySonar -> init [ label = "timeout(800)" ][ color = green ][ fontcolor = green ]
+	init -> receivedCmd [ label = "externalcmd" ][ color = black ][ fontcolor = black ]
+	cleaning -> detectedByFinal [ label = "sonarSensor" ][ color = black ][ fontcolor = black ]
+}

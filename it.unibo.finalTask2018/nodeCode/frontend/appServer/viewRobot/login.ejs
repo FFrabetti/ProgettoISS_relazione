@@ -10,6 +10,10 @@
 <div class="container">
 <h1>Log in</h1>
 
+<% if (infos) { %>
+  <p class="infos"><%= infos %></p>
+<% } %>
+
 <form action="/login" method="post">
   <input name="username" type="text" class="form-control" placeholder="Username" required autofocus>
   <input name="password" type="password" class="form-control" placeholder="Password" required>

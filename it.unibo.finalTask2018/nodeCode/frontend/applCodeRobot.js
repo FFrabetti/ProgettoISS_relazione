@@ -43,8 +43,8 @@ app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'jsCode')))
 
-var externalActuatorMqtt = false; //when true, the application logic is external to the server;
-var externalActuatorSocket = true;
+var externalActuatorMqtt = false; //when true, the application logic is external to the server (Mqtt)
+var externalActuatorSocket = true; //when true, the application logic is external to the server (Socket)
 var withAuth         = true;
 
 if( externalActuatorMqtt ) mqttUtils  = require('./uniboSupports/mqttUtils');
@@ -60,7 +60,7 @@ if( withAuth ){
 	 passport         = require("passport");			 
 	 setUpPassport    = require("./setuppassport");   
 	 mongoose         = require("mongoose");			 
-	 flash            = require("connect-flash");     	
+	 flash            = require("connect-flash"); 
 	
 	 setUpAuth();
 }
@@ -94,7 +94,9 @@ if( withAuth ){
 	  res.redirect("/");
 	});
 	app.get("/signup", function(req, res) {
-	  res.render("signup");
+	  res.render("signup",
+			   {flash: {errors: req.flash('error')}});
+
 	});
 
 	app.post("/signup", function(req, res, next) {  
@@ -126,9 +128,10 @@ if( withAuth ){
 	  });
 	});
 	app.get("/edit", ensureAuthenticated, function(req, res) {
-	  res.render("edit");
+	  res.render("edit",
+			  {flash: {infos: req.flash('info')}});
 	});
-	app.post("/edit", ensureAuthenticated, function(req, res, next) {console.log("edittttttttttttttttttttt " + req.body.displayName);
+	app.post("/edit", ensureAuthenticated, function(req, res, next) {console.log("edit " + req.body.displayName);
 	  req.user.displayName = req.body.displayname;
 	  req.user.bio = req.body.bio;
 	  req.user.save(function(err) {
@@ -147,34 +150,37 @@ if( withAuth ){
  */
 	app.post("/robot/actions/commands/appl", function(req, res) {
 		console.info("START THE APPLICATION "   );
-		if( externalActuatorMqtt ) delegateMqtt( "x(low)", "application", req, res);
-		else if(externalActuatorSocket) delegateSocket("msg(alarm,event,js,none,usercmd(clean)","application",req,res);
+		delegate( "msg(alarm,event,js,none,usercmd(clean)", "application", req, res);
+ 	});	
+	app.post("/robot/actions/commands/stop", function(req, res) {
+		console.info("STOP THE APPLICATION ");
+		delegate( "msg(alarm,event,js,none,usercmd(halt)","stop application", req, res);
  	});	
 
 	app.post("/robot/actions/commands/w", function(req, res) {
-		if( externalActuatorMqtt ) delegateMqtt( "w(low)", "moving forward", req, res);
-		else if(externalActuatorSocket) delegateSocket("msg(usercmd,event,js,none,usercmd(robotgui( w(low) ))","moving forward",req,res);
+		if(externalActuatorMqtt || externalActuatorSocket)
+			delegate("msg(usercmd,event,js,none,usercmd(robotgui( w(low) ))","moving forward",req,res);
 		else actuate( `{ "type": "moveForward",  "arg": -1 }`, "server moving forward", req, res);
 		
 	});	
 	app.post("/robot/actions/commands/s", function(req, res) {
-		if( externalActuatorMqtt ) delegateMqtt( "s(low)", "moving backward", req, res );
-		else if(externalActuatorSocket) delegateSocket("msg(usercmd,event,js,none,usercmd(robotgui( s(low) ))","moving backward",req,res);
+		if(externalActuatorMqtt || externalActuatorSocket)
+			delegate("msg(usercmd,event,js,none,usercmd(robotgui( s(low) ))","moving backward",req,res);
 		else actuate( `{ "type": "moveBackward",  "arg": -1 }`, "server moving backward", req, res);
 	});	
 	app.post("/robot/actions/commands/a", function(req, res) {
- 		if( externalActuatorMqtt ) delegateMqtt( "a(low)", "moving left", req, res );
-		else if(externalActuatorSocket) delegateSocket("msg(usercmd,event,js,none,usercmd(robotgui( a(low) ))","moving left",req,res);
+		if(externalActuatorMqtt || externalActuatorSocket)
+			delegate("msg(usercmd,event,js,none,usercmd(robotgui( a(low) ))","moving left",req,res);
 		else actuate( `{ "type": "turnLeft",  "arg": 1000 }`, "server moving left", req, res);
 	});	
 	app.post("/robot/actions/commands/d", function(req, res) {
-  		if( externalActuatorMqtt ) delegateMqtt( "d(low)", "moving right", req, res );
-		else if(externalActuatorSocket) delegateSocket("msg(usercmd,event,js,none,usercmd(robotgui( d(low) ))","moving right",req,res);
+		if(externalActuatorMqtt || externalActuatorSocket)
+			delegate("msg(usercmd,event,js,none,usercmd(robotgui( d(low) ))","moving right",req,res);
 		else actuate( `{ "type": "turnRight",  "arg": 1000 }`, "server moving right", req, res);
 	});	
 	app.post("/robot/actions/commands/h", function(req, res) {
-  		if( externalActuatorMqtt ) delegateMqtt( "h(low)", "stopped", req, res );
-		else if(externalActuatorSocket) delegateSocket("msg(usercmd,event,js,none,usercmd(robotgui( h(low) ))","stopped",req,res);
+		if(externalActuatorMqtt || externalActuatorSocket)
+			delegate("msg(usercmd,event,js,none,usercmd(robotgui( h(low) ))","stopped",req,res);
 		else actuate( `{  "type": "alarm",  "arg": 1000 }`, "server stopped", req, res);
 	});		
 	
@@ -215,6 +221,7 @@ if( withAuth ){
 function setUpAuth(){ //AUTH
 	try{	
 		console.log("\tWORKING WITH AUTH ... "  ) ;
+//		mongoose.connect("mongodb://192.168.99.100:27017/test"); per il Mongo di docker
 		mongoose.connect("mongodb://localhost:27017/test");
 		setUpPassport();	
 		app.use(session({	 
@@ -252,48 +259,30 @@ function setUpConn(){ // EXTERNAL ACTUATOR SOCKET
 	})
 }
 
-var msgNum=1; // EXTERNAL ACTUATOR SOCKET
-function sendMsg(msg){
-	try{
-		msg=msg+","+msgNum++ +")";
-		console.log("SENDING "+msg);
-		conn.write(msg+"\n");
-	}
-	catch(e){
-		console.log("ERROR "+e);
-	}
-}
-
-function delegateSocket(cmd,newState,req,res){ // EXTERNAL ACTUATOR SOCKET
-	robotModel.robot.state = newState;
-	sendMsg(cmd);
-	res.render("access");
-}
-
-
 function ensureAuthenticated(req, res, next) {
 	  if (req.isAuthenticated()) {
 		  next();
 	  } else {
-		    req.flash("info", "You must be logged in to see this page.");
+		    req.flash("info", "You must be logged into see this page.");
 		    res.redirect("/login");
 	  }
 }
 
-function delegateMqtt( hlcmd, newState, req, res ){ // EXTERNAL ACTUATOR MQTT
+var msgNum=1; //parte da 1 e aumenterà via via
+function delegate(msg,newState,req,res){
+	msg=msg+","+msgNum++ +")";
 	robotModel.robot.state = newState;
-	emitRobotCmd(hlcmd);
-    res.render("access");	
-}
-
-var emitRobotCmd = function( cmd ){ //called by delegateMqtt;
-	if(cmd == "x(low)")
-		var eventstr = "msg(alarm,event,js,none,usercmd(clean),1)";
-	else
-		var eventstr = "msg(usercmd,event,js,none,usercmd(robotgui( " +cmd + ")),1)";
- 	//var eventstr = "msg(cmd,event,js,none,cmd(" +cmd + "),1)" ;
- 	console.log("emits> "+ eventstr);
- 		mqttUtils.publish( eventstr );	//topic  = "unibo/qasys";
+	console.log("emits -> "+ msg);
+	try{
+		if(externalActuatorMqtt)
+	 		mqttUtils.publish( msg );	//topic  = "unibo/qasys"
+		else if(externalActuatorSocket)
+			conn.write(msg+"\n");
+	}
+	catch(e){
+		console.log("ERROR "+e);
+	}
+	res.render("access");
 }
 
 function actuate(cmd, newState, req, res ){ 

@@ -16,6 +16,10 @@
 
 <h1>Edit your profile</h1>
 
+<% if (infos) { %>
+  <p class="infos"><%= infos %></p>
+<% } %>
+
 <form action="/edit" method="post">
   DisplayName: <input name="displayname" type="text" class="form-control" placeholder="Display name" value="<%= currentUser.displayName || "" %>">
   Bio: <textarea name="bio" class="form-control" placeholder="Tell us about yourself!"><%= currentUser.bio || "" %></textarea>

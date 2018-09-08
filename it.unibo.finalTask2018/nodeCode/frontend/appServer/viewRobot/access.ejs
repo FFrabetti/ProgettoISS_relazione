@@ -19,13 +19,17 @@
 
 Welcome, <b><%= currentUser.displayName || "" %></b>
 
+<% if (infos) { %>
+  <p class="infos"><%= infos %></p>
+<% } %>
+
 <br/><br/>
 <center>
 			<table style="background-color: #d9f7f3">
 					<tr>
  						<td align="center">   
  							<form action="/robot/actions/commands/appl" method="post">
-							  	<input type="submit" value="Start">
+							  	<input type="submit" value="Start Appl">
 							</form>						
  						</td>
  						<td align="center">
@@ -33,7 +37,13 @@ Welcome, <b><%= currentUser.displayName || "" %></b>
 							  	<input type="submit" value="Forward" class="btn btn-primary btn-block">
 							</form>
 						</td>
+						<td align="center">   
+ 							<form action="/robot/actions/commands/stop" method="post">
+							  	<input type="submit" value="Stop Appl">
+							</form>						
+ 						</td>
  						<td align="center"> </td>
+ 						
  					</tr>
 					<tr>
 						<td align="center">

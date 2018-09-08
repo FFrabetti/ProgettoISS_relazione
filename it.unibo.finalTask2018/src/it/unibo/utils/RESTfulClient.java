@@ -10,19 +10,18 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 public class RESTfulClient {
 
 	private static HttpClient client = HttpClientBuilder.create().build();
-//	private static HttpClient client = new DefaultHttpClient();
 
 	// POST
 	public static HttpResponse execPOST(String url, String entity) throws ClientProtocolException, IOException {
 		HttpPost post = new HttpPost(url);
 		if (entity != null) {
 			StringEntity input = new StringEntity(entity);
+			input.setContentType("application/JSON");
 			post.setEntity(input);
 		}
 		HttpResponse response = client.execute(post);
@@ -45,6 +44,7 @@ public class RESTfulClient {
 		HttpPut put = new HttpPut(url);
 		if (entity != null) {
 			StringEntity input = new StringEntity(entity);
+			input.setContentType("application/JSON");
 			put.setEntity(input);
 		}
 		HttpResponse response = client.execute(put);

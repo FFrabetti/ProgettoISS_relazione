@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JSONParser {
@@ -14,20 +15,28 @@ public class JSONParser {
 		BufferedReader br = new BufferedReader(new InputStreamReader(input));
 		String line;
 		StringBuilder sb = new StringBuilder();
-		while((line = br.readLine()) != null) {
+		while ((line = br.readLine()) != null) {
 			sb.append(line);
 		}
-		return new JSONObject(sb.toString());
+		try {
+			return new JSONObject(sb.toString());
+		} catch (JSONException e) {
+			return null;
+		}
 	}
-	
+
 	public static JSONArray parseJSONArray(InputStream input) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(input));
 		String line;
 		StringBuilder sb = new StringBuilder();
-		while((line = br.readLine()) != null) {
+		while ((line = br.readLine()) != null) {
 			sb.append(line);
 		}
-		return new JSONArray(sb.toString());
+		try {
+			return new JSONArray(sb.toString());
+		} catch (JSONException e) {
+			return null;
+		}
 	}
-	
+
 }

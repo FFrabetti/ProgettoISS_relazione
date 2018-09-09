@@ -22,7 +22,8 @@ public class clientTcp {
 	protected static BufferedReader inFromServer;
 	protected static Thread rdThread;
 	
-	private static LocalTime lastEmittedFront;
+	private static final int TIME_INTERVAL = 1; // second
+	private static LocalTime lastFront;
 
 	public static void initClientConn(QActor qa) throws Exception {
 		initClientConn(qa, HOST, PORT);
@@ -38,6 +39,11 @@ public class clientTcp {
 		startTheReader(qa);
 	}
 
+	// for testing
+	public static PrintWriter getPrintWriter() {
+		return outToServer;
+	}
+	
 	public static void sendMsg(QActor qa, String jsonString) throws Exception {
 		JSONObject jsonObject = new JSONObject(jsonString);
 		String msg = SEP + jsonObject.toString() + SEP;
@@ -115,6 +121,7 @@ public class clientTcp {
 		// Event sonarSensor : sonar(NAME, DISTANCE)
 		private void sonarActivated(String sonar, int distance) {
 			qa.emit("sonarSensor", "sonar(" + sonar + "," + distance + ")");
+			System.out.println("NodeEnv: sensed by a sonar -> sonarSensor : sonar(" + sonar + "," + distance + ")");
 		}
 
 		/*
@@ -124,10 +131,10 @@ public class clientTcp {
 		 */
 		// Event frontSonar : sonar( DISTANCE )
 		private void collision(String obstacle) {
-			if(lastEmittedFront == null || LocalTime.now().isAfter(lastEmittedFront.plusSeconds(1))) {
+			if(lastFront == null || LocalTime.now().isAfter(lastFront.plusSeconds(TIME_INTERVAL))) {
 				qa.emit("frontSonar", "sonar(2)");
-				System.out.println("NodeEnv: emitting frontSonar : sonar(2)");
-				lastEmittedFront = LocalTime.now();
+				System.out.println("NodeEnv: collision with " + obstacle + " -> frontSonar : sonar(2)");
+				lastFront = LocalTime.now();
 			}
 //			else
 //				System.out.println("NodeEnv: frontSonar not emitted");

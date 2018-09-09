@@ -1,0 +1,20 @@
+System nodeRobotTest
+
+Event frontSonar : sonar(D)
+Event sonarSensor : sonar(N,D)
+
+// see: it.unibo.finalTask2018\test\it\unibo\test\impl\NodeRobotTest.java
+
+Context ctxNodeRobotTest ip [ host="localhost" port=1234 ]
+EventHandler evhpalogger for frontSonar, sonarSensor {
+	memoCurrentEvent -lastonly for nrtlogger;
+	demo dologevent for nrtlogger
+};
+
+QActor nrtlogger context ctxNodeRobotTest {
+	Plan init normal [
+		demo consult("./logger.pl")
+	]
+	transition stopAfter 3600000
+	finally repeatPlan
+}

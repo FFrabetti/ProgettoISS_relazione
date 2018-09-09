@@ -342,11 +342,30 @@ Come analisti però riteniamo che anche gli ostacoli il cui superamento richieda
 \subsection{R-Start and R-Stop}
 Per avviare la pulizia della stanza, è necessario l'invio dell'apposito comando da parte di un utente autorizzato che si interfaccia al sistema mediante una \code{console}. Tale utente può anche richiedere la terminazione prematura dell'operazione.
 
-Un utente è autorizzato se è dotato di un username e una password con cui accedere alla console. Sembra chiaro che sia necessario offrire un servizio di login che, supportato da un meccanismo per la persistenza dei dati, possa permettere di ottenere credenziali per accedere al sistema.\\
+Un utente è autorizzato se è dotato di un username e una password con cui accedere alla console, pertanto è necessario offrire un servizio di login che, supportato da un meccanismo per la persistenza dei dati, permetta di ottenere delle credenziali per accedere al sistema.\\
+
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.55]{img/screenFrontend/login.png}
+\caption{Richiesta di login al tentativo di accesso alla console}
+
+\vspace{8px}
+
+\includegraphics[scale=0.55]{img/screenFrontend/signup.png}
+\caption{Schermata di registrazione}
+\end{center}
+\end{figure}
 
 Inoltre i requisiti riferiscono esplicitamente la presenza di un'interfaccia grafica utilizzabile da remoto da qualsiasi dispositivo, ad esempio da PC o smartphone.
 
 Si delinea dunque la necessità un componente raggiungibile via web tramite un browser che permetta ad un utente umano di pilotare il robot, ma solo quelli precedentemente registrati nel sistema e che abbiano effettuato l'accesso.
+
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.55]{img/screenFrontend/console.png}
+\caption{Console web per gli utenti autenticati}
+\end{center}
+\end{figure}
 
 \subsection{R-TimeOk/R-TimeKo and R-TempOk/R-TempKo}
 Il robot può svolgere il suo lavoro solo durante un certo intervallo temporale. Per poter verificare questo requisito è sufficiente la presenza di un qualunque tipo di orologio all'interno del sistema, ad esempio quello della macchina locale.\\
@@ -1044,6 +1063,8 @@ switchExplorationDir :-
 Per realizzare il comportamento a tentativi del robot vengono impiegate le seguenti regole Prolog che implementano un contatore.\\
 
 \begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={SoftwareAgent, Rules - pt3}]
+giveUpLimit(3).
+
 increment(C) :-
 	counter(C,N), !,
 	N2 is N+1,
@@ -1062,12 +1083,12 @@ increment(C,N) :-
 	increment(C,N2).
 
 decrement(C) :-
-	counter(C, 1), !,
-	retract(counter(C, 1)).
+	counter(C,1), !,
+	retract(counter(C,1)).
 
 decrement(C) :-
 	counter(C,N), !,
-	eval(minus, N, 1, N2),
+	eval(minus,N,1,N2),
 	retract(counter(C,N)),
 	assert(counter(C,N2)).
 
@@ -1075,7 +1096,8 @@ avoidFixTry :-
 	increment(foundFix).
 
 avoidFixGiveUp :-
-	counter(foundFix, 3).
+	giveUpLimit(L),
+	counter(foundFix,L).
 
 decremFoundFix :-
 	decrement(foundFix).
@@ -1230,10 +1252,11 @@ Per farlo abbiamo utilizzato la tecnologia \emph{Node.js} perché permette di sc
 
 Per quanto riguarda l'autenticazione degli utenti, la tecnologia che abbiamo utilizzato è \emph{MongoDB}, un DBMS non relazionale. Questa scelta è stata fatta per l'ottima interazione presente tra Mongo e Node.js: esiste infatti un'estensione per gestire database Mongo, chiamata \emph{Mongoose}, proprio in Node.\\
 
-\begin{figure}[!htb]
-\centering
-\includegraphics[scale=0.40]{img/frontendServer.png}
-\caption{Schema delle interazioni del frontend server}\labelfig{frontendServer}
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.55]{img/screenFrontend/mongo.png}
+\caption{Dati di un utente mantenuti nel database}
+\end{center}
 \end{figure}
 
 Il frontend server utilizza un proprio modello interno del robot, scritto in JSON, che descrive lo stato in cui si trova e che viene aggiornato in base ai comandi inviati dalla console. Questo modello è svincolato da quello gestito dal controller, pertanto sono presenti tutte le problematiche relative alla sincronizzazione e alla consistenza dei due modelli.\\
@@ -1243,6 +1266,12 @@ Per quanto riguarda l'interazione tra il server e il resto del sistema, il front
 Per la propagazione degli eventi nel sistema è possibile utilizzare un server Mqtt tramite il quale comunicare messaggi con il modello publish-subscribe. In questo caso tutti gli attori interessati a ricevere o pubblicare informazioni devono essere provvisti del flag \codescript{-pubsub} e dell'istruzione \codescript{pubSubServer} che specifica l'indirizzo e la porta del server Mqtt.
 
 Un'alternativa è quella di aprire una connessione TCP con il contesto principale dell'applicazione ed inviare su di essa gli eventi nel formato di basso livello utilizzato dall'infrastruttura \qa.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.40]{img/frontendServer.png}
+\caption{Schema delle interazioni del frontend server}\labelfig{frontendServer}
+\end{figure}
 
 Per quanto siano attuabili entrambe le soluzioni, la seconda permette di passare da un frontend all'altro senza bisogno di alcuna modifica. Il passaggio da una all'altra è comunque facilmente realizzabile settando il parametro \codescript{externalActuatorMqtt} presente all'interno del frontend.\\
 
@@ -1466,7 +1495,7 @@ L'obiettivo di questi test è verificare i requisiti che riguardano il superamen
 \subsection{Implementation testing}
 \subsubsection{Hue Lamp interaction test}
 
-\subsubsection{Frontend Server test}
+%\subsubsection{Frontend Server test}
 
 \subsubsection{Virtual Robot test}
 

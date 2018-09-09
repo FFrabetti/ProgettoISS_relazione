@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -22,10 +23,12 @@ public class hueLampAdapter {
 	private static String bridge;
 	private static String lamp;
 	private static String username;
+	
+	public static final String FILE_NAME = "lamp_settings.txt";
+	public static final String DEFAULT_BRIDGE = "localhost:8666";
 
 	public static void setUp(QActor qa) throws ClientProtocolException, IOException {
-
-		File f = new File("lamp_settings.txt");
+		File f = new File(FILE_NAME);
 		if (f.exists()) { // controllo esistenza file
 			BufferedReader br = new BufferedReader(new FileReader(f));
 			bridge = br.readLine();
@@ -76,9 +79,14 @@ public class hueLampAdapter {
 
 
 	private static void findBridge() throws ClientProtocolException, IOException {
-		HttpResponse response = RESTfulClient.execGET("https://discovery.meethue.com");
-		JSONArray arr = JSONParser.parseJSONArray(response.getEntity().getContent());
-		bridge = arr.getJSONObject(0).getString("internalipaddress");
+		try {
+			HttpResponse response = RESTfulClient.execGET("https://discovery.meethue.com");
+			JSONArray arr = JSONParser.parseJSONArray(response.getEntity().getContent());
+			bridge = arr.getJSONObject(0).getString("internalipaddress");
+		}
+		catch(Exception e) {
+			bridge = DEFAULT_BRIDGE;
+		}
 	}
 
 	private static boolean checkBridge() throws ClientProtocolException, IOException {
@@ -110,6 +118,10 @@ public class hueLampAdapter {
 		JSONObject obj = new JSONObject();
 		obj.accumulate("devicetype", "finalTask#pc"); // <application_name>#<device_name>
 		HttpResponse response = RESTfulClient.execPOST("http://" + bridge + "/api", obj.toString());
+		
+//		BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+//		System.out.println("readLine = " + br.readLine());
+		
 		JSONArray arr = JSONParser.parseJSONArray(response.getEntity().getContent());
 		username = arr.getJSONObject(0).getJSONObject("success").getString("username");
 	}

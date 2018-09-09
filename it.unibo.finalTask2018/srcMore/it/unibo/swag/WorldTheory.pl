@@ -142,6 +142,7 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %-------------------------------------------------
 %  User static rules about swag
 %------------------------------------------------- 
+giveUpLimit( 3).
 isCloseTo( S):-sonarDetect( S,D),eval( gt,D,0), ! ,eval( lt,D,5).
 isCloseTo( S):-sonarDetect( S,D),eval( minus,0,D,R),eval( lt,R,5).
 increment( C):-counter( C,N), ! ,N2 is N + 1,retract( counter( C,N)),assert( counter( C,N2)).
@@ -151,7 +152,7 @@ increment( C,N):-increment( C),eval( minus,N,1,N2),increment( C,N2).
 decrement( C):-counter( C,1), ! ,retract( counter( C,1)).
 decrement( C):-counter( C,N), ! ,eval( minus,N,1,N2),retract( counter( C,N)),assert( counter( C,N2)).
 avoidFixTry:-increment( foundFix).
-avoidFixGiveUp:-counter( foundFix,3).
+avoidFixGiveUp:-giveUpLimit( L),counter( foundFix,L).
 decremFoundFix:-decrement( foundFix).
 switchExplorationDir:-exploring( r),retract( exploring( r)),assert( exploring( l)).
 isInWallProximity:-counter( steps,N),counter( roomLen,M),eval( minus,M,N,R),eval( lt,R,4).

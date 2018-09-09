@@ -77,17 +77,17 @@ public abstract class AbstractHuelampagent extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"hueLampAgent start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.lampAdapter.init( myself  );
+	    	it.unibo.finalTask2018.adapter.hueLampAdapter.setUp( myself  );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(1000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	it.unibo.finalTask2018.adapter.lampAdapter.setLamp( myself ,"on"  );
+	    	it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState( myself ,"on"  );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(1000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
 	    	if( ! aar.getGoon() ) return ;
-	    	it.unibo.finalTask2018.adapter.lampAdapter.setLamp( myself ,"off"  );
+	    	it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState( myself ,"off"  );
 	    	//switchTo waitForCommand
 	        switchToPlanAsNextState(pr, myselfName, "huelampagent_"+myselfName, 
 	              "waitForCommand",false, false, null); 
@@ -127,7 +127,7 @@ public abstract class AbstractHuelampagent extends QActor {
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "blink" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.lampAdapter.setLamp(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
@@ -139,7 +139,7 @@ public abstract class AbstractHuelampagent extends QActor {
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "on" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.lampAdapter.setLamp(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
@@ -151,7 +151,7 @@ public abstract class AbstractHuelampagent extends QActor {
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.lampAdapter.setLamp(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState(this,arg1 );
 	    			}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"huelampagent_"+myselfName,false,true);

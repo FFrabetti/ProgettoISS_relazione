@@ -61,8 +61,8 @@ QActor swag3 context ctxSwag3 {
 		println("cleaning forward");
 		demo addState(forwardCleaning);
 		
-		emit ctrlEvent : ctrlEvent(robot,r1,d(1) );
-		emit ctrlEvent : ctrlEvent(robot,r1,w(1) )
+		emit ctrlEvent : ctrlEvent(robot,r1,d(1));
+		emit ctrlEvent : ctrlEvent(robot,r1,w(1))
 	]
 	transition stopAfter 3600000
 		// la parete di fondo e' segnalata da sonar2
@@ -115,8 +115,8 @@ QActor swag3 context ctxSwag3 {
 		println("cleaning back");
 		demo addState(backCleaning);
 		
-		emit ctrlEvent : ctrlEvent(robot,r1,a(1) );
-		emit ctrlEvent : ctrlEvent(robot,r1,w(1) )
+		emit ctrlEvent : ctrlEvent(robot,r1,a(1));
+		emit ctrlEvent : ctrlEvent(robot,r1,w(1))
 	]
 	transition stopAfter 3600000
 		whenEvent frontSonar -> rightTurn
@@ -125,11 +125,11 @@ QActor swag3 context ctxSwag3 {
 		println("right turn");
 		demo addState(rightTurn);
 		
-		emit ctrlEvent : ctrlEvent(robot,r1,h(1) );
-		emit ctrlEvent : ctrlEvent(robot,r1,d(1) );
-		emit ctrlEvent : ctrlEvent(robot,r1,w(1) );
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1));
+		emit ctrlEvent : ctrlEvent(robot,r1,d(1));
+		emit ctrlEvent : ctrlEvent(robot,r1,w(1));
 		delay 400;
-		emit ctrlEvent : ctrlEvent(robot,r1,h(1) )
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1))
 	]
 	transition
 		// tutto ok, no ostacoli a destra
@@ -139,6 +139,6 @@ QActor swag3 context ctxSwag3 {
 		println("end");
 		demo addState(end);
 		
-		emit ctrlEvent : ctrlEvent(robot,r1,h(1) )
+		emit ctrlEvent : ctrlEvent(robot,r1,h(1))
 	]
 }

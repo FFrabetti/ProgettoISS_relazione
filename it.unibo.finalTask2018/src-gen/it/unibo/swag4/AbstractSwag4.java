@@ -56,10 +56,7 @@ public abstract class AbstractSwag4 extends QActor {
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
-	    	stateTab.put("receivedCmd",receivedCmd);
-	    	stateTab.put("detectedBySonar",detectedBySonar);
 	    	stateTab.put("cleaning",cleaning);
-	    	stateTab.put("detectedByFinal",detectedByFinal);
 	    	stateTab.put("handleFront",handleFront);
 	    	stateTab.put("avoidMobile",avoidMobile);
 	    	stateTab.put("avoidFix",avoidFix);
@@ -86,112 +83,35 @@ public abstract class AbstractSwag4 extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
 	    	String myselfName = "init";  
-	    	temporaryStr = "\"swag4 start: waiting for start command\"";
+	    	temporaryStr = "\"swag4 start\"";
 	    	println( temporaryStr );  
+	    	parg = "consult(\"./swagtest.pl\")";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	//switchTo cleaning
 	        switchToPlanAsNextState(pr, myselfName, "swag4_"+myselfName, 
-	              "cleaning",false, false, " ??test"); 
+	              "cleaning",false, false, null); 
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//init
 	    
-	    StateFun receivedCmd = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("receivedCmd",-1);
-	    	String myselfName = "receivedCmd";  
-	    	//onMsg 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(start)");
-	    	if( currentMessage != null && currentMessage.msgId().equals("externalcmd") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		//println("WARNING: variable substitution not yet fully implemented " ); 
-	    		{//actionseq
-	    		temporaryStr = "\"ricevuto start\"";
-	    		println( temporaryStr );  
-	    		temporaryStr = "startCmd";
-	    		addRule( temporaryStr );  
-	    		};//actionseq
-	    	}
-	    	//onMsg 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(halt)");
-	    	if( currentMessage != null && currentMessage.msgId().equals("externalcmd") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg = "\"ricevuto halt\"";
-	    		/* Print */
-	    		parg =  updateVars( Term.createTerm("usercmd(CMD)"), 
-	    		                    Term.createTerm("usercmd(halt)"), 
-	    			    		  	Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) println( parg );
-	    	}
-	    	//bbb
-	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("detectedBySonar") }, 
-	          new String[]{" ??startCmd" ,"E","sonarSensor" },
-	          800, "init" );//msgTransition
-	    }catch(Exception e_receivedCmd){  
-	    	 println( getName() + " plan=receivedCmd WARNING:" + e_receivedCmd.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//receivedCmd
-	    
-	    StateFun detectedBySonar = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("detectedBySonar",-1);
-	    	String myselfName = "detectedBySonar";  
-	    	temporaryStr = "\"detected by a sonar\"";
-	    	println( temporaryStr );  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonar(sonar1,D)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarSensor") && 
-	    		pengine.unify(curT, Term.createTerm("sonar(NAME,DISTANCE)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="sonarDetect(sonar1,D)";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("sonar(NAME,DISTANCE)"),  Term.createTerm("sonar(sonar1,D)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?isCloseTo(sonar1)" )) != null ){
-	    	{//actionseq
-	    	temporaryStr = "\"close to sonar1\"";
-	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(clean)", guardVars ).toString();
-	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    	};//actionseq
-	    	}
-	    	else{ temporaryStr = "\"NOT close to sonar1\"";
-	    	println( temporaryStr );  
-	    	}temporaryStr = "sonarDetect(sonar1,D)";
-	    	removeRule( temporaryStr );  
-	    	//bbb
-	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("cleaning") }, 
-	          new String[]{"true","M","swagmsg" },
-	          800, "init" );//msgTransition
-	    }catch(Exception e_detectedBySonar){  
-	    	 println( getName() + " plan=detectedBySonar WARNING:" + e_detectedBySonar.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//detectedBySonar
-	    
 	    StateFun cleaning = () -> {	
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("cleaning",-1);
 	    	String myselfName = "cleaning";  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
 	    	temporaryStr = "\"cleaning\"";
 	    	println( temporaryStr );  
+	    	parg = "addState(cleaning)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("handleFront"), stateTab.get("detectedByFinal"), stateTab.get("receivedCmd") }, 
-	          new String[]{"true","E","frontSonar", "true","E","sonarSensor", "true","M","externalcmd" },
+	          new StateFun[]{stateTab.get("handleFront") }, 
+	          new String[]{"true","E","frontSonar" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_cleaning){  
 	    	 println( getName() + " plan=cleaning WARNING:" + e_cleaning.getMessage() );
@@ -199,69 +119,31 @@ public abstract class AbstractSwag4 extends QActor {
 	    }
 	    };//cleaning
 	    
-	    StateFun detectedByFinal = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("detectedByFinal",-1);
-	    	String myselfName = "detectedByFinal";  
-	    	temporaryStr = "\"detected by a sonar\"";
-	    	println( temporaryStr );  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonar(sonar2,D)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarSensor") && 
-	    		pengine.unify(curT, Term.createTerm("sonar(NAME,DISTANCE)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="sonarDetect(sonar2,D)";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("sonar(NAME,DISTANCE)"),  Term.createTerm("sonar(sonar2,D)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?isCloseTo(sonar2)" )) != null ){
-	    	{//actionseq
-	    	temporaryStr = "\"close to sonar2, end of cleaning\"";
-	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(halt)", guardVars ).toString();
-	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    	};//actionseq
-	    	}
-	    	else{ temporaryStr = "\"NOT close to sonar2\"";
-	    	println( temporaryStr );  
-	    	}temporaryStr = "sonarDetect(sonar2,D)";
-	    	removeRule( temporaryStr );  
-	    	//bbb
-	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("init") }, 
-	          new String[]{"true","M","swagmsg" },
-	          800, "cleaning" );//msgTransition
-	    }catch(Exception e_detectedByFinal){  
-	    	 println( getName() + " plan=detectedByFinal WARNING:" + e_detectedByFinal.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//detectedByFinal
-	    
 	    StateFun handleFront = () -> {	
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("handleFront",-1);
 	    	String myselfName = "handleFront";  
 	    	temporaryStr = "\"handleFront\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "addState(handleFront)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"possible mobile obstacle\"";
 	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(1000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "handleFront";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"provo ad avanzare\"";
 	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("receivedCmd"), stateTab.get("avoidFix") }, 
-	          new String[]{"true","M","externalcmd", "true","E","frontSonar" },
+	          new StateFun[]{stateTab.get("avoidFix") }, 
+	          new String[]{"true","E","frontSonar" },
 	          800, "avoidMobile" );//msgTransition
 	    }catch(Exception e_handleFront){  
 	    	 println( getName() + " plan=handleFront WARNING:" + e_handleFront.getMessage() );
@@ -275,6 +157,9 @@ public abstract class AbstractSwag4 extends QActor {
 	    	String myselfName = "avoidMobile";  
 	    	temporaryStr = "\"avoidMobile\"";
 	    	println( temporaryStr );  
+	    	parg = "addState(avoidMobile)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = "\"ok, ostacolo superato\"";
 	    	println( temporaryStr );  
 	    	//switchTo cleaning
@@ -292,7 +177,20 @@ public abstract class AbstractSwag4 extends QActor {
 	    	String myselfName = "avoidFix";  
 	    	temporaryStr = "\"avoidFix\"";
 	    	println( temporaryStr );  
-	    	parg = "avoidFixTry";
+	    	parg = "addState(avoidFix)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?exploring(DIR)" )) != null ){
+	    	temporaryStr = "exploring(DIR)";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	println( temporaryStr );  
+	    	}
+	    	else{ temporaryStr = "exploring(r)";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	addRule( temporaryStr );  
+	    	}parg = "avoidFixTry";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?avoidFixGiveUp" )) != null ){
@@ -303,7 +201,10 @@ public abstract class AbstractSwag4 extends QActor {
 	    	}
 	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(giveUpRight)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    	}temporaryStr = "\"Raggiunti max tentativi\"";
+	    	}parg = "switchExplorationDir";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = "\"Raggiunti max tentativi\"";
 	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
@@ -316,15 +217,15 @@ public abstract class AbstractSwag4 extends QActor {
 	    	println( temporaryStr );  
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?exploring(l)" )) != null ){
 	    	{//actionseq
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"da sinistra\"";
 	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
 	    	else{ {//actionseq
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,d(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"da destra\"";
 	    	println( temporaryStr );  
 	    	};//actionseq
@@ -332,28 +233,24 @@ public abstract class AbstractSwag4 extends QActor {
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "avoidFix";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(600,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "avoidFix";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward + stop\"";
-	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "avoidFix";
 	    	if( ! aar.getGoon() ) return ;
 	    	};//actionseq
-	    	}parg = "switchExplorationDir";
-	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
-	    	solveGoal( parg ); //sept2017
+	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("failure"), stateTab.get("receivedCmd"), stateTab.get("giveUp") }, 
-	          new String[]{"true","E","frontSonar", "true","M","externalcmd", "true","M","swagmsg" },
+	          new StateFun[]{stateTab.get("failure"), stateTab.get("giveUp") }, 
+	          new String[]{"true","E","frontSonar", "true","M","swagmsg" },
 	          800, "checkDoor" );//msgTransition
 	    }catch(Exception e_avoidFix){  
 	    	 println( getName() + " plan=avoidFix WARNING:" + e_avoidFix.getMessage() );
@@ -367,32 +264,35 @@ public abstract class AbstractSwag4 extends QActor {
 	    	String myselfName = "checkDoor";  
 	    	temporaryStr = "\"checkDoor\"";
 	    	println( temporaryStr );  
+	    	parg = "addState(checkDoor)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?exploring(r)" )) != null ){
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	}
-	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,d(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	}//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "checkDoor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward\"";
-	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(400,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "checkDoor";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"stop\"";
-	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(2000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "checkDoor";
+	    	if( ! aar.getGoon() ) return ;
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("receivedCmd"), stateTab.get("avoidFix") }, 
-	          new String[]{"true","M","externalcmd", "true","E","frontSonar" },
+	          new StateFun[]{stateTab.get("avoidFix") }, 
+	          new String[]{"true","E","frontSonar" },
 	          800, "doorFound" );//msgTransition
 	    }catch(Exception e_checkDoor){  
 	    	 println( getName() + " plan=checkDoor WARNING:" + e_checkDoor.getMessage() );
@@ -406,32 +306,24 @@ public abstract class AbstractSwag4 extends QActor {
 	    	String myselfName = "doorFound";  
 	    	temporaryStr = "\"doorFound\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward\"";
-	    	println( temporaryStr );  
+	    	parg = "addState(doorFound)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(300,"" , "");
+	    	aar = delayReactive(1000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "doorFound";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"stop\"";
-	    	println( temporaryStr );  
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(2000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "doorFound";
-	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?exploring(r)" )) != null ){
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	}
-	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	}//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(800,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "doorFound";
-	    	if( ! aar.getGoon() ) return ;
+	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,d(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	}
 	    	//switchTo goToPrevLevel
 	        switchToPlanAsNextState(pr, myselfName, "swag4_"+myselfName, 
 	              "goToPrevLevel",false, false, null); 
@@ -447,32 +339,37 @@ public abstract class AbstractSwag4 extends QActor {
 	    	String myselfName = "goToPrevLevel";  
 	    	temporaryStr = "\"goToPrevLevel\"";
 	    	println( temporaryStr );  
+	    	parg = "addState(goToPrevLevel)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(2000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "goToPrevLevel";
+	    	if( ! aar.getGoon() ) return ;
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?counter(foundFix,C)" )) != null ){
 	    	{//actionseq
 	    	parg = "decremFoundFix";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(600,"" , "");
+	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "goToPrevLevel";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward + stop\"";
-	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	};//actionseq
 	    	}
 	    	else{ {//actionseq
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(initialP)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?exploring(r)" )) != null ){
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,d(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	}
-	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	}//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "goToPrevLevel";
@@ -483,9 +380,9 @@ public abstract class AbstractSwag4 extends QActor {
 	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("receivedCmd"), stateTab.get("cleaning") }, 
-	          new String[]{"true","M","externalcmd", "true","M","swagmsg" },
-	          200, "goToPrevLevel" );//msgTransition
+	          new StateFun[]{stateTab.get("cleaning") }, 
+	          new String[]{"true","M","swagmsg" },
+	          300, "goToPrevLevel" );//msgTransition
 	    }catch(Exception e_goToPrevLevel){  
 	    	 println( getName() + " plan=goToPrevLevel WARNING:" + e_goToPrevLevel.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -496,44 +393,47 @@ public abstract class AbstractSwag4 extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("resumeLastPosition",-1);
 	    	String myselfName = "resumeLastPosition";  
-	    	temporaryStr = "\"resume last position\"";
+	    	temporaryStr = "\"resumeLastPosition\"";
 	    	println( temporaryStr );  
+	    	parg = "addState(resumeLastPosition)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(2000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "resumeLastPosition";
+	    	if( ! aar.getGoon() ) return ;
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?counter(foundFix,C)" )) != null ){
 	    	{//actionseq
 	    	parg = "decremFoundFix";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(w(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"forward\"";
-	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,w(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(600,"" , "");
+	    	aar = delayReactive(800,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "resumeLastPosition";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(h(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,h(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "resumeLastPosition";
 	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = "\"stop\"";
-	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
 	    	else{ {//actionseq
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(initialP)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(d(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,d(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"fronteggio l'invalicabile muro\"";
 	    	println( temporaryStr );  
 	    	};//actionseq
 	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
-	          new StateFun[]{stateTab.get("receivedCmd"), stateTab.get("avoidFix") }, 
-	          new String[]{"true","M","externalcmd", "true","M","swagmsg" },
+	          new StateFun[]{stateTab.get("avoidFix") }, 
+	          new String[]{"true","M","swagmsg" },
 	          800, "resumeLastPosition" );//msgTransition
 	    }catch(Exception e_resumeLastPosition){  
 	    	 println( getName() + " plan=resumeLastPosition WARNING:" + e_resumeLastPosition.getMessage() );
@@ -547,15 +447,32 @@ public abstract class AbstractSwag4 extends QActor {
 	    	String myselfName = "failure";  
 	    	temporaryStr = "\"failure\"";
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(0))", guardVars ).toString();
-	    	sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    	parg = "addState(failure)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?exploring(r)" )) != null ){
+	    	{//actionseq
+	    	temporaryStr = "\"failure da destra\"";
+	    	println( temporaryStr );  
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(giveUpRight)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(800,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "failure";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(0))", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	};//actionseq
 	    	}
-	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(giveUpLeft)", guardVars ).toString();
+	    	else{ {//actionseq
+	    	temporaryStr = "\"failure da sinistra\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(giveUpLeft)", guardVars ).toString();
 	    	sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    	}
+	    	};//actionseq
+	    	}parg = "switchExplorationDir";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
 	          new StateFun[]{stateTab.get("giveUp") }, 
@@ -573,6 +490,9 @@ public abstract class AbstractSwag4 extends QActor {
 	    	String myselfName = "giveUp";  
 	    	temporaryStr = "\"giveUp\"";
 	    	println( temporaryStr );  
+	    	parg = "addState(giveUp)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	parg = "decremFoundFix";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
@@ -584,12 +504,20 @@ public abstract class AbstractSwag4 extends QActor {
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		//println("WARNING: variable substitution not yet fully implemented " ); 
 	    		{//actionseq
-	    		temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(CMD)","moveRobot(a(0))", guardVars ).toString();
-	    		sendExtMsg("moveRobot","robotnode", "ctxVirtualRobotNode", QActorContext.dispatch, temporaryStr ); 
+	    		temporaryStr = "\"giveUpRight\"";
+	    		println( temporaryStr );  
+	    		//delay  ( no more reactive within a plan)
+	    		aar = delayReactive(800,"" , "");
+	    		if( aar.getInterrupted() ) curPlanInExec   = "giveUp";
+	    		if( ! aar.getGoon() ) return ;
+	    		temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(CATEG,NAME,CMD)","ctrlEvent(robot,r1,a(0))", guardVars ).toString();
+	    		emit( "ctrlEvent", temporaryStr );
+	    		//delay  ( no more reactive within a plan)
+	    		aar = delayReactive(800,"" , "");
+	    		if( aar.getInterrupted() ) curPlanInExec   = "giveUp";
+	    		if( ! aar.getGoon() ) return ;
 	    		temporaryStr = QActorUtils.unifyMsgContent(pengine,"cmd(CMD)","cmd(resumeLastPos)", guardVars ).toString();
 	    		sendMsg("swagmsg",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    		temporaryStr = "\"ruoto di 90\"";
-	    		println( temporaryStr );  
 	    		};//actionseq
 	    	}
 	    	//onMsg 
@@ -600,18 +528,14 @@ public abstract class AbstractSwag4 extends QActor {
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		//println("WARNING: variable substitution not yet fully implemented " ); 
 	    		{//actionseq
+	    		temporaryStr = "\"giveUpLeft\"";
+	    		println( temporaryStr );  
 	    		temporaryStr = "foundFix(X)";
 	    		removeRule( temporaryStr );  
 	    		temporaryStr = "exploring(l)";
 	    		removeRule( temporaryStr );  
-	    		temporaryStr = "\"tentativi massimi raggiunti\"";
-	    		println( temporaryStr );  
 	    		};//actionseq
 	    	}
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(2000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "giveUp";
-	    	if( ! aar.getGoon() ) return ;
 	    	//bbb
 	     msgTransition( pr,myselfName,"swag4_"+myselfName,false,
 	          new StateFun[]{stateTab.get("resumeLastPosition") }, 

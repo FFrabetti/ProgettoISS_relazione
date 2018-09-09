@@ -17,7 +17,7 @@ import it.unibo.qactors.akka.QActor;
 import it.unibo.utils.JSONParser;
 import it.unibo.utils.RESTfulClient;
 
-public class HueLampAdapter {
+public class hueLampAdapter {
 
 	private static String bridge;
 	private static String lamp;

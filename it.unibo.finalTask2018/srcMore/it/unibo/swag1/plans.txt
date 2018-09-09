@@ -4,7 +4,7 @@ plan(3,init, sentence(true,msgswitch(swagmsg, cmd( CMD) , addRule( logmsg( swagm
 plan(1,receivedCmd, sentence(true,msgswitch(externalcmd, usercmd( CMD) , addRule( logmsg( externalcmd,usercmd( CMD)) )),'','' ))
 plan(2,receivedCmd, sentence(true,msgswitch(externalcmd, usercmd( clean) , not here StateMoveNormal),'','' ))
 plan(3,receivedCmd, sentence(true,msgswitch(externalcmd, usercmd( halt) , move(print("ricevuto halt"))),'','' ))
-plan(1,detectedBySonar, sentence(true,move(print("detected by a sonar")),'','' ))
+plan(1,detectedBySonar, sentence(true,eventswitch(sonarSensor, »sonar( sonar1,D), move(print(detectedBySonar( sonar1,D))) ),'','' ))
 plan(2,detectedBySonar, sentence(true,eventswitch(sonarSensor, »sonar( sonar1,D), addRule( sonarDetect( sonar1,D) ) ),'','' ))
 plan(3,detectedBySonar, sentence( isCloseTo( sonar1),not here StateMoveNormal,'','' ))
 plan(4,detectedBySonar, sentence(true,removeRule( sonarDetect( sonar1,D) ),'','' ))

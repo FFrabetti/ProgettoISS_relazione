@@ -5,6 +5,9 @@ Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
 Dispatch swagmsg : cmd(CMD)
 Dispatch externalcmd : usercmd(CMD)
+
+// avoidFixRight e avoidFixLeft, ...
+
 /* 
  * externalcmd viene usato per gestire uniformemente sia i click dell'utente per muovere il robot (usercmd)
  * che quelli per avviare terminare la pulizia (cmd)
@@ -19,7 +22,6 @@ EventHandler evhswag2pa for usercmd {
 // -------------------------- SOFTWARE AGENT 2 --------------------------
 QActor swag2pa context ctxSwag2 {
 	Rules{
-		// for testing
 		isCloseTo(S) :-
 			sonarDetect(S,D),
 			eval(gt,D,0),!,

@@ -149,12 +149,12 @@ increment( C):-assert( counter( C,1)).
 decrement( C):-counter( C,1), ! ,retract( counter( C,1)).
 decrement( C):-counter( C,N), ! ,eval( minus,N,1,N2),retract( counter( C,N)),assert( counter( C,N2)).
 avoidFixTry:-increment( foundFix).
-avoidFixGiveUp:-counter( foundFix,3).
+giveUpLimit( 3).
+avoidFixGiveUp:-giveUpLimit( L),counter( foundFix,L).
 decremFoundFix:-decrement( foundFix).
 switchExplorationDir:-exploring( r),avoidFixGiveUp, ! ,retract( exploring( r)),assert( exploring( l)).
 switchExplorationDir:-exploring( _), ! .
 switchExplorationDir:-assert( exploring( r)).
-test.
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

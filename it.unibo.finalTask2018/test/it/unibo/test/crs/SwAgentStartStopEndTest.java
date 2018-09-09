@@ -3,6 +3,7 @@ package it.unibo.test.crs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,6 +24,11 @@ public class SwAgentStartStopEndTest extends QATesting {
 		swag = waitForQActorToStart("swag1");
 	}
 
+	@After
+	public void afterTest() {
+		swag.solveGoal("removeLogMsg");
+	}
+	
 	@Test
 	public void externalCmdReceptionTest() throws Exception {
 		swag.emit("alarm", "usercmd(testcmd)");
@@ -31,21 +37,31 @@ public class SwAgentStartStopEndTest extends QATesting {
 	}
 	
 	@Test
-	public void cleanHaltCmdTest() throws Exception {
+	public void cleanCmdTooLateSonarTest() throws Exception {
 		swag.emit("alarm", "usercmd(clean)");
 		Thread.sleep(2000);
 		swag.emit("sonarSensor", "sonar(sonar1,1)");
-		Thread.sleep(400);
 		// too late
 		assertEquals("init", getCurrentState());
 		
+		swag.emit("alarm", "usercmd(clean)");
+		Thread.sleep(1000); // sonarSensor lost?
+		swag.emit("alarm", "usercmd(halt)");
+		Thread.sleep(1000);
+	}
+	
+	@Test
+	public void cleanCmdNotCloseToSonarTest() throws Exception {
 		swag.emit("alarm", "usercmd(clean)");
 		Thread.sleep(400);
 		swag.emit("sonarSensor", "sonar(sonar1,10)");
 		Thread.sleep(2000);
 		// not close to sonar1
 		assertEquals("init", getCurrentState());
-		
+	}
+	
+	@Test
+	public void cleanHaltCmdTest() throws Exception {
 		swag.emit("alarm", "usercmd(clean)");
 		Thread.sleep(400);
 		swag.emit("sonarSensor", "sonar(sonar1,1)");
@@ -59,8 +75,6 @@ public class SwAgentStartStopEndTest extends QATesting {
 		// halted
 		assertEquals("init", getCurrentState());
 		assertTrue(isMsgReceived(swag, "externalcmd", "usercmd(halt)"));
-		
-		swag.solveGoal("removeLogMsg");
 	}
 
 	@Test
@@ -83,8 +97,6 @@ public class SwAgentStartStopEndTest extends QATesting {
 		// ok end
 		assertEquals("init", getCurrentState());
 		assertTrue(isMsgReceived(swag, "swagmsg", "cmd(halt)"));
-		
-		swag.solveGoal("removeLogMsg");
 	}
 	
 	// utilities

@@ -201,8 +201,19 @@ public abstract class AbstractSwag extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("detectedBySonar",-1);
 	    	String myselfName = "detectedBySonar";  
-	    	temporaryStr = "\"detected by a sonar\"";
-	    	println( temporaryStr );  
+	    	//onEvent 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("sonar(S,D)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarSensor") && 
+	    		pengine.unify(curT, Term.createTerm("sonar(NAME,DISTANCE)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			String parg = "detectedBySonar(S,D)";
+	    			/* Print */
+	    			parg =  updateVars( Term.createTerm("sonar(NAME,DISTANCE)"), 
+	    			                    Term.createTerm("sonar(S,D)"), 
+	    				    		  	Term.createTerm(currentEvent.getMsg()), parg);
+	    			if( parg != null ) println( parg );
+	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("sonar(sonar1,D)");
@@ -242,8 +253,19 @@ public abstract class AbstractSwag extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("detectedByFinal",-1);
 	    	String myselfName = "detectedByFinal";  
-	    	temporaryStr = "\"detected by a sonar\"";
-	    	println( temporaryStr );  
+	    	//onEvent 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("sonar(S,D)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarSensor") && 
+	    		pengine.unify(curT, Term.createTerm("sonar(NAME,DISTANCE)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			String parg = "detectedByFinal(S,D)";
+	    			/* Print */
+	    			parg =  updateVars( Term.createTerm("sonar(NAME,DISTANCE)"), 
+	    			                    Term.createTerm("sonar(S,D)"), 
+	    				    		  	Term.createTerm(currentEvent.getMsg()), parg);
+	    			if( parg != null ) println( parg );
+	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("sonar(sonar2,D)");

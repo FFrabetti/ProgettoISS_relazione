@@ -133,7 +133,9 @@ Rules{ //The model is in the theory resourceModel.
 
 // -------------------------- SOFTWARE AGENT --------------------------
 QActor swag context ctxAppl {
-	Rules{
+	Rules {
+		giveUpLimit(3).
+		
 		isCloseTo(S) :-
 			sonarDetect(S,D),
 			eval(gt,D,0),!,
@@ -175,7 +177,8 @@ QActor swag context ctxAppl {
 			increment(foundFix).
 		
 		avoidFixGiveUp :-
-			counter(foundFix, 3).
+			giveUpLimit(L),
+			counter(foundFix,L).
 		
 		decremFoundFix :-
 			decrement(foundFix).
@@ -242,7 +245,7 @@ QActor swag context ctxAppl {
     	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
     	
   	Plan detectedBySonar [
-		println("detected by a sonar");
+		onEvent sonarSensor : sonar(S,D) -> println(detectedBySonar(S,D));
 		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);	
 		[ !? isCloseTo(sonar1) ] {
 			println("close to sonar1");
@@ -258,7 +261,7 @@ QActor swag context ctxAppl {
 
     // R-End
     Plan detectedByFinal [
-		println("detected by a sonar");
+		onEvent sonarSensor : sonar(S,D) -> println(detectedByFinal(S,D));
 		onEvent sonarSensor : sonar(sonar2,D) -> addRule sonarDetect(sonar2,D);	
 		[ !? isCloseTo(sonar2) ] {
 			println("close to sonar2");
@@ -626,12 +629,12 @@ QActor huelampagent context ctxAppl {
 	Plan init normal [         
    		println("hueLampAgent start");
 
-   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.init();
+   		javaRun it.unibo.finalTask2018.adapter.hueLampAdapter.setUp();
    		//lampeggia per prova
    		delay 1000;
-   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
+   		javaRun it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState("on");
    		delay 1000;
-   		javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
+   		javaRun it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState("off")
    	]
    	switchTo waitForCommand     
   
@@ -642,9 +645,9 @@ QActor huelampagent context ctxAppl {
    	 
 	Plan handleCmd resumeLastPlan[
  		printCurrentEvent;
- 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("blink");
-		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("on");
-		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.finalTask2018.adapter.lampAdapter.setLamp("off")
+ 		onEvent lightCmd : lightCmd(blink) -> javaRun it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState("blink");
+		onEvent lightCmd : lightCmd(on) -> javaRun it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState("on");
+		onEvent lightCmd : lightCmd(off) -> javaRun it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState("off")
 	]
 }
 // -------------------------- HUE LAMP AGENT --------------------------

@@ -164,8 +164,19 @@ public abstract class AbstractSwag1 extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("detectedBySonar",-1);
 	    	String myselfName = "detectedBySonar";  
-	    	temporaryStr = "\"detected by a sonar\"";
-	    	println( temporaryStr );  
+	    	//onEvent 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("sonar(sonar1,D)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarSensor") && 
+	    		pengine.unify(curT, Term.createTerm("sonar(NAME,DISTANCE)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			String parg = "detectedBySonar(sonar1,D)";
+	    			/* Print */
+	    			parg =  updateVars( Term.createTerm("sonar(NAME,DISTANCE)"), 
+	    			                    Term.createTerm("sonar(sonar1,D)"), 
+	    				    		  	Term.createTerm(currentEvent.getMsg()), parg);
+	    			if( parg != null ) println( parg );
+	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("sonar(sonar1,D)");

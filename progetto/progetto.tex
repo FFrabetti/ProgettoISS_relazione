@@ -878,7 +878,7 @@ Viceversa, se si ricevono altri eventi \codescript{frontSonar}, l'ostacolo viene
 Plan avoidFix [
 	println("avoidFix");
 	forward controller -m cmd : cmd(h(0));
-	[ !? exploring(DIR) ] println(explorng(DIR))
+	[ !? exploring(DIR) ] println(exploring(DIR))
 	else addRule exploring(r);
 	// aumento contatore di tentativi
 	demo avoidFixTry;
@@ -917,7 +917,7 @@ Plan checkDoor [
 	else forward controller -m cmd : cmd(d(0));
 	delay 800;
 	forward controller -m cmd : cmd(w(0));
-	delay 800;
+	delay 800; // testata
 	forward controller -m cmd : cmd(h(0));
 	delay 2000
 ]
@@ -929,7 +929,7 @@ transition
 Plan doorFound [
 	println("doorFound");
 	forward controller -m cmd : cmd(w(0));
-	delay 1000;
+	delay 1000; // supero l'ostacolo
 	forward controller -m cmd : cmd(h(0));
 	[ !? exploring(r) ] forward controller -m cmd : cmd(a(0))
 	else forward controller -m cmd : cmd(d(0))
@@ -949,8 +949,8 @@ Plan failure [
 		forward controller -m cmd : cmd(a(0))
 	}
 	else {
-		selfMsg swagmsg : cmd(giveUpLeft);
-		println("failure da sinistra")
+		println("failure da sinistra");
+		selfMsg swagmsg : cmd(giveUpLeft)
 	};
 	demo switchExplorationDir
 ]
@@ -983,7 +983,7 @@ Plan resumeLastPosition [
 	[ !? counter(foundFix,C) ] {
 		demo decremFoundFix;
 		forward controller -m cmd : cmd(w(0));
-		delay 800;
+		delay 800; // passo
 		forward controller -m cmd : cmd(h(0));
 		delay 2000
 	}
@@ -995,7 +995,7 @@ Plan resumeLastPosition [
 transition
 	whenTime 800 -> resumeLastPosition
 	whenMsg externalcmd -> receivedCmd,
-	whenMsg swagmsg -> avoidFix
+	whenMsg swagmsg -> avoidFix // prova dall'altra parte
 \end{qacode}
 
 Se invece viene trovato un passaggio, dopo averlo superato il robot deve ritornare alla stessa altezza a cui si trovava prima dell'ostacolo.\\
@@ -1007,7 +1007,7 @@ Plan goToPrevLevel [
 	[ !? counter(foundFix,C) ] {
 		demo decremFoundFix;
 		forward controller -m cmd : cmd(w(0));
-		delay 800;
+		delay 800; // passo
 		forward controller -m cmd : cmd(h(0))
 	}
 	else {
@@ -1129,12 +1129,12 @@ Per distinguere la parete di fondo da un ostacolo, entrambi segnalati da un even
 
 \begin{qacode}[caption={SoftwareAgent, pt12}]
 Plan startCleaning [
-	[...]
+	// [...]
 ]
 switchTo countRoomLen
 
 Plan countRoomLen [
-	demo increment(roomLen) // counter(roomLen, C++)
+	demo increment(roomLen) // counter(roomLen,C++)
 ]
 transition
 	whenTime 300 -> countRoomLen
@@ -1142,12 +1142,12 @@ transition
 	whenEvent externalcmd -> receivedCmd // R-Stop
 	
 Plan backCleaning [
-	[...]
+	// [...]
 ]
 switchTo countSteps
 
 Plan countSteps [
-	demo increment(steps) // counter(steps, C++)
+	demo increment(steps) // counter(steps,C++)
 ]
 transition
 	whenTime 300 -> countSteps
@@ -1186,7 +1186,7 @@ Per quanto riguarda il raggiungimento della parete frontale, segnalata dalla pre
 
 \begin{qacode}[caption={SoftwareAgent, pt13}]
 Plan leftTurn [
-	[...]
+	// [...]
 ]
 transition
 	whenTime 800 -> waitForGodot
@@ -1427,7 +1427,7 @@ La parte di progetto si concentra sulla realizzazione dei requisiti relativi all
 \subsubsection{Start/Stop/End test}
 Il testing dei requisiti legati all'avvio e alla terminazione della pulizia sono effettuati emettendo gli stessi eventi generati dalla console e dai sonar fissi, verificando che solo in presenza delle giuste condizioni l'agent transiti negli stati corretti. Ciò è possibile grazie al mantenimento dello stato corrente nella base di conoscenza dell'attore.\\
 
-\lstinputlisting[language=Java, firstline=17, lastline=88, firstnumber=17]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentStartStopEndTest.java}
+\lstinputlisting[language=Java, firstline=18, lastline=100, firstnumber=18]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentStartStopEndTest.java}
 
 \begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={swag1 Rules}]
 setCurrentState(S) :-
@@ -1449,21 +1449,19 @@ Come stabilito in fase di analisi, poiché abbiamo adottato questa strategia di 
 
 Questa versione dell'agent, a fine di testing, tiene traccia nella propria base di conoscenza di tutti gli stati in cui è transitato, così da poterne verificare la corretta sequenza.\\
 
-\begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={swag2 Rules}]
-addState(S) :- 
-	findall(X,logstate(X,Y),LIST),
-	length(LIST,N),
-	assert(logstate(S,N)).
- 
-stateHistory(LIST) :- stateHistory(LIST,0).
-stateHistory([],_).
-stateHistory([H|T],N) :- 
- 	logstate(H,N),
- 	N2 is N+1,
- 	stateHistory(T,N2).
-\end{lstlisting}
+\lstinputlisting[language=Prolog, keywordstyle=\color{black}]{../it.unibo.finalTask2018/swagtest.pl}
 
 \subsubsection{Obstacle avoidance test}
+L'obiettivo di questi test è verificare i requisiti che riguardano il superamento degli ostacoli fissi e mobili e l'eventuale rinuncia in caso di un ostacolo ``invalicabile''. In particolare, l'agent:
+\begin{itemize}
+\item Quando riceve un solo \codescript{frontSonar}, deve identificarlo come un ostacolo mobile
+\item Quando ne riceve due a breve distanza, deve riconoscere l'ostacolo come fisso ed aggirarlo da destra
+\item Se mentre prova a passarlo da destra non trova subito un varco, deve ritentare più in là
+\item Se durante la ricerca di un passaggio incontra un ostacolo, deve tornare indietro e tentare l'aggiramento da sinistra
+\item Se finisce i tentativi di esplorazione a destra, prova a sinistra; se fallisce nuovamente, rinuncia
+\end{itemize}
+
+\lstinputlisting[language=Java, firstline=16, lastline=152, firstnumber=16]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentObstacleAvTest.java}
 
 \subsection{Implementation testing}
 \subsubsection{Hue Lamp interaction test}

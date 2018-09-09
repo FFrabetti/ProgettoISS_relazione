@@ -7,6 +7,8 @@ Event sonarSensor : sonar(NAME,DISTANCE)
 Dispatch swagmsg : cmd(CMD)
 Dispatch externalcmd : usercmd(CMD)
 
+// solo start/stop, end
+
 Context ctxSwag1 ip [ host="localhost"  port=8016 ]
 EventHandler evhswag1 for usercmd, alarm {
 	forwardEvent swag1 -m externalcmd
@@ -14,7 +16,6 @@ EventHandler evhswag1 for usercmd, alarm {
 
 QActor swag1 context ctxSwag1 {
 	Rules{
-		// for testing
 		isCloseTo(S) :-
 			sonarDetect(S,D),
 			eval(gt,D,0),!,
@@ -98,7 +99,7 @@ QActor swag1 context ctxSwag1 {
     	whenEvent [ ?? startCmd ] sonarSensor -> detectedBySonar
     	
   	Plan detectedBySonar [
-		println("detected by a sonar");
+		onEvent sonarSensor : sonar(sonar1,D) -> println(detectedBySonar(sonar1,D));
 		onEvent sonarSensor : sonar(sonar1,D) -> addRule sonarDetect(sonar1,D);
 	
 		[ !? isCloseTo(sonar1) ] {

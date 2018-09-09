@@ -45,8 +45,8 @@ public class SwAgentCleaningTest extends QATesting {
 		Thread.sleep(400);
 		
 		assertTrue(swag.solveGoal("stateHistory(["
-				+ "startCleaning, leftTurn, backCleaning, rightTurn, forwardCleaning,"
-				+ "leftTurn, backCleaning, rightTurn, forwardCleaning, end])").isSuccess());
+			+ "startCleaning,leftTurn,backCleaning,rightTurn,forwardCleaning,"
+			+ "leftTurn,backCleaning,rightTurn,forwardCleaning,end])").isSuccess());
 	}
 
 	// utilities

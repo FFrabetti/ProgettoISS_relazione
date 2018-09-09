@@ -3,8 +3,8 @@
 %====================================================================================
 context(ctxhuelampagent, "localhost",  "TCP", "8888" ).  		 
 %%% -------------------------------------------
-qactor( huelampagentold , ctxhuelampagent, "it.unibo.huelampagentold.MsgHandle_Huelampagentold"   ). %%store msgs 
-qactor( huelampagentold_ctrl , ctxhuelampagent, "it.unibo.huelampagentold.Huelampagentold"   ). %%control-driven 
+qactor( huelampagent , ctxhuelampagent, "it.unibo.huelampagent.MsgHandle_Huelampagent"   ). %%store msgs 
+qactor( huelampagent_ctrl , ctxhuelampagent, "it.unibo.huelampagent.Huelampagent"   ). %%control-driven 
 qactor( tester , ctxhuelampagent, "it.unibo.tester.MsgHandle_Tester"   ). %%store msgs 
 qactor( tester_ctrl , ctxhuelampagent, "it.unibo.tester.Tester"   ). %%control-driven 
 %%% -------------------------------------------

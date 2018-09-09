@@ -56,8 +56,8 @@ public abstract class AbstractHuelampagent extends QActor {
 	    protected void initStateTable(){  	
 	    	stateTab.put("handleToutBuiltIn",handleToutBuiltIn);
 	    	stateTab.put("init",init);
-	    	stateTab.put("waitForCommand",waitForCommand);
-	    	stateTab.put("handleCmd",handleCmd);
+	    	stateTab.put("waitForEvents",waitForEvents);
+	    	stateTab.put("commandLed",commandLed);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -77,89 +77,68 @@ public abstract class AbstractHuelampagent extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"hueLampAgent start\"";
 	    	println( temporaryStr );  
-	    	it.unibo.finalTask2018.adapter.hueLampAdapter.setUp( myself  );
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
-	    	if( ! aar.getGoon() ) return ;
-	    	it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState( myself ,"on"  );
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "init";
-	    	if( ! aar.getGoon() ) return ;
-	    	it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState( myself ,"off"  );
-	    	//switchTo waitForCommand
+	    	//switchTo waitForEvents
 	        switchToPlanAsNextState(pr, myselfName, "huelampagent_"+myselfName, 
-	              "waitForCommand",false, false, null); 
+	              "waitForEvents",false, false, null); 
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//init
 	    
-	    StateFun waitForCommand = () -> {	
+	    StateFun waitForEvents = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_waitForCommand",0);
-	     pr.incNumIter(); 	
-	    	String myselfName = "waitForCommand";  
+	     PlanRepeat pr = PlanRepeat.setUp("waitForEvents",-1);
+	    	String myselfName = "waitForEvents";  
+	    	temporaryStr = "\"hueLampAgent waiting for events\"";
+	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"huelampagent_"+myselfName,false,
-	          new StateFun[]{stateTab.get("handleCmd") }, 
-	          new String[]{"true","E","lightCmd" },
+	          new StateFun[]{stateTab.get("commandLed") }, 
+	          new String[]{"true","E","blinkCmd" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_waitForCommand){  
-	    	 println( getName() + " plan=waitForCommand WARNING:" + e_waitForCommand.getMessage() );
+	    }catch(Exception e_waitForEvents){  
+	    	 println( getName() + " plan=waitForEvents WARNING:" + e_waitForEvents.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//waitForCommand
+	    };//waitForEvents
 	    
-	    StateFun handleCmd = () -> {	
+	    StateFun commandLed = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("handleCmd",-1);
-	    	String myselfName = "handleCmd";  
-	    	printCurrentEvent(false);
+	     PlanRepeat pr = PlanRepeat.setUp("commandLed",-1);
+	    	String myselfName = "commandLed";  
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("lightCmd(blink)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
-	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			String arg1 = "blink" ;
-	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState(this,arg1 );
-	    			}
-	    	}
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("lightCmd(on)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
-	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
+	    	curT = Term.createTerm("blinkCmd(on)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
+	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "on" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueAdapter.blinking(this,arg1 );
 	    			}
 	    	}
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("lightCmd(off)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("lightCmd") && 
-	    		pengine.unify(curT, Term.createTerm("lightCmd(STATE)")) && 
+	    	curT = Term.createTerm("blinkCmd(off)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("blinkCmd") && 
+	    		pengine.unify(curT, Term.createTerm("blinkCmd(STATE)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
 	    			String arg1 = "off" ;
 	    			//end arg1
-	    			it.unibo.finalTask2018.adapter.hueLampAdapter.setLampState(this,arg1 );
+	    			it.unibo.finalTask2018.adapter.hueAdapter.blinking(this,arg1 );
 	    			}
 	    	}
-	    	repeatPlanNoTransition(pr,myselfName,"huelampagent_"+myselfName,false,true);
-	    }catch(Exception e_handleCmd){  
-	    	 println( getName() + " plan=handleCmd WARNING:" + e_handleCmd.getMessage() );
+	    	//switchTo waitForEvents
+	        switchToPlanAsNextState(pr, myselfName, "huelampagent_"+myselfName, 
+	              "waitForEvents",false, false, null); 
+	    }catch(Exception e_commandLed){  
+	    	 println( getName() + " plan=commandLed WARNING:" + e_commandLed.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//handleCmd
+	    };//commandLed
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

@@ -1,3 +1,0 @@
-localhost:8666
-fnp
-1

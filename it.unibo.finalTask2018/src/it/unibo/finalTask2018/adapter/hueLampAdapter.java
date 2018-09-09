@@ -118,10 +118,6 @@ public class hueLampAdapter {
 		JSONObject obj = new JSONObject();
 		obj.accumulate("devicetype", "finalTask#pc"); // <application_name>#<device_name>
 		HttpResponse response = RESTfulClient.execPOST("http://" + bridge + "/api", obj.toString());
-		
-//		BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-//		System.out.println("readLine = " + br.readLine());
-		
 		JSONArray arr = JSONParser.parseJSONArray(response.getEntity().getContent());
 		username = arr.getJSONObject(0).getJSONObject("success").getString("username");
 	}

@@ -345,7 +345,7 @@ Per avviare la pulizia della stanza, è necessario l'invio dell'apposito comando
 Un utente è autorizzato se è dotato di un username e una password con cui accedere alla console, pertanto è necessario offrire un servizio di login che, supportato da un meccanismo per la persistenza dei dati, permetta di ottenere delle credenziali per accedere al sistema.\\
 
 \begin{figure}
-\begin{center}
+\centering
 \includegraphics[scale=0.55]{img/screenFrontend/login.png}
 \caption{Richiesta di login al tentativo di accesso alla console}
 
@@ -353,7 +353,6 @@ Un utente è autorizzato se è dotato di un username e una password con cui acce
 
 \includegraphics[scale=0.55]{img/screenFrontend/signup.png}
 \caption{Schermata di registrazione}
-\end{center}
 \end{figure}
 
 Inoltre i requisiti riferiscono esplicitamente la presenza di un'interfaccia grafica utilizzabile da remoto da qualsiasi dispositivo, ad esempio da PC o smartphone.
@@ -361,10 +360,9 @@ Inoltre i requisiti riferiscono esplicitamente la presenza di un'interfaccia gra
 Si delinea dunque la necessità un componente raggiungibile via web tramite un browser che permetta ad un utente umano di pilotare il robot, ma solo quelli precedentemente registrati nel sistema e che abbiano effettuato l'accesso.
 
 \begin{figure}
-\begin{center}
+\centering
 \includegraphics[scale=0.55]{img/screenFrontend/console.png}
 \caption{Console web per gli utenti autenticati}
-\end{center}
 \end{figure}
 
 \subsection{R-TimeOk/R-TimeKo and R-TempOk/R-TempKo}
@@ -1228,52 +1226,51 @@ transition
 \labelsec{Implementation}
 
 \subsection{Hue Lamp interaction}
-L'interazione con la Hue Lamp Philips avviene mediante un'interfaccia di API RESTful\footnote{\url{https://it.wikipedia.org/wiki/Representational_State_Transfer}} fornita dall'apposito bridge.
+L'interazione con la Hue Lamp Philips avviene mediante un'interfaccia di API RESTful\footnote{\url{https://it.wikipedia.org/wiki/Representational_State_Transfer}} fornita da un apposito bridge.
 
-Prima di interagire con la lampada, è quindi necessario individuare il bridge nella rete ed ottenere uno username. Sempre grazie alla documentazione apprendiamo che entrambe le operazioni possono essere facilmente svolte con messaggi HTTP: la prima attraverso una GET ad un preciso url (\url{https://discovery.meethue.com/}), mentre la seconda grazie alle API del bridge individuato con la prima.\\
+Per poter utilizzare la lampada è quindi necessario individuare prima il bridge nella rete ed ottenere uno username. Entrambe le operazioni possono essere facilmente svolte con messaggi HTTP: la prima attraverso una GET ad un preciso URL (\url{https://discovery.meethue.com/}), mentre la seconda grazie alle API del bridge precedentemente individuato.\\
 
-Attualmente il nostro sistema simula la lampada Wi-Fi con un oggetto mock scritto in Java; ci viene quindi facile sostituirlo mediante un'altra classe Java che funga da adapter per le API del sistema Hue Lamp Philips.\\
+Attualmente l'\codescript{HueLampAgent} presente nel nostro sistema si rivolge ad un oggetto Java che simula la lampada Wi-Fi con chiamate ad alcuni metodi tramite \codescript{javaRun}; ci viene quindi facile sostituirne l'implementazione con quelli di un'altra classe Java che funga da adapter verso le API del bridge della Hue Lamp.\\
 
 \lstinputlisting[language=Java, firstline=20, lastline=70, firstnumber=20]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/adapter/hueLampAdapter.java}
 
-Tale classe espone i due metodi statici \codescript{setUp()} e \codescript{setLamp(String state)}: il primo esegue le operazioni per stabilire una connessione col bridge ed ottenere le credenziali, mentre il secondo è un metodo adapter per chiamare le API che permettono di cambiare lo stato della lampadina (on/off/blink).\\
+Tale classe espone i metodi statici \codescript{setUp()} e \codescript{setLamp(String state)}: il primo esegue le operazioni per stabilire una connessione col bridge ed ottenere le credenziali, mentre il secondo permette di cambiare lo stato della lampadina (on/off/blink).\\
 
-Dal momento che sia l'interazione con la lampada, sia le operazioni preliminari per individuare l'indirizzo IP del bridge nella rete e per l'ottenimento dello username sono gestite attraverso comunicazione RESTful, abbiamo implementato una classe Java di utilità\footnote{RESTfulClient.java} che, sfruttando un'apposita libreria, semplifichi tali operazioni.
-Anche per quanto riguarda la scrittura/lettura dei dati in JSON ci siamo appoggiati ad una libreria.
+Dal momento che tutte le comunicazioni con il bridge e la lampada avvengono in modo RESTful, abbiamo implementato una classe Java di utilità\footnote{RESTfulClient.java} che, sfruttando un'apposita libreria, semplifichi tali interazioni.
+Anche per quanto riguarda la scrittura/lettura dei dati in JSON contenuti nel body dei messaggi ci siamo appoggiati ad una libreria.
 
 \subsection{Frontend Server}
-Fin'ora per permettere l'interazione fra utente e robot abbiamo utilizzato il flag \codescript{-httpserver} offerto dal linguaggio \qa che, se settato per un certo contesto, crea un web server HTTP alla porta 8080 dal quale è possibile inviare i comandi desiderati al robot.
-
-Tale scelta è stata fatta però in una fase prototipale per questioni di rapidità.\\
+Fin'ora per permettere l'interazione fra utente e robot abbiamo utilizzato il flag \codescript{-httpserver} offerto dal linguaggio \qa. Tale scelta è stata fatta però in una fase prototipale per questioni di rapidità.\\
 
 Stando ai requisiti \code{R-Start} e \code{R-Stop}, solo gli utenti autorizzati possono accedere alla console, quindi, per una maggiore personalizzazione dell'interfaccia e per gestire l'autenticazione, abbiamo costruito un nuovo \emph{frontend server}.
 
-Per farlo abbiamo utilizzato la tecnologia \emph{Node.js} perché permette di scrivere in \emph{Javascript} applicazioni web veloci e scalabili lato server: in particolare il suo framework \emph{Express} fornisce dei template per la generazione di pagine web, utility per il routing, ecc.\\
+Per farlo abbiamo utilizzato \emph{Node.js}, perché permette di scrivere in \emph{Javascript} applicazioni web veloci e scalabili lato server: in particolare il suo framework \emph{Express} fornisce dei template per la generazione di pagine web, utility per il routing, ecc.\\
 
-Per quanto riguarda l'autenticazione degli utenti, la tecnologia che abbiamo utilizzato è \emph{MongoDB}, un DBMS non relazionale. Questa scelta è stata fatta per l'ottima interazione presente tra Mongo e Node.js: esiste infatti un'estensione per gestire database Mongo, chiamata \emph{Mongoose}, proprio in Node.\\
+Per quanto riguarda l'autenticazione degli utenti, la tecnologia impiegata è \emph{MongoDB}, un DBMS non relazionale. Questa scelta è stata fatta per l'ottima integrazione tra Mongo e Node.js: esiste infatti un'estensione per gestire i database Mongo, chiamata \emph{Mongoose}, proprio in Node.\\
 
 \begin{figure}
-\begin{center}
-\includegraphics[scale=0.55]{img/screenFrontend/mongo.png}
+\centering
+\includegraphics[scale=0.5]{img/screenFrontend/mongo.png}
 \caption{Dati di un utente mantenuti nel database}
-\end{center}
 \end{figure}
 
 Il frontend server utilizza un proprio modello interno del robot, scritto in JSON, che descrive lo stato in cui si trova e che viene aggiornato in base ai comandi inviati dalla console. Questo modello è svincolato da quello gestito dal controller, pertanto sono presenti tutte le problematiche relative alla sincronizzazione e alla consistenza dei due modelli.\\
 
-Per quanto riguarda l'interazione tra il server e il resto del sistema, il frontend emette eventi \codescript{usercmd : usercmd(robotgui(CMD))} alla pressione dei tasti di movimento della console ed eventi \codescript{alarm : usercmd(CMD))} per l'avvio e l'interruzione della pulizia. Questi eventi derivano dal fatto che sono gli stessi emessi dalla GUI ottenuta col flag \codescript{-httpserver}.
+Per interagire con il resto del sistema, il frontend emette eventi \codescript{usercmd : usercmd(robotgui(CMD))} alla pressione dei tasti di movimento ed eventi \codescript{alarm : usercmd(CMD))} per l'avvio e l'interruzione della pulizia, gli stessi emessi dalla precedente GUI ottenuta con il flag \codescript{-httpserver}.
 
-Per la propagazione degli eventi nel sistema è possibile utilizzare un server Mqtt tramite il quale comunicare messaggi con il modello publish-subscribe. In questo caso tutti gli attori interessati a ricevere o pubblicare informazioni devono essere provvisti del flag \codescript{-pubsub} e dell'istruzione \codescript{pubSubServer} che specifica l'indirizzo e la porta del server Mqtt.
+Per la propagazione degli eventi nel sistema è possibile aprire una connessione TCP con il contesto principale dell'applicazione ed inviare su di essa gli eventi nel formato di basso livello utilizzato dall'infrastruttura \qa.
 
-Un'alternativa è quella di aprire una connessione TCP con il contesto principale dell'applicazione ed inviare su di essa gli eventi nel formato di basso livello utilizzato dall'infrastruttura \qa.
+Un'alternativa è utilizzare un server Mqtt tramite il quale comunicare messaggi secondo il modello publish-subscribe. In questo caso, lato \qa, deve essere presente l'istruzione \codescript{pubSubServer} che specifica l'indirizzo e la porta del server Mqtt a cui collegarsi, inoltre tutti gli attori interessati a ricevere o pubblicare informazioni devono essere provvisti del flag \codescript{-pubsub}.
 
-\begin{figure}[!htb]
+\begin{figure}
 \centering
 \includegraphics[scale=0.40]{img/frontendServer.png}
 \caption{Schema delle interazioni del frontend server}\labelfig{frontendServer}
 \end{figure}
 
-Per quanto siano attuabili entrambe le soluzioni, la seconda permette di passare da un frontend all'altro senza bisogno di alcuna modifica. Il passaggio da una all'altra è comunque facilmente realizzabile settando il parametro \codescript{externalActuatorMqtt} presente all'interno del frontend.\\
+Per quanto siano attuabili entrambe le soluzioni, la prima non necessita di servizi esterni e permette di passare da un frontend all'altro senza bisogno di alcuna modifica al codice del modello; d'altro canto la seconda evita che i vari micro-servizi si ``conoscano'' tra di loro, in quanto ogni componente, per far parte del sistema, deve unicamente dialogare con il server Mqtt.
+
+Il passaggio da una all'altra è comunque facilmente realizzabile settando il parametro \codescript{externalActuatorMqtt} presente all'interno del frontend.\\
 
 \lstinputlisting[language=java, firstline=148, lastline=179, firstnumber=148]{../it.unibo.finaltask2018/nodeCode/frontend/applCodeRobot.js}
 
@@ -1281,13 +1278,13 @@ Per quanto siano attuabili entrambe le soluzioni, la seconda permette di passare
 \labelssec{robotNodeImpl}
 L'implementazione del robot virtuale si basa sul progetto \texttt{configurable-threejs-app}\footnote{\url{https://github.com/PierfrancescoSoffritti/configurable-threejs-app}} di Pierfrancesco Soffritti, il quale fa uso di un server Node.js che può essere raggiunto sia tramite browser, sia tramite una semplice connessione TCP.
 
-Come prima cosa quindi, il nostro robot modellato tramite il linguaggio \qa (\xss{virtualRobotPA}) deve occuparsi di avviare il server e stabilire con questi una connessione.\\
+Come prima cosa quindi, il robot deve occuparsi di avviare il server e stabilire con questi una connessione.\\
 
 \lstinputlisting[style=style_qa, firstline=21, lastline=35, firstnumber=21]{../it.unibo.finaltask2018/src/virtualRobotNode.qa}
 
 La classe Java fa uso di un file \texttt{.bat} per eseguire il server in un nuovo terminale, appositamente aperto, evitando così che questa operazione debba essere fatta manualmente dall'utente, ma allo stesso tempo lasciando all'utilizzatore il controllo per poterlo terminare.\\
 
-\lstinputlisting[language=Java, firstline=6, lastline=30, firstnumber=6]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/robot/NodeRobot.java}
+\lstinputlisting[language=Java, firstline=11, lastline=30, firstnumber=11]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/robot/NodeRobot.java}
 
 L'implementazione dei metodi che corrispondono alle varie mosse fa uso della classe di utilità \codescript{it.unibo.utils.clientTcp}, la quale costruisce i messaggi nel giusto formato accettato dal server e li invia sulla connessione TCP.
 

@@ -302,7 +302,7 @@ Moreover, the robot must stop its activity when one of the following conditions 
 %===========================================================================
 
 %===========================================================================
-\section{Requirement analysis}
+\section{Requirements analysis}
 \labelsec{ReqAnalysis}
 Per prima cosa analizziamo i termini che compaiono nei requisiti allo scopo di comprenderne il significato e le problematiche. Il passo successivo è la definizione dell'architettura che deriva dall'analisi dei requisiti e la sua conseguente formalizzazione.
 
@@ -1230,9 +1230,9 @@ L'interazione con la Hue Lamp Philips avviene mediante un'interfaccia di API RES
 
 Per poter utilizzare la lampada è quindi necessario individuare prima il bridge nella rete ed ottenere uno username. Entrambe le operazioni possono essere facilmente svolte con messaggi HTTP: la prima attraverso una GET ad un preciso URL (\url{https://discovery.meethue.com/}), mentre la seconda grazie alle API del bridge precedentemente individuato.\\
 
-Attualmente l'\codescript{HueLampAgent} presente nel nostro sistema si rivolge ad un oggetto Java che simula la lampada Wi-Fi con chiamate ad alcuni metodi tramite \codescript{javaRun}; ci viene quindi facile sostituirne l'implementazione con quelli di un'altra classe Java che funga da adapter verso le API del bridge della Hue Lamp.\\
+Attualmente l'\codescript{HueLampAgent} presente nel nostro sistema si rivolge tramite \codescript{javaRun} ad un oggetto Java che simula la lampada Wi-Fi; ci viene quindi facile sostituirne l'implementazione con un'altra classe Java che funga da adapter verso le API del bridge della Hue Lamp.\\
 
-\lstinputlisting[language=Java, firstline=20, lastline=70, firstnumber=20]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/adapter/hueLampAdapter.java}
+\lstinputlisting[language=Java, firstline=29, lastline=77, firstnumber=29]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/adapter/hueLampAdapter.java}
 
 Tale classe espone i metodi statici \codescript{setUp()} e \codescript{setLamp(String state)}: il primo esegue le operazioni per stabilire una connessione col bridge ed ottenere le credenziali, mentre il secondo permette di cambiare lo stato della lampadina (on/off/blink).\\
 
@@ -1272,6 +1272,7 @@ Per quanto siano attuabili entrambe le soluzioni, la prima non necessita di serv
 
 Il passaggio da una all'altra è comunque facilmente realizzabile settando il parametro \codescript{externalActuatorMqtt} presente all'interno del frontend.\\
 
+% numeri di riga da sistemare
 \lstinputlisting[language=java, firstline=148, lastline=179, firstnumber=148]{../it.unibo.finaltask2018/nodeCode/frontend/applCodeRobot.js}
 
 \subsection{Virtual Robot with Node.js}
@@ -1282,15 +1283,15 @@ Come prima cosa quindi, il robot deve occuparsi di avviare il server e stabilire
 
 \lstinputlisting[style=style_qa, firstline=21, lastline=35, firstnumber=21]{../it.unibo.finaltask2018/src/virtualRobotNode.qa}
 
-La classe Java fa uso di un file \texttt{.bat} per eseguire il server in un nuovo terminale, appositamente aperto, evitando così che questa operazione debba essere fatta manualmente dall'utente, ma allo stesso tempo lasciando all'utilizzatore il controllo per poterlo terminare.\\
+La classe Java fa uso di un file \texttt{.bat} per eseguire il server in un nuovo terminale, appositamente aperto, evitando così che questa operazione debba essere svolta manualmente dall'utente, ma allo stesso tempo lasciando all'utilizzatore il controllo per poterlo terminare.\\
 
 \lstinputlisting[language=Java, firstline=11, lastline=30, firstnumber=11]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/robot/NodeRobot.java}
 
 L'implementazione dei metodi che corrispondono alle varie mosse fa uso della classe di utilità \codescript{it.unibo.utils.clientTcp}, la quale costruisce i messaggi nel giusto formato accettato dal server e li invia sulla connessione TCP.
 
-Inoltre, da questa un thread dedicato legge continuamente i dati in arrivo, corrispondenti alle informazioni emesse dai sonar fissi e mobili, per poi emettere i relativi eventi \codescript{sonarSensor} e \codescript{frontSonar}.
+Da questa inoltre, un thread dedicato legge continuamente i dati in arrivo, corrispondenti alle informazioni generate dai sonar fissi e mobili, per poi emettere i relativi eventi \codescript{sonarSensor} e \codescript{frontSonar}.
 
-\subsection{Real Robot with Arduino + RaspberryPi}
+\subsection{Real Robot with RaspberryPi + Arduino}
 Il robot fisico che si trova sul RaspberryPi\footnote{progetto: \texttt{it.unibo.raspRobot}} interagisce con il resto del sistema tramite l'invio e la ricezione di eventi (propagati dall'infrastruttura \qa via rete) e con Arduino -- dove sono collegati sensori e attuatori -- tramite una connessione seriale.
 
 L'architettura del sistema può essere quindi riassunta dalla \xf{raspRobotSchema}.
@@ -1340,7 +1341,7 @@ Una struttura ricorrente nei test è la verifica, in seguito al verificarsi di a
 
 L'utilizzo estensivo di opportune \codescript{sleep} non preclude quindi la possibilità di eventuali fallimenti dovuti all'impredicibilità dell'ordine di scheduling.
 
-\subsection{Requirement analysis testing}
+\subsection{Requirements analysis testing}
 \labelsssec{reqAnalTesting}
 
 \subsubsection{Led unit test}
@@ -1490,13 +1491,32 @@ L'obiettivo di questi test è verificare i requisiti che riguardano il superamen
 \lstinputlisting[language=Java, firstline=16, lastline=152, firstnumber=16]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentObstacleAvTest.java}
 
 \subsection{Implementation testing}
-\subsubsection{Hue Lamp interaction test}
+Poiché i modelli dei vari componenti sono già stati testati nelle sezioni precedenti, per verificarne l'implementazione relativa ad una certa tecnologia ci basta strutturare dei test che coprano i metodi Java esposti ed impiegati tramite \codescript{javaRun}.
+
+\subsubsection{Hue Lamp Agent interaction test}
+L'implementazione dello \texttt{HueLampAgent} fa uso di una classe Java per comunicare in modo RESTful con il bridge e la \textit{smart lamp}. In assenza di una Hue Lamp fisica, viene utilizzato un server HTTP che la simuli.\\
+
+\lstinputlisting[language=Java, firstline=21, lastline=79, firstnumber=21]{../it.unibo.finalTask2018/test/it/unibo/test/impl/HueLampTest.java}
+
+I test mirano a verificare la correttezza della procedura di set-up (individuazione del bridge ed ottenimento di un username) e dei metodi per modificare lo stato della lampada.
 
 %\subsubsection{Frontend Server test}
 
-\subsubsection{Virtual Robot test}
+\subsubsection{Virtual Node-Robot test}
+Il componente che rappresenta il robot virtuale necessita di interagire con il server Node sul quale si trova l'implementazione utilizzata per il robot e per l'ambiente virtuale in cui si muove. Tale interazione è bidirezionale, dal momento che da un lato vengono inviati i comandi di movimento e dall'altro i dati relativi ai vari sonar.
 
-\subsubsection{Real Robot test}
+I test devono pertanto verificare la comunicazione in entrambe le direzioni: per farlo si ricorre ad un oggetto mock che funga da server, così da poterne controllare sia i dati inviati sia quello che viene effettivamente ricevuto.\\
+
+\lstinputlisting[language=Java, firstline=28, lastline=98, firstnumber=28]{../it.unibo.finalTask2018/test/it/unibo/test/impl/NodeRobotTest.java}
+
+\subsubsection{Real Rasp-Robot test}
+
+\todo{...}
+
+\subsubsection{Real temperature sensor test}
+
+\todo{...}
+
 %===========================================================================
 
 %===========================================================================

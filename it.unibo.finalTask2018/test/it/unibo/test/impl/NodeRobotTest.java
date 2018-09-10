@@ -13,7 +13,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -34,11 +33,6 @@ public class NodeRobotTest extends QATesting {
 		MainCtxNodeRobotTest.initTheContext();
 
 		logger = waitForQActorToStart("nrtlogger");
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-
 	}
 
 	@Test
@@ -76,7 +70,7 @@ public class NodeRobotTest extends QATesting {
 	}
 
 	@Test
-	public void tcpConnSonarFrontEventsReceptionTest() throws Exception {
+	public void tcpConnEventsReceptionTest() throws Exception {
 		Thread t = null;
 		try {
 			TCPServer server = new TCPServer(7778, s -> s);

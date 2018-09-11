@@ -17,19 +17,22 @@ public class RealRobotTest extends QATesting {
 
 	private static QActor realrobotrasp;
 	private static QActor ledagent;
-
+	private static QActor rrrlogger;
+	
 	private static Process appl;
 	private static final int SRV_PORT = 6666;
 	private static List<String> receivedMsgs = new LinkedList<>();
 	private static Thread serverThread;
+	private static final String FRONT = "10.10";
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		// in alternativa a TCPServer server, avviare (python3):
-		// raspberry\pyServer\server_mock_no_arduino.py
+		// in alternativa a TCPServer, avviare (python3):
+		// ..\raspberry\pyServer\server_mock_no_arduino.py
+		
 		TCPServer server = new TCPServer(SRV_PORT, msg -> {
 			receivedMsgs.add(msg);
-			return "10.10";		// front sonar
+			return FRONT;		// front sonar
 		});
 		serverThread = server.runOnThread();
 		
@@ -41,6 +44,7 @@ public class RealRobotTest extends QATesting {
 
 		realrobotrasp = waitForQActorToStart("realrobotrasp");
 		ledagent = waitForQActorToStart("ledagent");
+		rrrlogger = waitForQActorToStart("rrrlogger");
 		Thread.sleep(2000);
 	}
 
@@ -48,7 +52,7 @@ public class RealRobotTest extends QATesting {
 	public static void tearDownAfterClass() throws Exception {
 		stopProcess(appl);
 		
-		if(serverThread!=null && serverThread.isAlive())
+		if(serverThread != null && serverThread.isAlive())
 			serverThread.interrupt();
 	}
 	
@@ -74,12 +78,12 @@ public class RealRobotTest extends QATesting {
 		assertTrue(receivedMsgs.contains(onCmd));
 	}
 
-//	@Test
-//	public void frontSonarEmissionTest() {
-//		// il server mock (TCPServer) risponde ad ogni comando ricevuto inviando un dato del sonar
-//		realrobotrasp.emit("lightCmd", "lightCmd(off)");
-//		Thread.sleep(1000);
-//		assertTrue(isEventReceived(realrobottest, "frontSonar", "sonar(D)"));
-//	}
+	@Test
+	public void frontSonarEmissionTest() throws Exception {
+		// il server mock (TCPServer) risponde ad ogni comando ricevuto inviando un dato del sonar
+		realrobotrasp.emit("lightCmd", "lightCmd(off)");
+		Thread.sleep(1000);
+		assertTrue(isEventReceived(rrrlogger, "frontSonar", "sonar(" + FRONT + ")"));
+	}
 
 }

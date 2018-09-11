@@ -62,3 +62,12 @@ QActor ledagent context ctxRealRobotRasp {
    		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
 	]
 }
+
+// -------- TEST{ --------
+QActor rrrlogger context ctxRealRobotRasp {
+	Plan init normal [	]
+	transition stopAfter 3600000
+		whenEvent frontSonar : sonar(D) do addRule logevent(frontSonar,sonar(D))
+	finally repeatPlan
+}
+// -------- }TEST --------

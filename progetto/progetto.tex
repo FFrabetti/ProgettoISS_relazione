@@ -157,6 +157,10 @@
 % table of contents fino a subsubsections
 \setcounter{tocdepth}{3}
 
+% Mette i numeri di pagina nel piede, lasciando vuota la testatina
+\pagestyle{plain}
+
+% %%%%%%%%%%%%%%%% BEGIN DOCUMENT %%%%%%%%%%%%%%%%
 \begin{document}
 
 \title{Software Systems Engineering: Final task 2018}
@@ -1292,6 +1296,7 @@ L'implementazione dei metodi che corrispondono alle varie mosse fa uso della cla
 Da questa inoltre, un thread dedicato legge continuamente i dati in arrivo, corrispondenti alle informazioni generate dai sonar fissi e mobili, per poi emettere i relativi eventi \codescript{sonarSensor} e \codescript{frontSonar}.
 
 \subsection{Real Robot with RaspberryPi + Arduino}
+\labelssec{realRobotRaspImpl}
 Il robot fisico che si trova sul RaspberryPi\footnote{progetto: \texttt{it.unibo.raspRobot}} interagisce con il resto del sistema tramite l'invio e la ricezione di eventi (propagati dall'infrastruttura \qa via rete) e con Arduino -- dove sono collegati sensori e attuatori -- tramite una connessione seriale.
 
 L'architettura del sistema può essere quindi riassunta dalla \xf{raspRobotSchema}.
@@ -1306,7 +1311,7 @@ In realtà, il robot non comunica direttamente con Arduino, in quanto abbiamo sc
 
 Questa soluzione scarica dal robot fisico la responsabilità di conoscere i dettagli della comunicazione con Arduino, a favore di un'interazione tra entità di alto livello (micro-servizi).\\
 
-\lstinputlisting[style=style_qa, firstline=24, firstnumber=24]{../it.unibo.raspRobot/src/realrobot.qa}
+\lstinputlisting[style=style_qa, firstline=11, firstnumber=11, lastline=64]{../it.unibo.raspRobot/src/realrobot.qa}
 
 L'attore che rappresenta il robot utilizza un'apposita classe Java che si comporta come un client nei confronti del server Python, inviando i comandi di movimento e ricevendo da questi i dati relativi al sonar frontale.
 
@@ -1510,12 +1515,16 @@ I test devono pertanto verificare la comunicazione in entrambe le direzioni: per
 \lstinputlisting[language=Java, firstline=28, lastline=98, firstnumber=28]{../it.unibo.finalTask2018/test/it/unibo/test/impl/NodeRobotTest.java}
 
 \subsubsection{Real Rasp-Robot test}
+Come illustrato nella \xss{realRobotRaspImpl}, il robot reale che si trova sul RaspberryPi si rivolge ad un server scritto in Python che mostra all'esterno una visione di alto livello dei sensori e degli attuatori collegati alla board di Arduino.
 
-\todo{...}
+Il server, opportunamente simulato a fini di test, deve ricevere sia i comandi di movimento del robot sia quelli che regolano il led presente su di esso, tutti espressi nel giusto formato; inoltre, deve rendere disponibili i dati del sonar frontale al relativo client Java, così che questi possa emetterli sotto forma di eventi \codescript{frontSonar}.\\
+
+\lstinputlisting[language=Java, firstline=18, lastline=97, firstnumber=18]{../it.unibo.raspRobot/test/RealRobotTest.java}
 
 \subsubsection{Real temperature sensor test}
+Anche l'implementazione \textit{Arduino-based} del servizio che fornisce la temperatura deve comunicare con un apposito server Python, il quale risponde ad ogni richiesta con il dato aggiornato sulla temperatura corrente. Alla ricezione di questi, \codescript{TemperatureAgent} deve emettere nel sistema eventi \codescript{temperature}.\\
 
-\todo{...}
+\lstinputlisting[language=Java, firstline=20, lastline=68, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/impl/TemperatureAgentTest.java}
 
 %===========================================================================
 

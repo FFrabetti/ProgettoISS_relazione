@@ -133,8 +133,7 @@ public class NodeRobotTest extends QATesting {
 
 			assertTrue(isEventReceived(logger, "frontSonar", "sonar(2)"));
 		} finally {
-			if (p != null && p.isAlive())
-				p.destroyForcibly();
+			stopProcess(p);
 		}
 	}
 

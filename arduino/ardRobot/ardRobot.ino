@@ -22,33 +22,41 @@ const int RETRO_PIN = 6;
 const int MOTOR_LED_PIN = 12; //  debug
 // ---------------- PIN ----------------
 
-// periodo di loop(), arg di delay
+// periodo di loop(), arg di delay (ms)
 const int LOOP_PERIOD = 500;
 // frequenza seriale
 const int SERIAL_FREQ = 9600;
+// frequenza di blink
+const int BLINK_FREQ = 500;
 // soglia temperatura
 const float T_MAX = 30;
 // variazione minima di temperatura per scrittura su seriale
 const float DELTA_T = 0.5;
-// ogni quante iter la temperatura viene comunque inviata
-const int ITER_T = 5;
+// ogni quanti ms la temperatura viene comunque inviata
+const int SEND_T = 1000;
 // angoli servomotore
 const int SRV_FRONT = 90;
 const int SRV_LEFT = 45;
 const int SRV_RIGHT = 135;
+// buffer per lettura caratteri spuri (fino a \n)
+const int BUFF_LEN = 64;
+char buffer[BUFF_LEN];
 
 // NOTA: lo "stato" viene memorizzato all'interno delle var glob
-char n = '\0';	// ultimo carattere letto da seriale
-int iter = 0;	// nr di iterazioni di loop() % 1024
+char firstChar = '\0';	// primo carattere letto da seriale
 
 float tempState = 0;
-
-int ledState = 0; // 0 = off, 1 = on, 2 = blink
-
+int ledCmd = 0; // 0 = off, 1 = on, 2 = blink
+int ledState = LOW; // LOW / HIGH
 Servo myServo;	// "oggetto" servo motore
-int servoState = SRV_FRONT;	// angolo servo motore
-
+int servoAngle = SRV_FRONT;	// angolo servo motore
+int finalAngle = SRV_FRONT; // angolo dopo una svolta
 int motorState = 0; // 0 = halt, 1 = forward, -1 = backward
+
+unsigned long lastTempSend = 0;
+unsigned long lastSonarSend = 0; // debug
+unsigned long lastBlink = 0;
+unsigned long endTurn = 0;
 
 void setPinOutput(int pin) {
   pinMode(pin, OUTPUT);
@@ -69,9 +77,14 @@ void setup() {
   Serial.begin(SERIAL_FREQ);
 }
 
+void readEOL() {
+	int n = Serial.readBytesUntil('\n', buffer, BUFF_LEN);
+//	if(n > 0)
+//		Serial.println("Letti " + String(n) + " bytes: [" + buffer + "]");
+}
+
 void loop() {
-  if(Serial.available())
-    n = Serial.read();
+  firstChar = Serial.available() ? Serial.read() : '\0';
   
   // sensori
   handleTemperature();
@@ -82,7 +95,9 @@ void loop() {
   handleServo();
   handleMotor();
   
-  iter = (++iter) % 1024;
+  if(firstChar)
+	  readEOL();
+  
   delay(LOOP_PERIOD);
 }
 
@@ -94,8 +109,10 @@ void handleTemperature() {
   float temp = (volt - .5) * 100;
   
 //  Serial.println("TempSensor: " + String(sensorVal) + " volts: " + String(volt) + " degreesC: " + String(temp));
-  if(iter%ITER_T == 0 || abs(temp-tempState) >= DELTA_T)
+  if(millis()-lastTempSend > SEND_T || abs(temp-tempState) >= DELTA_T) {
     Serial.println("Temperature: " + String(temp));
+	lastTempSend = millis();
+  }
   
   digitalWrite(LOWT_LED_PIN, temp < T_MAX ? HIGH : LOW);
   digitalWrite(HIGHT_LED_PIN, temp < T_MAX ? LOW : HIGH);
@@ -105,26 +122,55 @@ void handleTemperature() {
 
 void handleSonar() {
   // TODO: read value from SONAR_PIN
-  int sonarVal = 10;
-
-  if(iter%10 == 0)
+  int sonarVal = millis() % 16;
+  
+  // debug: send a 'random' value every 10s
+  if(millis()-lastSonarSend > 10000) {
     Serial.println("Sonar: " + String(sonarVal));
+	lastSonarSend = millis();
+  }
 }
 
 void handleLed() {
-  if(n=='0' || n=='1' || n=='2') {
-    ledState = n - '0';
-    n = '\0'; // input consumato
+  if(firstChar=='l') {
+    ledCmd = Serial.parseInt();
 	
     // on/off solo al cambiamento di stato del led
-    if(ledState < 2)
-      digitalWrite(MOV_LED_PIN, ledState==0 ? LOW : HIGH);
+    if(ledCmd < 2) {
+      ledState = ledCmd==0 ? LOW : HIGH;
+      digitalWrite(MOV_LED_PIN, ledState);
+	}
   }
   
-  if(ledState == 2) // blink
-    digitalWrite(MOV_LED_PIN, iter%2==0 ? LOW : HIGH);
+  // blink
+  if(ledCmd == 2 && millis()-lastBlink > BLINK_FREQ) {
+	ledState = ledState==LOW ? HIGH : LOW;
+    digitalWrite(MOV_LED_PIN, ledState);
+	lastBlink = millis();
+  }
 }
 
+void handleServo() {
+	int angle, duration;
+
+	if(firstChar=='t') {
+		angle = Serial.parseInt();
+		duration = Serial.parseInt();
+		finalAngle = Serial.parseInt(); // 0 se non presente
+		
+		setAngle(angle);
+		endTurn = millis() + duration;
+//		Serial.println("endTurn: " + String(duration) + " ms");
+    }
+	
+	if(endTurn != 0 && millis() > endTurn) {
+		endTurn = 0;
+//		Serial.println("endTurn elapsed");
+		setAngle(finalAngle);
+	}
+}
+
+/*
 void handleServo() {
   if(n=='a' || n=='d' || n=='f') {
     if(n=='f')
@@ -136,36 +182,16 @@ void handleServo() {
     n = '\0'; // input consumato
   }
 }
-
-/*
-void handleServo() {
-  if(n=='a' || n=='d' || n=='f') {
-    if(n=='f') {
-	  servoState = SRV_FRONT;
-	  n = '\0'; // input consumato
-	}
-	else {
-	  servoState = n=='d' ? SRV_RIGHT : SRV_LEFT;
-	  n = 'f';
-	}
-	
-	myServo.write(servoState);
-  }
-}
 */
 
 void handleMotor() {
-  if(n=='w' || n=='s' || n=='h') {
-    if(n=='h') {
-	  motorState = 0;
-	  motorStop();
-	}
-    else {
-	  motorState = n=='w' ? 1 : -1;
-	  motorStart(motorState);
-	}
-	
-    n = '\0'; // input consumato
+  if(firstChar=='h') {
+    motorState = 0;
+    motorStop();
+  }
+  else if(firstChar=='w' || firstChar=='s') {
+    motorState = firstChar=='w' ? 1 : -1;
+    motorStart(motorState);
   }
 }
 
@@ -185,4 +211,10 @@ void motorStop() {
   
   digitalWrite(FORW_PIN, LOW);
   digitalWrite(RETRO_PIN, LOW);
+}
+
+void setAngle(int a) {
+	servoAngle = constrain(a, 0, 180);
+	myServo.write(servoAngle);
+//	Serial.println("Servo angle: " + String(servoAngle));
 }

@@ -150,78 +150,63 @@ if( withAuth ){
  */
 	app.post("/robot/actions/commands/appl", function(req, res) {
 		console.info("START THE APPLICATION "   );
-		delegate( "msg(alarm,event,js,none,usercmd(clean)", "application", req, res);
+		delegate( "alarm","usercmd(clean)", "application", req, res);
  	});	
 	app.post("/robot/actions/commands/stop", function(req, res) {
 		console.info("STOP THE APPLICATION ");
-		delegate( "msg(alarm,event,js,none,usercmd(halt)","stop application", req, res);
+		delegate( "alarm","usercmd(halt)","stop application", req, res);
  	});	
 
 	app.post("/robot/actions/commands/w", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("msg(usercmd,event,js,none,usercmd(robotgui( w(low) ))","moving forward",req,res);
+			delegate("usercmd","usercmd(robotgui( w(low) ))","moving forward",req,res);
 		else actuate( `{ "type": "moveForward",  "arg": -1 }`, "server moving forward", req, res);
 		
 	});	
 	app.post("/robot/actions/commands/s", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("msg(usercmd,event,js,none,usercmd(robotgui( s(low) ))","moving backward",req,res);
+			delegate("usercmd","usercmd(robotgui( s(low) ))","moving backward",req,res);
 		else actuate( `{ "type": "moveBackward",  "arg": -1 }`, "server moving backward", req, res);
 	});	
 	app.post("/robot/actions/commands/a", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("msg(usercmd,event,js,none,usercmd(robotgui( a(low) ))","moving left",req,res);
+			delegate("usercmd","usercmd(robotgui( a(low) ))","moving left",req,res);
 		else actuate( `{ "type": "turnLeft",  "arg": 1000 }`, "server moving left", req, res);
 	});	
 	app.post("/robot/actions/commands/d", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("msg(usercmd,event,js,none,usercmd(robotgui( d(low) ))","moving right",req,res);
+			delegate("usercmd","usercmd(robotgui( d(low) ))","moving right",req,res);
 		else actuate( `{ "type": "turnRight",  "arg": 1000 }`, "server moving right", req, res);
 	});	
 	app.post("/robot/actions/commands/h", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("msg(usercmd,event,js,none,usercmd(robotgui( h(low) ))","stopped",req,res);
+			delegate("usercmd","usercmd(robotgui( h(low) ))","stopped",req,res);
 		else actuate( `{  "type": "alarm",  "arg": 1000 }`, "server stopped", req, res);
 	});		
 	
-	/*
-	 * ====================== REPRESENTATION ================
-	 */
- 	app.use( function(req,res){
-		console.info("SENDING THE ANSWER " + req.result  );
-		try{
-			if( req.result != undefined)
-				serverWithSocket.updateClient( JSON.stringify(req.result ) );
-			res.send(req.result);
-		}catch(e){console.info("SORRY ...");}
-		} 
-	);
-	// catch 404 and forward to error handler;
-	app.use(function(req, res, next) {
-	  var err = new Error('Not Found');
-	  err.status = 404;
-	  next(err);
-	});
-
-	// error handler;
-	app.use(function(err, req, res, next) {
-	  // set locals, only providing error in development
-	  res.locals.message = err.message;
-	  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-	  // render the error page;
-	  res.status(err.status || 500); 
-	  res.send("SORRY, ERROR=" + err.status );
-	});
-
-	
 //=================== UTILITIES =========================
 
-
+var msgNum=1; //parte da 1 e aumentera' via via
+function delegate(eventName,payload,newState,req,res){
+	var msg= "msg("+eventName+",event,js,none,"+payload+","+msgNum++ +")";
+	robotModel.robot.state = newState;
+	console.log("emits -> "+ msg);
+	try{
+		if(externalActuatorMqtt)
+	 		mqttUtils.publish( msg );	//topic  = "unibo/qasys"
+		else if(externalActuatorSocket)
+			conn.write(msg+"\n");
+	}
+	catch(e){
+		console.log("ERROR "+e);
+	}
+	res.render("access");
+}
+	
 function setUpAuth(){ //AUTH
 	try{	
 		console.log("\tWORKING WITH AUTH ... "  ) ;
-//		mongoose.connect("mongodb://192.168.99.100:27017/test"); per il Mongo di docker
+//		mongoose.connect("mongodb://192.168.99.100:27017/test"); //per il Mongo di docker
 		mongoose.connect("mongodb://localhost:27017/test");
 		setUpPassport();	
 		app.use(session({	 
@@ -268,23 +253,6 @@ function ensureAuthenticated(req, res, next) {
 	  }
 }
 
-var msgNum=1; //parte da 1 e aumenterà via via
-function delegate(msg,newState,req,res){
-	msg=msg+","+msgNum++ +")";
-	robotModel.robot.state = newState;
-	console.log("emits -> "+ msg);
-	try{
-		if(externalActuatorMqtt)
-	 		mqttUtils.publish( msg );	//topic  = "unibo/qasys"
-		else if(externalActuatorSocket)
-			conn.write(msg+"\n");
-	}
-	catch(e){
-		console.log("ERROR "+e);
-	}
-	res.render("access");
-}
-
 function actuate(cmd, newState, req, res ){ 
 	var toRobot=require("./jsCode/clientRobotVirtual");
 	toRobot.send( cmd );
@@ -293,3 +261,33 @@ function actuate(cmd, newState, req, res ){
 }
 
 module.exports = app;
+
+/*
+ * ====================== REPRESENTATION ================
+ */
+	app.use( function(req,res){
+	console.info("SENDING THE ANSWER " + req.result  );
+	try{
+		if( req.result != undefined)
+			serverWithSocket.updateClient( JSON.stringify(req.result ) );
+		res.send(req.result);
+	}catch(e){console.info("SORRY ...");}
+	} 
+);
+// catch 404 and forward to error handler;
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler;
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page;
+  res.status(err.status || 500); 
+  res.send("SORRY, ERROR=" + err.status );
+});

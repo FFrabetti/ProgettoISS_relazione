@@ -24,6 +24,8 @@ var host			;	//to be set later fort EXTERNALACTUATORSOCKET
 var port			;	//to be set later fort EXTERNALACTUATORSOCKET
 var conn			;   //to be set later fort EXTERNALACTUATORSOCKET
 
+var settings = require('./settings.json');
+
 var app              = express();
 
 // view engine setup;
@@ -50,8 +52,8 @@ var withAuth         = true;
 if( externalActuatorMqtt ) mqttUtils  = require('./uniboSupports/mqttUtils');
 if( externalActuatorSocket ){
 	net = require('net');
-	host="localhost";
-	port=8018;
+	host = settings.applHost;
+	port = settings.applPort;
 	
 	setUpConn();
 }
@@ -207,7 +209,8 @@ function setUpAuth(){ //AUTH
 	try{	
 		console.log("\tWORKING WITH AUTH ... "  ) ;
 //		mongoose.connect("mongodb://192.168.99.100:27017/test"); //per il Mongo di docker
-		mongoose.connect("mongodb://localhost:27017/test");
+//		mongoose.connect("mongodb://localhost:27017/test");
+		mongoose.connect(settings.mongoAddr);
 		setUpPassport();	
 		app.use(session({	 
 			  secret: "LUp$Dg?,I#i&owP3=9su+OB%`JgL4muLF5YJ~{;t",

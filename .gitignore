@@ -18,6 +18,9 @@
 # cartella per le prove
 prove/
 
+# frontend node modules 
+it.unibo.finalTask2018/nodeCode/frontend/node_modules/
+
 
 # https://github.com/github/gitignore/blob/master/Java.gitignore
 # Compiled class file

@@ -6,6 +6,8 @@ var resourceModel   = require('./appServer/models/robot');
 var http            = require('http');
 var io              ; 	//Upgrade ro socketIo;
 
+var settings = require('./settings.json');
+
 var createServer = function (port  ) {
   initPlugins();  
   server = http.createServer( appl );   
@@ -28,7 +30,7 @@ function showResourceState(){
 
 function initPlugins() {}
 
-createServer(3000);
+createServer(settings.frontendPort);
 
 function onListening() {
 	  var addr = server.address();

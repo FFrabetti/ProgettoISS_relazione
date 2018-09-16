@@ -7,9 +7,9 @@ import it.unibo.is.interfaces.IOutputEnvView;
 import it.unibo.qactors.QActorContext;
 import it.unibo.qactors.QActorUtils;
 
-public abstract class AbstractEvled extends EventHandlerComponent { 
+public abstract class AbstractEvadapterpa extends EventHandlerComponent { 
 protected IEventItem event;
-	public AbstractEvled(String name, QActorContext myCtx, IOutputEnvView outEnvView, String[] eventIds ) throws Exception {
+	public AbstractEvadapterpa(String name, QActorContext myCtx, IOutputEnvView outEnvView, String[] eventIds ) throws Exception {
 		super(name, myCtx, eventIds, outEnvView);
   	}
 	@Override
@@ -19,12 +19,20 @@ protected IEventItem event;
 		event = this.currentEvent; //AKKA getEventItem();
 		if( event == null ) return;
 		//RaiseOtherEvent
-		{String newcontent = "lightCmd(CMD)";
-		newcontent =  updateVars( Term.createTerm("ctrlEvent(led,l1,CMD)"), 
-			                Term.createTerm("ctrlEvent(led,l1,CMD)"), 
+		{String newcontent = "inputEvent(temperature,t1,T)";
+		newcontent =  updateVars( Term.createTerm("temperature(T)"), 
+			                Term.createTerm("temperature(T)"), 
 			                Term.createTerm( event.getMsg() ), newcontent);
 		//println("newcontent="+newcontent);
-		if( newcontent != null ){ emit( "lightCmd", newcontent ); }
+		if( newcontent != null ){ emit( "inputCtrlEvent", newcontent ); }
+		}
+		//RaiseOtherEvent
+		{String newcontent = "inputEvent(clock,c1,h(H,M))";
+		newcontent =  updateVars( Term.createTerm("clock(H,M)"), 
+			                Term.createTerm("clock(H,M)"), 
+			                Term.createTerm( event.getMsg() ), newcontent);
+		//println("newcontent="+newcontent);
+		if( newcontent != null ){ emit( "inputCtrlEvent", newcontent ); }
 		}
 	}//handleCurrentEvent
 	

@@ -12,12 +12,12 @@ Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
 
 Context ctxApplPA ip [ host="localhost"  port=8018 ] -httpserver
-EventHandler evadapter for temperature, clock {
+EventHandler evadapterpa for temperature, clock {
 	// maps temperature and clock into inputCtrlEvent
 	emit inputCtrlEvent fromContent temperature(T) to inputEvent(temperature,t1,T);
 	emit inputCtrlEvent fromContent clock(H,M) to inputEvent(clock,c1,h(H,M))
 };
-EventHandler evled for ctrlEvent { // filter ctrlEvent by CATEGORY and NAME
+EventHandler evledpa for ctrlEvent { // filter ctrlEvent by CATEGORY and NAME
 	emit lightCmd fromContent ctrlEvent(led,l1,CMD) to lightCmd(CMD)
 };
 EventHandler evhpalogger for /*usercmd, clock, temperature, sonarSensor, frontSonar,*/ ctrlEvent, lightCmd /*-print*/ {

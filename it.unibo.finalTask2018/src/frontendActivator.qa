@@ -1,0 +1,55 @@
+System frontendActivator
+
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
+Event local_robotCmd : moveRobot(CMD)
+Dispatch moveRobot : moveRobot(CMD)
+
+Context ctxFrontendActivator ip [ host="localhost" port=3434 ]
+EventHandler evhfe for ctrlEvent {
+	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
+};
+EventHandler evhfebroker for local_robotCmd {
+	forwardEvent febroker -m moveRobot		// stesso payload
+};
+
+Context ctxAppl ip [ host="localhost"  port=8018 ] -standalone 
+
+QActor feactivator context ctxFrontendActivator {
+	Plan init normal [
+		println("Activating frontend...");
+		// -o shows the output of the Node program
+		nodeOp "./nodeCode/frontend/robotFrontendServer.js" -o
+	]
+}
+
+QActor febroker context ctxFrontendActivator {
+	Plan waitForMsg normal [ ]
+	transition stopAfter 3600000
+		whenMsg moveRobot : moveRobot(CMD) do
+			javaRun it.unibo.finalTask2018.clientREST.sendPut("http://localhost:3000/robot/r1/state","state",CMD)
+	finally repeatPlan
+}
+
+// testing
+QActor fetester context ctxFrontendActivator {
+	Rules {
+		cmd(w(0)).
+		cmd(h(0)).
+		cmd(a(0)).
+		cmd(s(0)).
+		cmd(d(0)).
+	}
+	
+	Plan init normal [
+		delay 20000; // wait for frontend to start
+		println("starting to emit ctrlEvents")
+	]
+	switchTo emitEvents
+	
+	Plan emitEvents [
+		delay 8000;
+		[ !? cmd(CMD) ] println(ctrlEvent(robot,r1,CMD));
+		[ ?? cmd(CMD) ] emit ctrlEvent : ctrlEvent(robot,r1,CMD)
+	]
+	switchTo [ !? cmd(CMD) ] emitEvents	
+}

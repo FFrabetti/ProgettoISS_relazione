@@ -148,6 +148,20 @@ if( withAuth ){
 	}
 
 /*
+ * ====================== PUT ROUTING ================
+ */	
+	// Update the local model (robot state)
+	robotStateMap = {h: "stopped", w: "forward", s: "backward", a: "left", d: "right"};
+	app.put("/robot/r1/state", function(req, res) {
+		var cmd = req.body.state;
+		// substr: the second parameter specifies the length of the extracted part
+		robotModel.robot.state = robotStateMap[cmd.substr(0,1)];
+		console.info("Robot state = " + robotModel.robot.state);
+		// the info is sent periodically to the browser by showResourceState() in robotFrontendServer.js
+		res.sendStatus(200); // OK
+	});
+	
+/*
  * ====================== COMMANDS ================
  */
 	app.post("/robot/actions/commands/appl", function(req, res) {
@@ -191,7 +205,7 @@ if( withAuth ){
 var msgNum=1; //parte da 1 e aumentera' via via
 function delegate(eventName,payload,newState,req,res){
 	var msg= "msg("+eventName+",event,js,none,"+payload+","+msgNum++ +")";
-	robotModel.robot.state = newState;
+//	robotModel.robot.state = newState;
 	console.log("emits -> "+ msg);
 	try{
 		if(externalActuatorMqtt)
@@ -259,7 +273,7 @@ function ensureAuthenticated(req, res, next) {
 function actuate(cmd, newState, req, res ){ 
 	var toRobot=require("./jsCode/clientRobotVirtual");
 	toRobot.send( cmd );
-	robotModel.robot.state = newState;
+//	robotModel.robot.state = newState;
 	res.render("access");
 }
 

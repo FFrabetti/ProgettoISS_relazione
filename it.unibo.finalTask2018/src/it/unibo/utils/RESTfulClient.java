@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -24,8 +25,7 @@ public class RESTfulClient {
 			input.setContentType("application/JSON");
 			post.setEntity(input);
 		}
-		HttpResponse response = client.execute(post);
-		return response;
+		return executeRequest(post);
 	}
 
 	public static HttpResponse execPOST(String url) throws ClientProtocolException, IOException {
@@ -35,8 +35,7 @@ public class RESTfulClient {
 	// GET
 	public static HttpResponse execGET(String url) throws ClientProtocolException, IOException {
 		HttpGet get = new HttpGet(url);
-		HttpResponse response = client.execute(get);
-		return response;
+		return executeRequest(get);
 	}
 
 	// PUT
@@ -47,8 +46,7 @@ public class RESTfulClient {
 			input.setContentType("application/JSON");
 			put.setEntity(input);
 		}
-		HttpResponse response = client.execute(put);
-		return response;
+		return executeRequest(put);
 	}
 
 	public static HttpResponse execPUT(String url) throws ClientProtocolException, IOException {
@@ -58,8 +56,17 @@ public class RESTfulClient {
 	// DELETE
 	public static HttpResponse execDELETE(String url) throws ClientProtocolException, IOException {
 		HttpDelete delete = new HttpDelete(url);
-		HttpResponse response = client.execute(delete);
-		return response;
+		return executeRequest(delete);
 	}
 
+	
+	// https://hc.apache.org/httpcomponents-client-4.2.x/quickstart.html
+	private static HttpResponse executeRequest(HttpRequestBase request) throws ClientProtocolException, IOException {
+		try {
+			return client.execute(request);
+		} finally {
+			request.releaseConnection();
+		}
+	}
+	
 }

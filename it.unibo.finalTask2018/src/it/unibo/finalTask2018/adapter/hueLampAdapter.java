@@ -28,12 +28,7 @@ public class hueLampAdapter {
 
 	public static void setUp(QActor qa) throws ClientProtocolException, IOException {
 		File f = new File(FILE_NAME);
-		if (f.exists()) { // controllo esistenza file
-			BufferedReader br = new BufferedReader(new FileReader(f));
-			bridge = br.readLine();
-			username = br.readLine();
-			lamp = br.readLine();
-			br.close();
+		if (readSettingsFile(f)) { // controllo esistenza file (e ben formato: 3 righe)
 			if (checkBridge()) { // controllo bridge
 				if(!checkLamp()) { // lamp non valida, ne cerco un'altra
 					findLamp();
@@ -129,4 +124,19 @@ public class hueLampAdapter {
 		bw.close();
 	}
 
+	private static boolean readSettingsFile(File f) {
+		try(BufferedReader br = new BufferedReader(new FileReader(f))) {
+			bridge = br.readLine();
+			username = br.readLine();
+			lamp = br.readLine();
+			
+			if(bridge == null || username == null || lamp == null)
+				throw new IOException("invalid file format");
+			
+			return true;
+		} catch(Exception e) {
+			return false;
+		}
+	}
+	
 }

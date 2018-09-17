@@ -80,7 +80,7 @@ public abstract class AbstractController extends QActor {
 	    	parg = "consult(\"./resourceModel.pl\")";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = "qacontrol(starts)";
+	    	temporaryStr = "controller(starts)";
 	    	println( temporaryStr );  
 	    	//switchTo waitForInputEvent
 	        switchToPlanAsNextState(pr, myselfName, "controller_"+myselfName, 
@@ -100,7 +100,7 @@ public abstract class AbstractController extends QActor {
 	     msgTransition( pr,myselfName,"controller_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleInputEvent"), stateTab.get("handleCmd"), stateTab.get("handleFront") }, 
 	          new String[]{"true","E","inputCtrlEvent", "true","M","cmd", "true","E","frontSonar" },
-	          6000000, "handleToutBuiltIn" );//msgTransition
+	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_waitForInputEvent){  
 	    	 println( getName() + " plan=waitForInputEvent WARNING:" + e_waitForInputEvent.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

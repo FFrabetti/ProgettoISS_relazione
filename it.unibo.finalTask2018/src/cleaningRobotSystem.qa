@@ -6,7 +6,6 @@ Event temperature : temperature(T)
 Event clock : clock(H,M) 
 Event frontSonar : sonar(DISTANCE)
 Event sonarSensor : sonar(NAME,DISTANCE)
-Event moveRobot : moveRobot(C)
 Event lightCmd : lightCmd(STATE)
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
 Event inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)
@@ -17,13 +16,11 @@ Dispatch externalcmd : usercmd(CMD)
 
 Context ctxAppl ip [ host="localhost"  port=8018 ] -httpserver
 EventHandler evadapter for temperature,clock  { //maps temperature and clock into inputCtrlEvent
-	emit inputCtrlEvent fromContent temperature( T ) to inputEvent( temperature,t1,T );
-	emit inputCtrlEvent fromContent clock( H,M ) to inputEvent( clock,c1,h(H,M) )
+	emit inputCtrlEvent fromContent temperature(T) to inputEvent(temperature,t1,T);
+	emit inputCtrlEvent fromContent clock(H,M) to inputEvent(clock,c1,h(H,M))
 };
-EventHandler evled for ctrlEvent  { // filter ctrlEvent by CATEGORY and NAME
-	emit lightCmd fromContent ctrlEvent( led,l1,blink ) to lightCmd(blink);
-	emit lightCmd fromContent ctrlEvent( led,l1,on ) to lightCmd(on);
-	emit lightCmd fromContent ctrlEvent( led,l1,off ) to lightCmd(off)
+EventHandler evled for ctrlEvent { // filter ctrlEvent by CATEGORY and NAME
+	emit lightCmd fromContent ctrlEvent(led,l1,CMD) to lightCmd(CMD)
 };
 EventHandler evhswag for alarm {
 	forwardEvent swag -m externalcmd
@@ -31,72 +28,73 @@ EventHandler evhswag for alarm {
 
 // -------------------------- CONTROLLER --------------------------
 QActor controller context ctxAppl {
-Rules{ //The model is in the theory resourceModel. 
-	//fatti
-	limitTemperatureValue( 25 ).
-	timeInterval(h(7,0),h(10,0)).
-	
-	//se cambia il modello della temperatura
+Rules{ // The model is in the theory resourceModel.pl
+	// se cambia il modello della temperatura
 	//	R-TempKo: fermo il robot se temperatura >= limite
-	changedModelAction( temperature, t1, V  ):-
-			limitTemperatureValue( MAX ), 
-			eval( ge, V , MAX ),   
-			changeModelItem(robot,r1,h(0)).		      			
+	changedModelAction(temperature,t1,V) :-
+			limitTemperatureValue(MAX),
+			eval(ge,V,MAX),
+			changeModelItem(robot,r1,h(0)).
 
- 	//se cambia il modello del clock
+ 	// se cambia il modello del clock
  	//	R-TimeKo: fermo il robot se il tempo non e' nell'intervallo
- 	changedModelAction(clock,c1,h(HC,MC)):-
+ 	changedModelAction(clock,c1,h(HC,MC)) :-
  			non(inTime(HC,MC)),
  			changeModelItem(robot,r1,h(0)).
  			 	
- 	//se cambia il modello del robot
- 	changedModelAction(robot,R,CMD):-
- 			emitevent(ctrlEvent, ctrlEvent(robot,R,CMD)), fail.	
- 	changedModelAction(robot,R, w(X)):-
- 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
- 	changedModelAction(robot,R, s(X)):-
- 			changeModelItem(led,l1,blink).		// R-BlinkLed/R-BlinkHue
- 	changedModelAction(robot,R, h(X)):-
- 			changeModelItem(led,l1,off).	// R-BlinkLed/R-BlinkHue
- 	//dopo una svolta il modello deve risultare fermo
- 	changedModelAction(robot,R, a(X)):-
- 			changeModelItem(robot,R,h(X)).		
- 	changedModelAction(robot,R, d(X)):-
+ 	// se cambia il modello del robot
+ 	changedModelAction(robot,R,CMD) :-
+ 			emitevent(ctrlEvent,ctrlEvent(robot,R,CMD)),
+ 			fail. // prosegui...
+ 	
+ 	// R-BlinkLed/R-BlinkHue
+ 	changedModelAction(robot,R,w(X)) :-
+ 			changeModelItem(led,l1,blink).
+ 	changedModelAction(robot,R,s(X)) :-
+ 			changeModelItem(led,l1,blink).
+ 	changedModelAction(robot,R,h(X)) :-
+ 			changeModelItem(led,l1,off).
+ 	
+ 	// dopo una svolta il modello del robot deve risultare fermo
+ 	changedModelAction(robot,R,a(X)) :- 
+ 			changeModelItem(robot,R,h(X)).
+ 	changedModelAction(robot,R,d(X)) :-
  			changeModelItem(robot,R,h(X)).
  	
- 	//se cambia il modello del led		
- 	changedModelAction(led,L,X):-
+ 	// se cambia il modello del led
+ 	changedModelAction(led,L,X) :-
  			emitevent(ctrlEvent,ctrlEvent(led,L,X)).
  	
- 	//utility: restituisce vero se il primo tempo e' precedente al secondo		
+ 	// UTILITIES
+ 	// vero se il primo tempo e' precedente al secondo
  	timeBefore(H,M1,H,M2) :-
  			eval(lt,M1,M2), !.
  	timeBefore(H1,_,H2,_) :-
  			eval(lt,H1,H2).
  	
- 	//vero se HC,MC e' dentro all'intervallo di tempo consentito		
- 	inTime(HC,MC):-
+ 	// vero se HC,MC e' dentro all'intervallo di tempo consentito
+ 	inTime(HC,MC) :-
  			timeInterval(h(H1,M1),h(H2,M2)),
  			timeBefore(H1,M1,HC,MC),
  			timeBefore(HC,MC,H2,M2).
  			
- 	//possibilita' di muovere il robot (R-TempOk e R-TimeOk)
- 	canMove:-
+ 	// possibilita' di muovere il robot (R-TempOk e R-TimeOk)
+ 	canMove :-
  			limitTemperatureValue(MAX),
  			getModelItem(sensor,temperature,t1,T),
  			eval(lt,T,MAX),
  			getModelItem(sensor,clock,c1,h(HC,MC)),
  			inTime(HC,MC).
  			
- 	//R-TempOk e R-TimeOk: cambio il modello solo se il robot puo' muoversi
- 	changeRobotModel(CMD):-
+ 	// R-TempOk e R-TimeOk: cambio il modello solo se il robot puo' muoversi
+ 	changeRobotModel(CMD) :-
  			canMove,
- 			changeModelItem(robot,r1,CMD).		
+ 			changeModelItem(robot,r1,CMD).
 }
  
 	Plan init normal [         
 		demo consult("./resourceModel.pl");  //contains the models and related rules
-   		println( qacontrol(starts) )   
+   		println( controller(starts) )   
    	]
    	switchTo waitForInputEvent      
  
@@ -107,7 +105,7 @@ Rules{ //The model is in the theory resourceModel.
 //    	[ !? getModelItem(sensor, clock, c1, VALUE) ] println(model(c1, VALUE));
 //    	println("---------------------------------------")
     ]
-    transition stopAfter 6000000 
+    transition stopAfter 3600000 
      	whenEvent inputCtrlEvent -> handleInputEvent,
      	whenMsg cmd -> handleCmd,
      	whenEvent frontSonar -> handleFront
@@ -115,8 +113,8 @@ Rules{ //The model is in the theory resourceModel.
        
     Plan handleInputEvent resumeLastPlan [
      	printCurrentEvent;
-    	onEvent inputCtrlEvent : inputEvent( CATEG, NAME, VALUE ) ->  //change the model
-    		demo changeModelItem( CATEG, NAME, VALUE )
+    	onEvent inputCtrlEvent : inputEvent(CATEG,NAME,VALUE) ->  //change the model
+    		demo changeModelItem(CATEG,NAME,VALUE)
     ]
     
     Plan handleCmd resumeLastPlan [
@@ -125,7 +123,7 @@ Rules{ //The model is in the theory resourceModel.
     ]
     
     Plan handleFront resumeLastPlan [
-    	[ !? getModelItem( software,agent,swag,idle ) ]
+    	[ !? getModelItem(software,agent,swag,idle) ]
     		demo changeRobotModel(h(0))
     ]
 }
@@ -207,7 +205,7 @@ QActor swag context ctxAppl {
 			nwait(TYPE,N2,W2),
 			eval(plus,W1,W2,W).
 			
-		test.
+		//test.
 	}
 	
 	Plan init normal [         
@@ -216,13 +214,13 @@ QActor swag context ctxAppl {
    		// starting position:
    		[ ?? test] {
    			delay 30000;
-	   		forward controller -m cmd : cmd( d(0) );
+	   		forward controller -m cmd : cmd(d(0));
 	   		delay 800;
-	   		forward controller -m cmd : cmd( s(0) );
+	   		forward controller -m cmd : cmd(s(0));
 	   		delay 800;
-	   		forward controller -m cmd : cmd( d(0) );
+	   		forward controller -m cmd : cmd(d(0));
 	   		delay 800;
-			forward controller -m cmd : cmd( s(0) );
+			forward controller -m cmd : cmd(s(0));
 	   		delay 800
    		}
    	]
@@ -583,8 +581,8 @@ QActor humanoperator context ctxAppl {
 	finally repeatPlan
 
 	Plan sendCmd resumeLastPlan [
-		onEvent usercmd : usercmd( robotgui(CMD) ) -> println(robotgui(CMD));
-		onEvent usercmd : usercmd( robotgui(CMD) ) -> forward controller -m cmd : cmd(CMD)
+		onEvent usercmd : usercmd(robotgui(CMD)) -> println(robotgui(CMD));
+		onEvent usercmd : usercmd(robotgui(CMD)) -> forward controller -m cmd : cmd(CMD)
 	]
 }
 // -------------------------- HUMAN OPERATOR --------------------------
@@ -599,7 +597,8 @@ QActor clockagent context ctxAppl {
 	
 	Plan emitTime [
 		delay 6000;
-		javaRun it.unibo.finalTask2018.adapter.clockAdapter.emitTime()
+		javaRun it.unibo.finalTask2018.adapter.clockAdapter.getTime();
+		[ ?? currentTime(H,M) ] emit clock : clock(H,M)
 	]
 	finally repeatPlan
 }
@@ -627,7 +626,7 @@ QActor temperatureagent context ctxAppl {
 // -------------------------- HUE LAMP AGENT --------------------------
 QActor huelampagent context ctxAppl {
 	Plan init normal [         
-   		println("hueLampAgent start");
+   		println("hueLampAgent start"); 
 
    		javaRun it.unibo.finalTask2018.adapter.hueLampAdapter.setUp();
    		//lampeggia per prova

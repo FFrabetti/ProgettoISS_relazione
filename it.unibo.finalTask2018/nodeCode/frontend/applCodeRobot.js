@@ -45,9 +45,9 @@ app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'jsCode')))
 
-var externalActuatorMqtt = false; //when true, the application logic is external to the server (Mqtt)
-var externalActuatorSocket = true; //when true, the application logic is external to the server (Socket)
-var withAuth         = true;
+var externalActuatorMqtt = settings.externalActuatorMqtt; //when true, the application logic is external to the server (Mqtt)
+var externalActuatorSocket = settings.externalActuatorSocket; //when true, the application logic is external to the server (Socket)
+var withAuth         = settings.withAuth;
 
 if( externalActuatorMqtt ) mqttUtils  = require('./uniboSupports/mqttUtils');
 if( externalActuatorSocket ){

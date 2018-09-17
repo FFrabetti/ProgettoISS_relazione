@@ -1,6 +1,10 @@
 {
-	mongoAddr: 'mongodb:\/\/192.168.99.100:27017\/test', // 'mongodb://192.168.99.100:27017/test',
-	applHost: 'localhost',
-	applPort: 8018,
-	frontendPort: 3000
+	"mongoAddr": "mongodb:\/\/localhost:27017\/test",
+	"mongoAddr2": "mongodb:\/\/192.168.99.100:27017\/test",
+	"applHost": "localhost",
+	"applPort": 8018,
+	"frontendPort": 3000,
+	"withAuth": false,
+	"externalActuatorMqtt": false,
+	"externalActuatorSocket": true
 }

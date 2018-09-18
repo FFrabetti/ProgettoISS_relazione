@@ -19,12 +19,12 @@ var createServer = function (port  ) {
 };
 
 function showResourceState(){
-	var now = new Date() ;
-	var info = "ROBOT state="+resourceModel.robot.state+"\n"+
+//	var now = new Date() ;
+	var info = "ROBOT state=" + resourceModel.robot.state + "\n";
 //		resourceModel.robot.sonar1.name+"="+resourceModel.robot.sonar1.value+"\n"+
 //		resourceModel.robot.sonar2.name+"="+resourceModel.robot.sonar2.value+"\n"+
 //		resourceModel.robot.sonarRobot.name+"="+resourceModel.robot.sonarRobot.value+"\n"+ //;
-		"time=" + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+//		"time=" + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
 	io.sockets.send( info );
 }
 

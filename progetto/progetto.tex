@@ -1236,7 +1236,7 @@ Per poter utilizzare la lampada è quindi necessario individuare prima il bridge
 
 Attualmente l'\codescript{HueLampAgent} presente nel nostro sistema si rivolge tramite \codescript{javaRun} ad un oggetto Java che simula la lampada Wi-Fi; ci viene quindi facile sostituirne l'implementazione con un'altra classe Java che funga da adapter verso le API del bridge della Hue Lamp.\\
 
-\lstinputlisting[language=Java, firstline=29, lastline=77, firstnumber=29]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/adapter/hueLampAdapter.java}
+\lstinputlisting[language=Java, firstline=29, lastline=72, firstnumber=29]{../it.unibo.finaltask2018/src/it/unibo/finaltask2018/adapter/hueLampAdapter.java}
 
 Tale classe espone i metodi statici \codescript{setUp()} e \codescript{setLamp(String state)}: il primo esegue le operazioni per stabilire una connessione col bridge ed ottenere le credenziali, mentre il secondo permette di cambiare lo stato della lampadina (on/off/blink).\\
 
@@ -1258,7 +1258,7 @@ Per quanto riguarda l'autenticazione degli utenti, la tecnologia impiegata è \e
 \caption{Dati di un utente mantenuti nel database}
 \end{figure}
 
-Il frontend server utilizza un proprio modello interno del robot, scritto in JSON, che descrive lo stato in cui si trova e che viene aggiornato in base ai comandi inviati dalla console. Questo modello è svincolato da quello gestito dal controller, pertanto sono presenti tutte le problematiche relative alla sincronizzazione e alla consistenza dei due modelli.\\
+Il frontend server utilizza un proprio modello interno del robot, scritto in JSON, che descrive lo stato in cui si trova e che viene aggiornato in base ai comandi inviati dalla console. Questo modello è svincolato da quello gestito dal controller, pertanto sono presenti tutte le problematiche relative alla sincronizzazione e alla consistenza dei due modelli. Di queste ci occuperemo nella \xsss{frontendObserver}.\\
 
 Per interagire con il resto del sistema, il frontend emette eventi \codescript{usercmd : usercmd(robotgui(CMD))} alla pressione dei tasti di movimento ed eventi \codescript{alarm : usercmd(CMD))} per l'avvio e l'interruzione della pulizia, gli stessi emessi dalla precedente GUI ottenuta con il flag \codescript{-httpserver}.
 
@@ -1274,10 +1274,64 @@ Un'alternativa è utilizzare un server Mqtt tramite il quale comunicare messaggi
 
 Per quanto siano attuabili entrambe le soluzioni, la prima non necessita di servizi esterni e permette di passare da un frontend all'altro senza bisogno di alcuna modifica al codice del modello; d'altro canto la seconda evita che i vari micro-servizi si ``conoscano'' tra di loro, in quanto ogni componente, per far parte del sistema, deve unicamente dialogare con il server Mqtt.
 
-Il passaggio da una all'altra è comunque facilmente realizzabile settando il parametro \codescript{externalActuatorMqtt} presente all'interno del frontend.\\
+Il passaggio da una all'altra è comunque facilmente realizzabile settando il parametro \codescript{externalActuatorMqtt} usato all'interno del frontend\footnote{Definito nel file di configurazione \texttt{settings.json}}.\\
 
-% numeri di riga da sistemare
-\lstinputlisting[language=java, firstline=151, lastline=204, firstnumber=151]{../it.unibo.finaltask2018/nodeCode/frontend/applCodeRobot.js}
+\begin{lstlisting}[language=java, caption={nodeCode/frontend/applCodeRobot.js}]
+app.post("/robot/actions/commands/h", function(req, res) {
+	if(externalActuatorMqtt || externalActuatorSocket)
+		delegate("usercmd","usercmd(robotgui( h(low) ))", "stopped", req, res);
+	else
+		actuate(`{ "type": "alarm", "arg": 1000 }`, "stopped", req, res);
+});
+
+var msgNum=1; //parte da 1 e aumentera' via via
+function delegate(eventName, payload, newState, req, res) {
+	var msg = "msg("+eventName+",event,js,none,"+payload+","+msgNum++ +")";
+	robotModel.robot.state = newState;	// (1)
+	console.log("emits -> "+ msg);
+	try{
+		if(externalActuatorMqtt)
+	 		mqttUtils.publish(msg);	//topic  = "unibo/qasys"
+		else if(externalActuatorSocket)
+			conn.write(msg+"\n");
+	}
+	catch(e){
+		console.log("ERROR "+e);
+	}
+	res.render("access");
+}
+\end{lstlisting}
+
+\subsubsection{Frontend as an observer of the resource model}
+\labelsssec{frontendObserver}
+Alla pressione di un pulsante sulla console non corrisponde sempre un'effettiva modifica del modello del robot, ad esempio quando le condizioni di temperatura e orario non sono soddisfatte, o quando il robot si trova davanti ad un ostacolo; pertanto l'aggiornamento del modello in JSON non deve seguire direttamente all'invio di un comando\footnote{Vedi riga con commento \texttt{(1)}}, ma deve essere subordinato alla modifica del modello delle risorse.
+
+Per sincronizzare il modello interno del frontend con quello mantenuto dal controller, il primo deve essere notificato ad ogni cambiamento del secondo. In altre parole il frontend deve essere un observer del modello delle risorse, le cui modifiche vengono trasmesse all'esterno nella forma di eventi \codescript{ctrlEvent}.\\
+
+Definiamo pertanto un QActor sensibile a tali eventi, in particolare a quelli che riguardano lo stato del robot (similmente a quanto fatto per i robot virtuale e reale), che trasmetta l'informazione aggiornata al server via messaggi HTTP di tipo PUT.\\
+
+\lstinputlisting[style=style_qa, lastline=31]{../it.unibo.finaltask2018/src/frontendActivator.qa}
+
+Si noti come nello stesso contesto è presente anche un attore in grado di attivare l'applicazione Node del frontend.\\
+
+Lato server, basta aggiungere una regola di routing che si occupi di modificare il modello del robot, il quale viene periodicamente inviato al browser tramite una socket.\\
+
+\begin{lstlisting}[language=java, caption={nodeCode/frontend/applCodeRobot.js}]
+robotStateMap = {h: "stopped", w: "forward", s: "backward", a: "left", d: "right"};
+app.put("/robot/r1/state", function(req, res) {
+	var cmd = req.body.state;
+	robotModel.robot.state = robotStateMap[cmd.substr(0,1)];
+	console.info("Robot state = " + robotModel.robot.state);
+	// the info is sent periodically to the browser by showResourceState() in robotFrontendServer.js
+	res.sendStatus(200); // OK
+});
+\end{lstlisting}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.40]{img/frontendServerRefactoring.png}
+\caption{Refactoring dell'architettura del frontend}\labelfig{frontendServerRefactoring}
+\end{figure}
 
 \subsection{Virtual Robot with Node.js}
 \labelssec{robotNodeImpl}

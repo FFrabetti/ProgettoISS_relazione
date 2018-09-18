@@ -166,50 +166,50 @@ if( withAuth ){
  */
 	app.post("/robot/actions/commands/appl", function(req, res) {
 		console.info("START THE APPLICATION "   );
-		delegate( "alarm","usercmd(clean)", "application", req, res);
+		delegate( "alarm","usercmd(clean)", req, res);
  	});	
 	app.post("/robot/actions/commands/stop", function(req, res) {
 		console.info("STOP THE APPLICATION ");
-		delegate( "alarm","usercmd(halt)","stop application", req, res);
+		delegate( "alarm","usercmd(halt)", req, res);
  	});	
 
 	app.post("/robot/actions/commands/w", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("usercmd","usercmd(robotgui( w(low) ))","moving forward",req,res);
+			delegate("usercmd","usercmd(robotgui( w(low) ))",req,res);
 		else actuate( `{ "type": "moveForward",  "arg": -1 }`, "server moving forward", req, res);
 		
 	});	
 	app.post("/robot/actions/commands/s", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("usercmd","usercmd(robotgui( s(low) ))","moving backward",req,res);
+			delegate("usercmd","usercmd(robotgui( s(low) ))",req,res);
 		else actuate( `{ "type": "moveBackward",  "arg": -1 }`, "server moving backward", req, res);
 	});	
 	app.post("/robot/actions/commands/a", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("usercmd","usercmd(robotgui( a(low) ))","moving left",req,res);
+			delegate("usercmd","usercmd(robotgui( a(low) ))",req,res);
 		else actuate( `{ "type": "turnLeft",  "arg": 1000 }`, "server moving left", req, res);
 	});	
 	app.post("/robot/actions/commands/d", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("usercmd","usercmd(robotgui( d(low) ))","moving right",req,res);
+			delegate("usercmd","usercmd(robotgui( d(low) ))",req,res);
 		else actuate( `{ "type": "turnRight",  "arg": 1000 }`, "server moving right", req, res);
 	});	
 	app.post("/robot/actions/commands/h", function(req, res) {
 		if(externalActuatorMqtt || externalActuatorSocket)
-			delegate("usercmd","usercmd(robotgui( h(low) ))","stopped",req,res);
+			delegate("usercmd","usercmd(robotgui( h(low) ))",req,res);
 		else actuate( `{  "type": "alarm",  "arg": 1000 }`, "server stopped", req, res);
 	});		
 	
 //=================== UTILITIES =========================
 
 var msgNum=1; //parte da 1 e aumentera' via via
-function delegate(eventName,payload,newState,req,res){
+function delegate(eventName,payload,req,res){
 	var msg= "msg("+eventName+",event,js,none,"+payload+","+msgNum++ +")";
-//	robotModel.robot.state = newState;
+	//robotModel.robot.state = newState; //inutile dopo il refactoring sulla sincronizzazione dei modelli
 	console.log("emits -> "+ msg);
 	try{
 		if(externalActuatorMqtt)
-	 		mqttUtils.publish( msg );	//topic  = "unibo/qasys"
+	 		mqttUtils.publish(msg);	//topic = "unibo/qasys"
 		else if(externalActuatorSocket)
 			conn.write(msg+"\n");
 	}

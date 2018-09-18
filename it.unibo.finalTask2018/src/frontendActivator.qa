@@ -44,7 +44,7 @@ QActor fetester context ctxFrontendActivator {
 		delay 20000; // wait for frontend to start
 		println("starting to emit ctrlEvents")
 	]
-	switchTo emitEvents
+	//switchTo emitEvents
 	
 	Plan emitEvents [
 		delay 8000;

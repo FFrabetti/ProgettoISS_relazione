@@ -11,7 +11,7 @@ digraph finite_state_machine {
 	
 	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
 	emitEvents [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	init [ color = blue ][ fontcolor = blue ][ penwidth = 3 ]
 	
-	init -> emitEvents [ label = "switch" ][ color = black ][ fontcolor = black ]
 	emitEvents -> emitEvents [ label = "[ !? cmd(CMD) ], switch" ][ color = black ][ fontcolor = black ]
 }

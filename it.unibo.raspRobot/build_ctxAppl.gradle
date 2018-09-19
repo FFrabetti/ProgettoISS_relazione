@@ -13,6 +13,15 @@ apply plugin: 'eclipse'
 apply plugin: 'java-library-distribution'
 apply plugin: 'jacoco'
 
+// https://docs.gradle.org/current/userguide/application_plugin.html
+/*
+gradle installDist		// to create an image of the application in build/install/projectName
+gradle distZip			// to create a ZIP containing the distribution
+gradle distTar			// to create an application TAR
+gradle assemble			// to build both
+*/
+apply plugin: 'application'
+mainClassName = "$mainClassName"
 /*
 --------------------------------------------------------------
 PROPERTIES
@@ -61,12 +70,15 @@ BASIC SUPPORT (test, akka)
 /*
 UNIBO SUPPORTS
 */		
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'uniboInterfaces.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'unibonoawtsupports.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'uniboEnvBaseAwt.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: '2p301.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'qa18Akka.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/http',  include: 'nanoHTTPD.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'uniboInterfaces.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'unibonoawtsupports.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'uniboEnvBaseAwt.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: '2p301.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'qa18Akka.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/http',  include: 'nanoHTTPD.jar')
+	
+		compile fileTree(dir: '../',  include: 'SocketUtils.jar')
+		
 /*
 JSON
 */
@@ -171,11 +183,15 @@ task copyInfoForDist << {
 }
 task cleanDistDir(type: Delete) {
 	  delete 'src/dist'
-      
   }
 //jar.dependsOn cleanDistDir
 jar.dependsOn copyInfoForDist
-jar.finalizedBy cleanDistDir
+//jar.finalizedBy cleanDistDir
+
+// no file duplicati nel tar
+distTar { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+distTar.finalizedBy cleanDistDir
+
 /*
 ---------------------------------------------------------
 TESTING

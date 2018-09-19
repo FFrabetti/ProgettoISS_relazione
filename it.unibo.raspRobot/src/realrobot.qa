@@ -7,8 +7,8 @@ Event local_robotCmd : moveRobot(CMD)			// internal
 Dispatch moveRobot : moveRobot(CMD)				// internal
 
 // RICORDA: inserire host addr giusto
-//Context ctxRealRobotRasp ip [ host="10.0.3.14" port=8888 ]
-Context ctxRealRobotRasp ip [ host="localhost" port=8888 ]
+Context ctxRealRobotRasp ip [ host="10.0.3.14" port=8888 ]
+//Context ctxRealRobotRasp ip [ host="localhost" port=8888 ]
 EventHandler evhreal for ctrlEvent {
 	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
 };
@@ -17,12 +17,13 @@ EventHandler evhrealbroker for local_robotCmd {
 };
 
 // RICORDA: inserire host addr giusto
-Context ctxAppl ip [ host="localhost" port=8018 ] -standalone 
+Context ctxAppl ip [ host="10.0.3.3" port=8018 ] -standalone 
+//Context ctxAppl ip [ host="localhost" port=8018 ] -standalone 
 
 QActor realrobotrasp context ctxRealRobotRasp {
 	Plan init normal [
-		demo consult("./mapping.pl");
 	    println("realrobotrasp start");
+		demo consult("./mapping.pl");
 	    [ !? server(ADDR,PORT) ] javaRun it.unibo.raspRobot.robotClient.init(ADDR,PORT)
   	]
     switchTo waitForCmd
@@ -44,9 +45,9 @@ QActor realrobotrasp context ctxRealRobotRasp {
 
 QActor ledagent context ctxRealRobotRasp {
 	Plan init normal [
+   		println("ledagent start");
 		demo consult("./mapping.pl");
-		delay 1000; // waiting for realrobotrasp to start... (robotClient.init())
-   		println("ledagent start")
+		delay 1000 // waiting for realrobotrasp to start... (robotClient.init())
    	]
    	switchTo waitForCommand
   

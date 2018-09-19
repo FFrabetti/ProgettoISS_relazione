@@ -1,12 +1,80 @@
-Per compilazione e deployment:
-// aggiungere riga
-compile fileTree(dir: '../', include: 'LedTempRasp.jar')
+// https://docs.gradle.org/current/userguide/application_plugin.html
+/*
+gradle installDist		// to create an image of the application in build/install/projectName
+gradle distZip			// to create a ZIP containing the distribution
+gradle distTar			// to create an application TAR
+gradle assemble			// to build both
+*/
+apply plugin: 'application'
+mainClassName = "$mainClassName"
 
-gradle distZip --info
-// crea archivio in build/distributions con .jar e lib/
-// serve anche srcMore
 
-// alla fine si ottiene:
-// - lib/
-// - srcMore/
-// it.unibo.XXX-1.0.jar
+/*
+--------------------------------------------------------------
+DEPENDENCIES
+--------------------------------------------------------------
+*/
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'uniboInterfaces.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'unibonoawtsupports.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'uniboEnvBaseAwt.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: '2p301.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'qa18Akka.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/http',  include: 'nanoHTTPD.jar')
+
+	// librerie esterne aggiuntive
+	compile fileTree(dir: '../', include: 'SocketUtils.jar')
+
+/*
+se SENZA application plugin:
+	gradle -b FILE_NAME.gradle distZip
+	gradle -b FILE_NAME.gradle distTar
+crea archivio in build/distributions con .jar e lib/
+serve anche srcMore + eventuali file .pl
+alla fine si ottiene:
+	- lib/
+	- srcMore/
+	- it.unibo.XXX-1.0.jar
+	
+se CON application plugin, tutto ok una volta sistemata la parte seguente
+*/
+
+/*
+---------------------------------------------------------
+PREPARE DISTRIBUTION
+---------------------------------------------------------
+*/
+task copyInfoForDist << {
+	copy {
+		from 'audio'
+		into 'src/dist/audio/'
+		include '**/*.*'
+ 	}
+	copy { 
+		from 'srcMore'
+		into 'src/dist/srcMore/'
+		include '**/*.*'
+ 	}
+	copy { 
+		from '.'
+		into 'src/dist/'
+		include '*.pl'
+		include '*.html'
+ 	}
+	copy {  
+		from 'src'
+		into 'src/dist/'
+		include '*.qa'
+		include '*.ddr'
+		include '*.baseddr'
+   	}
+}
+task cleanDistDir(type: Delete) {
+	  delete 'src/dist'
+  }
+//jar.dependsOn cleanDistDir
+jar.dependsOn copyInfoForDist
+//jar.finalizedBy cleanDistDir
+
+// no file duplicati nel tar
+distTar { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+distTar.finalizedBy cleanDistDir

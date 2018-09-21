@@ -4,8 +4,9 @@
 // SENSORI
 // sensore temperatura (analog PIN)
 const int TEMP_PIN = A0;
-// sonar (TODO)
-// const int SONAR_PIN = A1;
+// sonar
+const int TRIG_PIN = 13;
+const int ECHO_PIN = 12;
 
 // ATTUATORI
 // 2 led temperatura (sotto/sopra la soglia)
@@ -19,17 +20,17 @@ const int SRV_PIN = 9;
 const int MOTOR_PIN = 8;
 const int FORW_PIN = 7;
 const int RETRO_PIN = 6;
-const int MOTOR_LED_PIN = 12; //  debug
+const int MOTOR_LED_PIN = 11; //  debug
 // ---------------- PIN ----------------
 
 // periodo di loop(), arg di delay (ms)
-const int LOOP_PERIOD = 500;
+const int LOOP_PERIOD = 100;
 // frequenza seriale
 const int SERIAL_FREQ = 9600;
 // frequenza di blink
-const int BLINK_FREQ = 500;
+const int BLINK_FREQ = 400;
 // soglia temperatura
-const float T_MAX = 30;
+const float T_MAX = 35;
 // variazione minima di temperatura per scrittura su seriale
 const float DELTA_T = 0.5;
 // ogni quanti ms la temperatura viene comunque inviata
@@ -38,6 +39,9 @@ const int SEND_T = 1000;
 const int SRV_FRONT = 90;
 const int SRV_LEFT = 45;
 const int SRV_RIGHT = 135;
+// sonar
+const int SONAR_PERIOD = 1000;
+const int DIST_MAX = 25;
 // buffer per lettura caratteri spuri (fino a \n)
 const int BUFF_LEN = 64;
 char buffer[BUFF_LEN];
@@ -63,6 +67,11 @@ void setPinOutput(int pin) {
   digitalWrite(pin, LOW);
 }
 
+void setPinInput(int pin) {
+  pinMode(pin, INPUT);
+  digitalWrite(pin, LOW);
+}
+
 void setup() {
   setPinOutput(LOWT_LED_PIN);
   setPinOutput(HIGHT_LED_PIN);
@@ -71,6 +80,9 @@ void setup() {
   setPinOutput(FORW_PIN);
   setPinOutput(RETRO_PIN);
   setPinOutput(MOTOR_LED_PIN); // debug
+  setPinOutput(TRIG_PIN);
+  
+  setPinInput(ECHO_PIN);
   
   myServo.attach(SRV_PIN);
   
@@ -121,14 +133,23 @@ void handleTemperature() {
 }
 
 void handleSonar() {
-  // TODO: read value from SONAR_PIN
-  int sonarVal = millis() % 16;
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
   
-  // debug: send a 'random' value every 10s
-  if(millis()-lastSonarSend > 10000) {
-    Serial.println("Sonar: " + String(sonarVal));
-	lastSonarSend = millis();
-  }
+  const unsigned long duration = pulseIn(ECHO_PIN, HIGH);
+  int distance = duration/29/2;
+
+  // frenata di emergenza
+  if(duration != 0 && distance < 10)
+    motorStop();
+  
+  if(duration != 0 && (millis()-lastSonarSend > SONAR_PERIOD) && distance < DIST_MAX){
+    Serial.println("Sonar: " + String(distance));
+    lastSonarSend = millis();
+ } 
 }
 
 void handleLed() {

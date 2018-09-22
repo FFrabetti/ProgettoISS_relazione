@@ -37,7 +37,12 @@ public class robotClient {
 	
 	// synchronized: metodo usato sia da realrobotrasp sia da ledagent
 	public synchronized static void sendCmd(QActor qa, String cmd) throws IOException {
+		int index = cmd.lastIndexOf('\''); // 't0 3000 80'
+		if(index >= 0)
+			cmd = cmd.substring(1, index);
+		
 		client.writeLine(cmd);
+		System.out.println("robotClient sending: " + cmd);
 	}
 	
 }

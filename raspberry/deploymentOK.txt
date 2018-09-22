@@ -1,0 +1,22 @@
+Da così:
+
+//jar.dependsOn cleanDistDir
+jar.dependsOn copyInfoForDist
+jar.finalizedBy cleanDistDir
+
+A così:
+
+//jar.dependsOn cleanDistDir
+jar.dependsOn copyInfoForDist
+//jar.finalizedBy cleanDistDir
+distZip.finalizedBy cleanDistDir
+distTar.finalizedBy cleanDistDir
+
+task unZip(type: Copy) {
+    def zipFile = file("build/distributions/" + "$mainClassName" + "-" + "$version" + ".zip")
+    def outputDir = file("${buildDir}/unpacked")
+ 
+    from zipTree(zipFile)
+    into outputDir
+}
+unZip.dependsOn distZip

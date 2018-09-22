@@ -24,17 +24,23 @@ const int MOTOR_LED_PIN = 11; //  debug
 // ---------------- PIN ----------------
 
 // periodo di loop(), arg di delay (ms)
-const int LOOP_PERIOD = 100;
+const int LOOP_PERIOD = 200;
 // frequenza seriale
 const int SERIAL_FREQ = 9600;
 // frequenza di blink
 const int BLINK_FREQ = 400;
 // soglia temperatura
-const float T_MAX = 35;
-// variazione minima di temperatura per scrittura su seriale
-const float DELTA_T = 0.5;
+const float T_MAX = 32;
+// variazione minima temperatura per scrittura su seriale
+const float DELTA_T_MIN = 0.5;
+// variazione massima temperatura (filtraggio picchi)
+const float DELTA_T_MAX = 10;
 // ogni quanti ms la temperatura viene comunque inviata
 const int SEND_T = 1000;
+// array circolare per la temperatura
+const int TEMP_BUFF_DIM = 16;
+float tempBuffer[TEMP_BUFF_DIM];
+int tempIndex = 0;
 // angoli servomotore
 const int SRV_FRONT = 90;
 const int SRV_LEFT = 45;
@@ -58,7 +64,7 @@ int finalAngle = SRV_FRONT; // angolo dopo una svolta
 int motorState = 0; // 0 = halt, 1 = forward, -1 = backward
 
 unsigned long lastTempSend = 0;
-unsigned long lastSonarSend = 0; // debug
+unsigned long lastSonarSend = 0;
 unsigned long lastBlink = 0;
 unsigned long endTurn = 0;
 
@@ -90,14 +96,22 @@ void setup() {
 }
 
 void readEOL() {
-	int n = Serial.readBytesUntil('\n', buffer, BUFF_LEN);
-//	if(n > 0)
-//		Serial.println("Letti " + String(n) + " bytes: [" + buffer + "]");
+	int c;
+	while((c = Serial.read()) != -1 && c != '\n') {
+	//	Serial.println("Letto c: " + String((char)c));
+	}
+	//int n = Serial.readBytesUntil('\n', buffer, BUFF_LEN);
+	// debug
+	//if(n > 0)
+	//	Serial.println("Letti " + String(n) + " bytes: [" + buffer + "]");
 }
 
 void loop() {
   firstChar = Serial.available() ? Serial.read() : '\0';
-  
+	// debug
+  if(firstChar)
+	  Serial.println("Letto carattere: " + String(firstChar));
+
   // sensori
   handleTemperature();
   handleSonar();
@@ -113,21 +127,45 @@ void loop() {
   delay(LOOP_PERIOD);
 }
 
+float meanTemperature() {
+	float sum = 0;
+	int i;
+	
+	for(i=0; i<TEMP_BUFF_DIM; i++) {
+		sum = sum + tempBuffer[i];
+	}
+	
+	return sum/TEMP_BUFF_DIM;
+}
+
 void handleTemperature() {
+  float mean;
   int sensorVal = analogRead(TEMP_PIN);
   //conversione della lettura ADC in tensione
   float volt = (sensorVal / 1024.0) * 5.0;
   //conversione tensione in temperatura
   float temp = (volt - .5) * 100;
+
+	if(tempState != 0 && abs(temp-tempState) > DELTA_T_MAX) {
+		// picco da filtrare
+		// Serial.println("Picco di temperatura: " + String(temp));
+		return;
+	}
+  
+	tempBuffer[tempIndex] = temp;
+	tempIndex = (tempIndex+1) % TEMP_BUFF_DIM;
   
 //  Serial.println("TempSensor: " + String(sensorVal) + " volts: " + String(volt) + " degreesC: " + String(temp));
-  if(millis()-lastTempSend > SEND_T || abs(temp-tempState) >= DELTA_T) {
-    Serial.println("Temperature: " + String(temp));
+  if(millis()-lastTempSend > SEND_T || abs(temp-tempState) >= DELTA_T_MIN) {
+//    Serial.println("Temperature: " + String(temp));
 	lastTempSend = millis();
-  }
+	
+	mean = meanTemperature();
+	Serial.println("Temperature: " + String(mean));
   
-  digitalWrite(LOWT_LED_PIN, temp < T_MAX ? HIGH : LOW);
-  digitalWrite(HIGHT_LED_PIN, temp < T_MAX ? LOW : HIGH);
+  digitalWrite(LOWT_LED_PIN, mean < T_MAX ? HIGH : LOW);
+  digitalWrite(HIGHT_LED_PIN, mean < T_MAX ? LOW : HIGH);
+  }
   
   tempState = temp;
 }

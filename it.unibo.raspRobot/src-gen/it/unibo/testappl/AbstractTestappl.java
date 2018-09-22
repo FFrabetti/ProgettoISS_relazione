@@ -106,21 +106,20 @@ public abstract class AbstractTestappl extends QActor {
 	    	if( aar.getInterrupted() ) curPlanInExec   = "emitEvents";
 	    	if( ! aar.getGoon() ) return ;
 	    	}
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?cmd(w(X))" )) != null ){
-	    	{//actionseq
-	    	temporaryStr = "lightCmd(on)";
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?light(X)" )) != null ){
+	    	temporaryStr = "lightCmd(X)";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "lightCmd(STATE)","lightCmd(on)", guardVars ).toString();
-	    	emit( "lightCmd", temporaryStr );
-	    	};//actionseq
 	    	}
-	    	else{ {//actionseq
-	    	temporaryStr = "lightCmd(off)";
-	    	println( temporaryStr );  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "lightCmd(STATE)","lightCmd(off)", guardVars ).toString();
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??light(X)" )) != null ){
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "lightCmd(STATE)","lightCmd(X)", guardVars ).toString();
 	    	emit( "lightCmd", temporaryStr );
-	    	};//actionseq
-	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " !?cmd(CMD)" )) != null ){
+	    	}
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(400,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "emitEvents";
+	    	if( ! aar.getGoon() ) return ;
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?cmd(CMD)" )) != null ){
 	    	temporaryStr = "ctrlEvent(robot,r1,CMD)";
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  

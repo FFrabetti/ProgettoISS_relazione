@@ -38,6 +38,7 @@ class ServerThread(Thread):
 	def run(self):
 		print("Thread " + self.name + ": started")
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		s.bind((HOST, self.port))
 		s.listen(1) # dim della coda di richieste
 		print("Thread " + self.name + ": waiting for a connection on port", self.port)

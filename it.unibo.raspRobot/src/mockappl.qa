@@ -4,7 +4,8 @@ Event frontSonar : sonar(DISTANCE)				// in
 Event lightCmd : lightCmd(STATE)				// out
 Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)		// out
 
-Context ctxAppl ip [ host="10.0.3.3" port=8018 ]
+Context ctxAppl ip [ host="192.168.43.3" port=8018 ]
+//Context ctxAppl ip [ host="10.0.3.3" port=8018 ]
 //Context ctxAppl ip [ host="localhost" port=8018 ]
 
 QActor testappl context ctxAppl {
@@ -20,16 +21,18 @@ QActor testappl context ctxAppl {
 	Plan emitEvents [
 		[ !? wait(T) ] delay T;
 		
-		[ !? cmd(w(X)) ] {
-			println(lightCmd(on));
-			emit lightCmd : lightCmd(on)
-		} else {
-			println(lightCmd(off));
-			emit lightCmd : lightCmd(off)
-		};
+		[ !? light(X) ] println(lightCmd(X));
+		[ ?? light(X) ] emit lightCmd : lightCmd(X);
+		
+		delay 400;
 		
 		[ !? cmd(CMD) ]	println(ctrlEvent(robot,r1,CMD));
-		[ ?? cmd(CMD) ]	emit ctrlEvent : ctrlEvent(robot,r1,CMD)	
+		[ ?? cmd(CMD) ]	emit ctrlEvent : ctrlEvent(robot,r1,CMD)
+		
+		//[ !? waitLight(T) ] delay T;
+		
+//		[ !? light(X) ] println(lightCmd(X));
+//		[ ?? light(X) ] emit lightCmd : lightCmd(X)
 	]
 	switchTo [ !? cmd(CMD) ] emitEvents
 }

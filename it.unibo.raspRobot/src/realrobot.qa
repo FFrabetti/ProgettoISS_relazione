@@ -7,7 +7,8 @@ Event local_robotCmd : moveRobot(CMD)			// internal
 Dispatch moveRobot : moveRobot(CMD)				// internal
 
 // RICORDA: inserire host addr giusto
-Context ctxRealRobotRasp ip [ host="10.0.3.14" port=8888 ]
+Context ctxRealRobotRasp ip [ host="192.168.43.14" port=8888 ]
+//Context ctxRealRobotRasp ip [ host="10.0.3.14" port=8888 ]
 //Context ctxRealRobotRasp ip [ host="localhost" port=8888 ]
 EventHandler evhreal for ctrlEvent {
 	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
@@ -17,7 +18,8 @@ EventHandler evhrealbroker for local_robotCmd {
 };
 
 // RICORDA: inserire host addr giusto
-Context ctxAppl ip [ host="10.0.3.3" port=8018 ] -standalone 
+Context ctxAppl ip [ host="192.168.43.3" port=8018 ] -standalone 
+//Context ctxAppl ip [ host="10.0.3.3" port=8018 ] -standalone 
 //Context ctxAppl ip [ host="localhost" port=8018 ] -standalone 
 
 QActor realrobotrasp context ctxRealRobotRasp {

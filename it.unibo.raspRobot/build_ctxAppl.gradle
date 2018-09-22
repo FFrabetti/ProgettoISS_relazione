@@ -13,15 +13,6 @@ apply plugin: 'eclipse'
 apply plugin: 'java-library-distribution'
 apply plugin: 'jacoco'
 
-// https://docs.gradle.org/current/userguide/application_plugin.html
-/*
-gradle installDist		// to create an image of the application in build/install/projectName
-gradle distZip			// to create a ZIP containing the distribution
-gradle distTar			// to create an application TAR
-gradle assemble			// to build both
-*/
-apply plugin: 'application'
-mainClassName = "$mainClassName"
 /*
 --------------------------------------------------------------
 PROPERTIES
@@ -187,10 +178,17 @@ task cleanDistDir(type: Delete) {
 //jar.dependsOn cleanDistDir
 jar.dependsOn copyInfoForDist
 //jar.finalizedBy cleanDistDir
-
-// no file duplicati nel tar
-distTar { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+distZip.finalizedBy cleanDistDir
 distTar.finalizedBy cleanDistDir
+
+task unZip(type: Copy) {
+    def zipFile = file("build/distributions/" + "$mainClassName" + "-" + "$version" + ".zip")
+    def outputDir = file("${buildDir}/unpacked")
+ 
+    from zipTree(zipFile)
+    into outputDir
+}
+unZip.dependsOn distZip
 
 /*
 ---------------------------------------------------------

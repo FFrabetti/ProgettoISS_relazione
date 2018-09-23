@@ -5,13 +5,13 @@
 // sensore temperatura (analog PIN)
 const int TEMP_PIN = A0;
 // sonar
-const int TRIG_PIN = 13;
-const int ECHO_PIN = 12;
+const int TRIG_PIN = 11;
+const int ECHO_PIN = 10;
 
 // ATTUATORI
 // 2 led temperatura (sotto/sopra la soglia)
 const int LOWT_LED_PIN = 2;
-const int HIGHT_LED_PIN = 3;
+const int HIGH_LED_PIN = 3;
 // led di movimento (blink)
 const int MOV_LED_PIN = 4;
 // servo motore
@@ -20,7 +20,7 @@ const int SRV_PIN = 9;
 const int MOTOR_PIN = 8;
 const int FORW_PIN = 7;
 const int RETRO_PIN = 6;
-const int MOTOR_LED_PIN = 11; //  debug
+const int MOTOR_LED_PIN = 5; //  debug
 // ---------------- PIN ----------------
 
 // periodo di loop(), arg di delay (ms)
@@ -30,7 +30,7 @@ const int SERIAL_FREQ = 9600;
 // frequenza di blink
 const int BLINK_FREQ = 400;
 // soglia temperatura
-const float T_MAX = 32;
+const float T_MAX = 35;
 // variazione minima temperatura per scrittura su seriale
 const float DELTA_T_MIN = 0.5;
 // variazione massima temperatura (filtraggio picchi)
@@ -55,6 +55,7 @@ char buffer[BUFF_LEN];
 // NOTA: lo "stato" viene memorizzato all'interno delle var glob
 char firstChar = '\0';	// primo carattere letto da seriale
 
+float avTemp = 0; // temperatura media dalla calibrazione
 float tempState = 0;
 int ledCmd = 0; // 0 = off, 1 = on, 2 = blink
 int ledState = LOW; // LOW / HIGH
@@ -80,7 +81,7 @@ void setPinInput(int pin) {
 
 void setup() {
   setPinOutput(LOWT_LED_PIN);
-  setPinOutput(HIGHT_LED_PIN);
+  setPinOutput(HIGH_LED_PIN);
   setPinOutput(MOV_LED_PIN);
   setPinOutput(MOTOR_PIN);
   setPinOutput(FORW_PIN);
@@ -93,6 +94,20 @@ void setup() {
   myServo.attach(SRV_PIN);
   
   Serial.begin(SERIAL_FREQ);
+  
+  temperatureCalibration(5000);
+}
+
+void temperatureCalibration(int time) {
+	float t = 0;
+	int count = 0;
+	while(millis() < time) {
+		t += readTemperature();
+		count++;
+    delay(20);
+	}
+	avTemp = t/count;
+	Serial.println("T = " + String(avTemp));
 }
 
 void readEOL() {
@@ -130,25 +145,29 @@ void loop() {
 float meanTemperature() {
 	float sum = 0;
 	int i;
-	
 	for(i=0; i<TEMP_BUFF_DIM; i++) {
 		sum = sum + tempBuffer[i];
 	}
-	
 	return sum/TEMP_BUFF_DIM;
 }
 
-void handleTemperature() {
-  float mean;
+float readTemperature() {
   int sensorVal = analogRead(TEMP_PIN);
   //conversione della lettura ADC in tensione
   float volt = (sensorVal / 1024.0) * 5.0;
   //conversione tensione in temperatura
   float temp = (volt - .5) * 100;
 
-	if(tempState != 0 && abs(temp-tempState) > DELTA_T_MAX) {
+  return temp;
+}
+
+void handleTemperature() {
+  float mean;
+  float temp = readTemperature();
+
+	if(abs(temp-avTemp) > DELTA_T_MAX) {
 		// picco da filtrare
-		// Serial.println("Picco di temperatura: " + String(temp));
+		Serial.println("Picco di temperatura: " + String(temp));
 		return;
 	}
   
@@ -164,7 +183,7 @@ void handleTemperature() {
 	Serial.println("Temperature: " + String(mean));
   
   digitalWrite(LOWT_LED_PIN, mean < T_MAX ? HIGH : LOW);
-  digitalWrite(HIGHT_LED_PIN, mean < T_MAX ? LOW : HIGH);
+  digitalWrite(HIGH_LED_PIN, mean < T_MAX ? LOW : HIGH);
   }
   
   tempState = temp;
@@ -181,8 +200,10 @@ void handleSonar() {
   int distance = duration/29/2;
 
   // frenata di emergenza
-  if(duration != 0 && distance < 10)
+  if(duration != 0 && distance < 10) {
     motorStop();
+    Serial.println("Frenata di emergenza");
+  }
   
   if(duration != 0 && (millis()-lastSonarSend > SONAR_PERIOD) && distance < DIST_MAX){
     Serial.println("Sonar: " + String(distance));
@@ -218,6 +239,8 @@ void handleServo() {
 		finalAngle = Serial.parseInt(); // 0 se non presente
 		
 		setAngle(angle);
+    delay(20);
+    motorStart(1);
 		endTurn = millis() + duration;
 //		Serial.println("endTurn: " + String(duration) + " ms");
     }
@@ -225,6 +248,7 @@ void handleServo() {
 	if(endTurn != 0 && millis() > endTurn) {
 		endTurn = 0;
 //		Serial.println("endTurn elapsed");
+    motorStop();
 		setAngle(finalAngle);
 	}
 }

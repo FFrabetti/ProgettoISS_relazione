@@ -113,3 +113,5 @@ out_*
 # use just top-level .gitignore
 .gitignore
 !/.gitignore
+
+!/zip/*.zip

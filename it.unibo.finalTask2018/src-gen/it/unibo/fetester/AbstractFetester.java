@@ -80,9 +80,7 @@ public abstract class AbstractFetester extends QActor {
 	    	if( ! aar.getGoon() ) return ;
 	    	temporaryStr = "\"starting to emit ctrlEvents\"";
 	    	println( temporaryStr );  
-	    	//switchTo emitEvents
-	        switchToPlanAsNextState(pr, myselfName, "fetester_"+myselfName, 
-	              "emitEvents",false, false, null); 
+	    	repeatPlanNoTransition(pr,myselfName,"fetester_"+myselfName,false,false);
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

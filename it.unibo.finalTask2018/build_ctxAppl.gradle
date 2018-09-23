@@ -61,12 +61,18 @@ BASIC SUPPORT (test, akka)
 /*
 UNIBO SUPPORTS
 */		
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'uniboInterfaces.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'unibonoawtsupports.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'uniboEnvBaseAwt.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: '2p301.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/unibo', include: 'qa18Akka.jar')
-	  compile fileTree(dir: '../it.unibo.iss.libs/libs/http',  include: 'nanoHTTPD.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'uniboInterfaces.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'unibonoawtsupports.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'uniboEnvBaseAwt.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: '2p301.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/unibo', include: 'qa18Akka.jar')
+	  compile fileTree(dir: '../it.unibo.libs2018/libs/http',  include: 'nanoHTTPD.jar')
+	
+		compile fileTree(dir: '../',  include: 'SocketUtils.jar')
+		compile fileTree(dir: '../',  include: 'json-20180813.jar')
+		compile fileTree(dir: '../',  include: 'ThermoGUI.jar')
+		compile fileTree(dir: '../',  include: 'ClockGUI.jar')
+		
 /*
 JSON
 */
@@ -175,7 +181,18 @@ task cleanDistDir(type: Delete) {
   }
 //jar.dependsOn cleanDistDir
 jar.dependsOn copyInfoForDist
-jar.finalizedBy cleanDistDir
+//jar.finalizedBy cleanDistDir
+distZip.finalizedBy cleanDistDir
+distTar.finalizedBy cleanDistDir
+
+task unZip(type: Copy) {
+    def zipFile = file("build/distributions/" + "$mainClassName" + "-" + "$version" + ".zip")
+    def outputDir = file("${buildDir}/unpacked")
+ 
+    from zipTree(zipFile)
+    into outputDir
+}
+unZip.dependsOn distZip
 /*
 ---------------------------------------------------------
 TESTING

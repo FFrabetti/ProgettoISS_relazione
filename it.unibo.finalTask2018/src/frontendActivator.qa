@@ -18,7 +18,7 @@ QActor feactivator context ctxFrontendActivator {
 	Plan init normal [
 		println("Activating frontend...");
 		// -o shows the output of the Node program
-		nodeOp "./nodeCode/frontend/robotFrontendServer.js" -o
+		nodeOp "../nodeCode/frontend/robotFrontendServer.js" -o
 	]
 }
 

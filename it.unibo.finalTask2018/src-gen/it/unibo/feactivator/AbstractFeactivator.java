@@ -75,7 +75,7 @@ public abstract class AbstractFeactivator extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"Activating frontend...\"";
 	    	println( temporaryStr );  
-	    	runNodeJs( "./nodeCode/frontend/robotFrontendServer.js", "true"); 
+	    	runNodeJs( "../nodeCode/frontend/robotFrontendServer.js", "true"); 
 	    	repeatPlanNoTransition(pr,myselfName,"feactivator_"+myselfName,false,false);
 	    }catch(Exception e_init){  
 	    	 println( getName() + " plan=init WARNING:" + e_init.getMessage() );

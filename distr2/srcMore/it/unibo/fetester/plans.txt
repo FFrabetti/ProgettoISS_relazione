@@ -1,0 +1,5 @@
+plan(1,init, sentence(true,delay( 20000) ,'','' ))
+plan(2,init, sentence(true,move(print("starting to emit ctrlEvents")),'','' ))
+plan(1,emitEvents, sentence(true,delay( 8000) ,'','' ))
+plan(2,emitEvents, sentence( cmd( CMD),move(print(ctrlEvent( robot,r1,CMD))),'','' ))
+plan(3,emitEvents, sentence(-  cmd( CMD) ,raise( ctrlEvent , ctrlEvent( robot,r1,CMD) )'),'','' ))

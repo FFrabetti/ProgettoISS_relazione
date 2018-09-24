@@ -4,7 +4,7 @@
 	"applHost": "localhost",
 	"applPort": 8018,
 	"frontendPort": 3000,
-	"withAuth": false,
+	"withAuth": true,
 	"externalActuatorMqtt": false,
 	"externalActuatorSocket": true
 }

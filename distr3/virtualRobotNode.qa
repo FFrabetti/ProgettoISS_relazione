@@ -1,0 +1,84 @@
+System finalTask2018            
+
+Event frontSonar : sonar(DISTANCE)
+Event sonarSensor : sonar(NAME,DISTANCE)
+Dispatch moveRobot : moveRobot(CMD)
+
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)
+Event local_robotCmd : moveRobot(CMD)
+
+pubSubServer  "tcp://localhost:1883"
+
+Context ctxVirtualRobotNode ip [ host="localhost" port=8822 ]
+EventHandler evhnode for ctrlEvent {
+	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
+};
+EventHandler evhnodebroker for local_robotCmd {
+	forwardEvent robotnode -m moveRobot		// stesso payload
+};
+
+//Context ctxApplPA ip [ host="localhost" port=8018 ] -standalone 
+Context ctxAppl ip [ host="localhost" port=8018 ] -standalone 
+
+QActor robotnode context ctxVirtualRobotNode -pubsub{
+	Rules {
+		robotConfig("localhost", 8999).	// Node server
+	}
+	
+	Plan init normal [
+		println("robotnode start");
+		javaRun it.unibo.finalTask2018.adapter.robotAdapter.useImpl("NodeRobot");
+	
+		[ !? robotConfig(ADDR,PORT) ]
+			javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment(ADDR,PORT)
+		else
+			javaRun it.unibo.finalTask2018.adapter.robotAdapter.setUpEnvironment()
+	]
+	switchTo waitForCmd
+		
+	Plan waitForCmd [
+		println("robotnode waiting for commands")
+	]
+	transition stopAfter 3600000
+		whenMsg moveRobot -> execMove
+	finally repeatPlan
+	   
+	Plan execMove resumeLastPlan [
+		printCurrentMessage;
+		
+		onMsg moveRobot : moveRobot(h(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotStop();
+		onMsg moveRobot : moveRobot(w(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotForward();
+		onMsg moveRobot : moveRobot(s(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotBackward();
+		onMsg moveRobot : moveRobot(a(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotLeft();
+		onMsg moveRobot : moveRobot(d(X)) -> javaRun it.unibo.finalTask2018.adapter.robotAdapter.robotRight()
+	]
+}
+
+//Dispatch ctrlMsg : ctrlEvent(CATEG,NAME,CMD) // broker -> robot
+//EventHandler evhnode for ctrlEvent {
+//	forwardEvent nodebroker -m ctrlMsg		// stesso payload
+//}
+//QActor nodebroker context ctxVirtualRobotNode {
+//	Plan init normal [ ]
+//	transition stopAfter 3600000
+//		whenMsg ctrlMsg : ctrlEvent(robot,r1,CMD) do forward robotnode -m moveRobot : moveRobot(CMD)
+//	finally repeatPlan
+//}
+
+//QActor testerrobotnode context ctxVirtualRobotNode {
+//	Plan init normal [
+//		println("testerrobotnode start");
+//		delay 20000; // wait for everything else to start...
+//		forward robotnode -m moveRobot : moveRobot(w(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(h(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(s(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(a(1));
+//		delay 2000;
+//		forward robotnode -m moveRobot : moveRobot(d(1))
+//	]
+//	transition stopAfter 3600000
+//		whenMsg sonarSensor : sonar(S,D) do println(sonar(S,D))
+//}

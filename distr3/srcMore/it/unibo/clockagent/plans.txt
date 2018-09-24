@@ -1,0 +1,5 @@
+plan(1,init, sentence(true,move(print("clockAgent start")),'','' ))
+plan(2,init, sentence(true,not here StateMoveNormal,'','' ))
+plan(1,emitTime, sentence(true,delay( 6000) ,'','' ))
+plan(2,emitTime, sentence(true,not here StateMoveNormal,'','' ))
+plan(3,emitTime, sentence(-  currentTime( H,M) ,raise( clock , clock( H,M) )'),'','' ))

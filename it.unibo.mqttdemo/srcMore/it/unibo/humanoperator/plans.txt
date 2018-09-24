@@ -1,0 +1,4 @@
+plan(1,init, sentence(true,move(print("humanOperator start")),'','' ))
+plan(1,sendCmd, sentence(true,eventswitch(usercmd, »usercmd( robotgui( CMD)), move(print(robotgui( CMD))) ),'','' ))
+plan(2,sendCmd, sentence(true,eventswitch(usercmd, »usercmd( robotgui( CMD)), forward(controller, cmd,cmd( CMD)) ),'','' ))
+plan(3,sendCmd, sentence(true,move(resumeplan),'','' ))

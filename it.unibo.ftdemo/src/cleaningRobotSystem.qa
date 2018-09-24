@@ -225,7 +225,8 @@ QActor swag context ctxAppl {
    		}
    	]
 	transition stopAfter 3600000
-		whenMsg externalcmd -> receivedCmd
+		whenMsg externalcmd -> receivedCmd,
+		whenEvent frontSonar -> init // consuma eventuali eventi residui
 	finally repeatPlan
    	
    	Plan receivedCmd [

@@ -183,6 +183,8 @@ task cleanDistDir(type: Delete) {
 //jar.dependsOn cleanDistDir
 jar.dependsOn copyInfoForDist
 //jar.finalizedBy cleanDistDir
+distZip.finalizedBy cleanDistDir
+distTar.finalizedBy cleanDistDir
 /*
 ---------------------------------------------------------
 TESTING

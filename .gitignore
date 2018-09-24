@@ -19,7 +19,7 @@
 prove/
 
 # frontend node modules 
-it.unibo.finalTask2018/nodeCode/frontend/node_modules/
+nodeCode/frontend/node_modules/
 
 # cartelle distributions, ecc...
 it.unibo.*/build/

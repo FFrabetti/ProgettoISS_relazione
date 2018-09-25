@@ -45,7 +45,7 @@
 		Plan,System,Event,Dispatch,Context,ip,host,port,httpserver,QActor,context,println,
 		normal,switchTo,transition,whenMsg,finally,repeatPlan,stopAfter,resumeLastPlan,
 		onMsg,addRule,replyToCaller,onEvent,removeRule,javaRun,whenTime,sendto,emit,else,not,
-		selfMsg,forward,delay,whenEvent,printCurrentEvent,EventHandler,forwardEvent,Rules,demo
+		selfMsg,forward,delay,whenEvent,printCurrentEvent,EventHandler,forwardEvent,Rules,demo,memoCurrentEvent
 	}
 }
 
@@ -182,9 +182,7 @@
 \begin{abstract}
 \footnotesize
 
-This document is the explicit representation of the production process adopted.\\
-
-\todo{abstract and keywords}
+This document is the explicit representation of the production process adopted for the Software Systems Engineering final task 2018.\\
 
 % (This part is optional)
 %%This a Latex template to be used for the explicit representation of the production process adopted in the Software Systems Engineering course. 
@@ -192,10 +190,10 @@ This document is the explicit representation of the production process adopted.\
 
 % The document can be compiled by using the \fname{kitISLatex.zip} given in \code{iss2018/it.unibo.issMaterial/issdocs/Lab}
   
-\keywords{
+%\keywords{
 % (This part is optional)
-Software engineering, software development process, process representation, ...
-}
+%Software engineering, software development process, process representation, ...
+%}
 \end{abstract}
 
 % evita le righe eccessivamente lunghe aumentando la spaziatura tra le parole
@@ -312,7 +310,7 @@ Per prima cosa analizziamo i termini che compaiono nei requisiti allo scopo di c
 
 \subsection{Cleaning the room}
 \labelssec{cleaningRA}
-Pulire la stanza significa trovare un percorso da un punto di partenza (\code{start-point}) ad un punto di arrivo (\code{end-point}) predefiniti che copra l'intera superficie disponibile. Ciò può essere fatto in svariati modi, tuttavia si considera desiderabile impiegare il minor tempo possibile e quindi limitare il passaggio ripetuto per le stesse posizioni già pulite in precedenza.
+Pulire la stanza significa trovare un percorso, da un punto di partenza (\code{start-point}) ad un punto di arrivo (\code{end-point}) predefiniti, che copra l'intera superficie disponibile. Ciò può essere fatto in svariati modi, tuttavia si considera desiderabile impiegare il minor tempo possibile e quindi limitare il passaggio ripetuto per le stesse posizioni già pulite in precedenza.
 
 Consideriamo inizialmente una stanza rettangolare e priva di ostacoli. In questo caso esistono più percorsi che consentono di non passare mai due volte per lo stesso punto: ad esempio procedendo a spirale lungo le pareti e proseguendo verso il centro della stanza, oppure a ``zig-zag'' parallelamente ad una parete, avvicinandosi via via a quella opposta.
 
@@ -334,54 +332,54 @@ L'unico modo che il robot ha a disposizione per misurare le distanze è tramite 
 
 Il robot quindi, muovendosi all'interno della griglia, può tenere traccia di tutti i passi fatti così da poter verificare in seguito di essere passato almeno una volta su ogni casella. Questo comporta però di conoscere prima la dimensione della stanza.\\
 
-Un'alternativa è assumere che, adottando il movimento a ``zig-zag'', quando il robot viene rilevato molto vicino a \code{sonar2} questi abbia pulito l'intera stanza. Ciò è sicuramente vero nel caso di una semplice stanza rettangolare e priva di ostacoli, la cui lunghezza è multiplo pari del ``passo laterale'' compiuto dal robot al termine di ogni rettilineo.
+In alternativa, adottando un movimento a ``zig-zag'', quando il robot viene rilevato molto vicino a \code{sonar2} possiamo ragionevolmente assumere che questi abbia pulito l'intera stanza. Ciò è sicuramente vero nel caso di una semplice stanza rettangolare e priva di ostacoli, la cui lunghezza è multiplo pari del ``passo laterale'' compiuto dal robot al termine di ogni rettilineo.
+
+Nel caso di multiplo dispari, l'ultimo tratto verrebbe percorso due volte: una per effettuare la pulizia e l'altra per raggiungere la posizione di \code{sonar2}.
 
 \subsubsection{R-AvoidFix, R-AvoidMobile and R-Obstacle}
 Possiamo dividere gli ostacoli in due categorie: fissi e mobili. I primi vanno necessariamente aggirati in qualche modo, mentre per i secondi il robot può aspettare che l'ostacolo si sposti per poi proseguire il proprio percorso di pulizia.
 
-Inoltre ci sono alcuni tipi di ostacoli che il robot potrebbe essere incapace di superare (\code{R-Obstacle}), come ad esempio una campana posta su di esso o una barriera imprevista da parete a parete che separa in due la stanza.\\
+Inoltre, ci sono alcuni tipi di ostacoli che il robot potrebbe essere incapace di superare (\code{R-Obstacle}), come ad esempio una campana posta su di esso o una barriera imprevista da parete a parete che separa in due la stanza.\\
 
-Come analisti però riteniamo che anche gli ostacoli il cui superamento richieda un numero di mosse superiore ad una certa soglia vadano considerati invalicabili, in modo da semplificare la logica applicativa. Dal punto di vista del robot risulterebbe infatti complesso stabilire quando ha a che fare con un ostacolo ``effettivamente'' insuperabile (come l'esempio della campana) o con uno molto difficile da superare, ovvero che porti al fallimento di numerosi tentativi di superamento.
+Come analisti riteniamo però che anche gli ostacoli il cui tentato superamento comporti un numero di fallimenti superiore ad una certa soglia vadano considerati invalicabili. Dal punto di vista del robot risulterebbe infatti complesso stabilire quando ha a che fare con un ostacolo ``effettivamente'' insuperabile (come nell'esempio della campana) o con uno molto difficile da superare, ovvero che porti al fallimento di numerosi tentativi di superamento.
 
 \subsection{R-Start and R-Stop}
 Per avviare la pulizia della stanza, è necessario l'invio dell'apposito comando da parte di un utente autorizzato che si interfaccia al sistema mediante una \code{console}. Tale utente può anche richiedere la terminazione prematura dell'operazione.
 
 Un utente è autorizzato se è dotato di un username e una password con cui accedere alla console, pertanto è necessario offrire un servizio di login che, supportato da un meccanismo per la persistenza dei dati, permetta di ottenere delle credenziali per accedere al sistema.\\
 
-\begin{figure}
-\centering
-\includegraphics[scale=0.55]{img/screenFrontend/login.png}
-\caption{Richiesta di login al tentativo di accesso alla console}
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.55]{img/screenFrontend/login.png}
+%\caption{Esempio di richiesta di login al tentativo di accesso alla console}
+%
+%\vspace{8px}
+%
+%\includegraphics[scale=0.55]{img/screenFrontend/signup.png}
+%\caption{Esempio di schermata di registrazione}
+%\end{figure}
 
-\vspace{8px}
+Inoltre, i requisiti riferiscono esplicitamente che l'interfaccia grafica sia utilizzabile da remoto da qualsiasi dispositivo, ad esempio da PC o smartphone. Se la console fosse raggiungibile via web, qualsiasi utente umano potrebbe pilotare il robot tramite un browser, purché precedentemente registrato e autenticato nel sistema.
 
-\includegraphics[scale=0.55]{img/screenFrontend/signup.png}
-\caption{Schermata di registrazione}
-\end{figure}
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.55]{img/screenFrontend/console.png}
+%\caption{Esempio di console web per utenti autenticati}
+%\end{figure}
 
-Inoltre i requisiti riferiscono esplicitamente la presenza di un'interfaccia grafica utilizzabile da remoto da qualsiasi dispositivo, ad esempio da PC o smartphone.
+\subsection{Additional requirements}
 
-Si delinea dunque la necessità un componente raggiungibile via web tramite un browser che permetta ad un utente umano di pilotare il robot, ma solo quelli precedentemente registrati nel sistema e che abbiano effettuato l'accesso.
+\begin{itemize}
+\item \code{R-TimeOk}/\code{R-TimeKo}: il robot può svolgere il suo lavoro solo durante un certo intervallo temporale, determinato da un orologio presente nel sistema (ad esempio quello della macchina locale).
+\item \code{R-TempOk}/\code{R-TempKo}: per poter utilizzare il robot la temperatura non può essere superiore ad una certa soglia, quindi il sistema deve essere in grado di interagire con un sensore remoto per ricevere i dati termici aggiornati. 
+\item \code{R-BlinkLed}: durante il movimento, il robot fisico deve far lampeggiare un led posto su di esso.
+\item \code{R-BlinkHue}: il robot virtuale deve far lampeggiare una Hue Lamp Philips: una \emph{smart thing} con cui è possibile interagire da remoto.
+\end{itemize}
 
-\begin{figure}
-\centering
-\includegraphics[scale=0.55]{img/screenFrontend/console.png}
-\caption{Console web per gli utenti autenticati}
-\end{figure}
-
-\subsection{R-TimeOk/R-TimeKo and R-TempOk/R-TempKo}
-Il robot può svolgere il suo lavoro solo durante un certo intervallo temporale. Per poter verificare questo requisito è sufficiente la presenza di un qualunque tipo di orologio all'interno del sistema, ad esempio quello della macchina locale.\\
-
-Similmente, per poter utilizzare il robot la temperatura non può essere superiore ad una certa soglia (es. \SI{25}{\celsius}). In questo caso l'informazione deve arrivare da un sensore remoto, quindi il sistema deve essere in grado di interagire con esso per ricevere i dati termici aggiornati.
-
-\subsection{R-BlinkLed and R-BlinkHue}
-Mentre è all'opera, il robot fisico deve far lampeggiare un led posto su di esso. Essendo il led un attuatore luminoso estremamente semplice (solitamente dotato di due soli stati on/off), è necessario delegare ad un altro componente la responsabilità di accenderlo e spegnerlo ripetutamente durante la pulizia, così da ottenere l'effetto intermittente richiesto dal requisito.\\
-
-La Hue Lamp Philips è invece una \emph{smart thing} estremamente versatile dal punto di vista del comportamento.
-Da analisti non riteniamo essere necessaria quindi l'introduzione di un ulteriore componente per eseguire il lampeggiamento, in quanto essa stessa possiede già una analoga funzione built-in.
+I componenti richiesti da questi requisiti sono definiti formalmente nella sezione successiva.
 
 \subsection{System architecture}
-Dai requisiti emerge il fatto che il sistema sia distribuito e composto da due nodi di esecuzione: uno per il robot ed uno che ospita la logica di controllo e fornisce la console, usabile da remoto, per pilotare il robot (\code{R-Start} e \code{R-Stop}).\\
+Dai requisiti emerge il fatto che il sistema sia distribuito e composto da due nodi di esecuzione: uno per il robot ed uno che ospita la logica di controllo e fornisce la console, usabile da remoto, per pilotare il robot.\\
 
 \noindent Si delineano nello specifico 5 entità:
 \begin{enumerate}
@@ -394,7 +392,7 @@ Dai requisiti emerge il fatto che il sistema sia distribuito e composto da due n
 
 \noindent L'ambiente in cui si trova il robot è inoltre costituito da:
 \begin{itemize}[label={--}]
-\item 2 sensori \code{sonar1} e \code{sonar2} % (ambiente virtuale) %% sono virtuali solo perchè non li abbiamo fisici, giusto?
+\item 2 sensori: \code{sonar1} e \code{sonar2} % (ambiente virtuale) %% sono virtuali solo perchè non li abbiamo fisici, giusto?
 \item ostacoli fissi (pareti) e mobili
 \end{itemize}
 
@@ -411,15 +409,17 @@ Passiamo ora ad analizzare formalmente i singoli componenti presenti all'interno
 
 \subsection{Actuators}
 \labelssec{actuatorsRA}
-Il \texttt{Led}, essendo un componente estremamente semplice e trovandosi sul robot fisico, può essere visto come un'entità passiva senza un proprio flusso di controllo. Pertanto, il modello del \texttt{Led} -- un oggetto Java -- può essere formalmente definito dalla seguente interfaccia:
+Il \texttt{Led}, essendo un componente estremamente semplice e trovandosi sul robot fisico, può essere visto dal punto di vista dell'applicazione come un'entità passiva senza un proprio flusso di controllo. Pertanto, il modello del \texttt{Led} -- un oggetto Java -- può essere formalmente definito dalla seguente interfaccia:
 
 \begin{center}
 \includegraphics[scale=0.4]{img/iled.png}
 \end{center}
 
-L'interazione con il \texttt{Led} può quindi avvenire tramite \textit{procedure call} ad opera del robot fisico su cui si trova.\\
+L'interazione con il \texttt{Led} può quindi avvenire tramite \textit{procedure call} ad opera del robot fisico su cui si trova.
 
-L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un componente software per poter interagire con essa attraverso un'interfaccia \textit{RESTful}
+Il lampeggiamento del led dovrà essere gestito da un apposito componente attivo il cui compito è accenderlo e spegnerlo ripetutamente, in base alla logica applicativa, utilizzando i metodi esposti dall'interfaccia.\\
+
+L'\texttt{Hue Lamp} è invece un'entità attiva che ci viene fornita dal committente insieme ad un bridge per poter interagire con essa attraverso un'interfaccia \textit{RESTful}
 \footnote{\url{https://www.developers.meethue.com/philips-hue-api}}.
 
 Possiamo quindi definire il modello di un attore in grado di interagire con l'\texttt{Hue Lamp} remota: per farlo usiamo il linguaggio custom della nostra Software House \qa, poiché ci permette di modellare sistemi distribuiti eterogenei.\\
@@ -428,7 +428,9 @@ Possiamo quindi definire il modello di un attore in grado di interagire con l'\t
 
 Si noti come la scelta di utilizzare l'evento \codescript{lightCmd} consenta di controllare più dispositivi senza che questi siano noti a priori dalla sorgente che emette tali eventi in base alla logica applicativa.
 
-Inoltre, poiché i comandi utilizzati nel payload dell'evento non si limitano al solo \textit{lampeggiamento}, il modello è generale e facilmente riutilizzabile. Ad esempio un cambiamento dei requisiti potrebbe stabilire che il led debba restare acceso durante il movimento del robot.
+Inoltre, poiché i comandi utilizzati nel payload dell'evento non si limitano al solo \textit{lampeggiamento}, il modello è generale e facilmente riutilizzabile. Ad esempio un cambiamento dei requisiti potrebbe stabilire che la lampada debba restare acceso durante il movimento del robot.\\
+
+Dal momento che l'implementazione del comportamento technology-dependent è delegata a metodi Java (\codescript{javaRun}), un modello analogo può essere utilizzato per il lampeggiamento del led.
 
 \subsection{Sensors}
 
@@ -437,7 +439,7 @@ Poiché abbiamo a che fare con un servizio remoto che fornisce i dati sulla temp
 
 In generale, l'applicazione può interagire con l'adapter mediante tre possibili approcci del tipo produttore/consumatore:
 \begin{itemize}
-\item \textbf{polling:} chi necessita dell'informazione si fa carico di fare richiesta periodicamente al consumatore;
+\item \textbf{polling:} chi necessita dell'informazione si fa carico di fare richiesta periodicamente al produttore;
 \item \textbf{pattern observer:} l'observer si registra presso l'observable e viene notificato al cambiamento di stato di quest'ultimo;
 \item \textbf{publish/subscribe:} è il produttore stesso a pubblicare all'esterno le informazioni quando queste sono disponibili, ad uso degli eventuali consumatori.
 \end{itemize}
@@ -464,7 +466,8 @@ Il modello di tale attore è pressoché analogo a quello visto per \texttt{Tempe
 \labelssec{humanOpRA}
 Lo \texttt{HumanOperator} può essere modellato come un emettitore di comandi per il robot. Per disaccoppiare le comunicazioni tra sorgente e destinatario dei comandi, l'operator si rivolge ad una terza entità che rappresenta la logica applicativa, così da non essere vincolato a conoscere l'identità di ogni possibile robot pilotabile.
 
-Si noti come tale disaccoppiamento funziona anche al contrario: gli eventuali robot possono essere pilotati il maniera uniforme da molteplici sorgenti di comandi, tutte facenti riferimento alla stessa application logic. Nel nostro caso ciò si verifica per l'utilizzatore umano (\texttt{HumanOperator}) e per l'agente software che muove il robot in autonomia per la pulizia della stanza (\texttt{SoftwareAgent}, vedi \xss{swagPA}).\\
+Si noti come tale disaccoppiamento funziona anche al contrario: gli eventuali robot possono essere pilotati il maniera uniforme da molteplici sorgenti di comandi, tutte facenti riferimento alla stessa application logic.\\
+%Nel nostro caso ciò si verifica per l'utilizzatore umano (\texttt{HumanOperator}) e per l'agente software che muove il robot in autonomia per la pulizia della stanza (\texttt{SoftwareAgent}, vedi \xss{swagPA}).\\
 
 \lstinputlisting[style=style_qa, firstline=78, lastline=92, firstnumber=78]{../it.unibo.finalTask2018/src/requirementsAnalysis.qa}
 
@@ -486,7 +489,7 @@ Il robot è anche dotato di un sonar frontale che gli permette di rilevare la pr
 
 Il robot è quindi un'entità attiva il cui scopo è interpretare i messaggi ricevuti in un certo formato ed emettere eventi relativi al sonar frontale.\\
 
-Poiché l'attore che incarna la logica applicativa emette comandi sotto forma di eventi \codescript{robotCmd}, è necessario introdurre un ulteriore componente che effettui il mapping di questi nei rispettivi messaggi \codescript{moveRobot} gestiti dal robot. In questo caso, dal momento che vogliamo evitare che i comandi per pilotare il robot vadano persi, facciamo ricorso per tale scopo ad un componente \emph{event-driven} (\texttt{EventHandler}).\\
+Poiché l'attore che incarna la logica applicativa emette comandi mediante eventi \codescript{robotCmd}, è necessario introdurre un ulteriore componente che effettui il mapping di questi nei rispettivi messaggi \codescript{moveRobot} gestiti dal robot. In questo caso, dal momento che vogliamo evitare che i comandi per pilotare il robot vadano persi, facciamo ricorso per tale scopo ad un componente \emph{event-driven} (\texttt{EventHandler}).\\
 
 \lstinputlisting[style=style_qa, lastline=42]{../it.unibo.finalTask2018/src/ddr.qa}
 
@@ -526,7 +529,7 @@ Il modello delle risorse è quindi un disaccoppiatore del mondo fisico da quello
 \item l'aggiornamento del modello dell'attuatore comporta infine un aggiornamento dell'attuatore fisico
 \end{enumerate}
 
-Come analisti riteniamo vantaggioso introdurre un modello delle risorse così da non vincolare la logica applicativa a dettagli tecnologico-implementativi, sebbene ciò comporti un piccolo sforzo aggiuntivo iniziale. Tale overhead è però un investimento a fronte dello sviluppo futuro di applicazioni simili, inoltre, se il modello fosse standardizzato, sarebbe garantita l'interoperabilità tra sistemi diversi.
+Come analisti riteniamo vantaggioso introdurre un modello delle risorse così da non vincolare la logica applicativa a dettagli tecnologico-implementativi, sebbene ciò comporti un piccolo sforzo aggiuntivo iniziale. Tale overhead è però un investimento a fronte dello sviluppo futuro di applicazioni simili.%, inoltre, se il modello fosse standardizzato, sarebbe garantita l'interoperabilità tra sistemi diversi.
 
 \subsection{Resource Model}
 Per la definizione del modello delle risorse usiamo un linguaggio dichiarativo che consenta di esprimere sia lo stato di ciascun componente, sia le operazioni primitive su di esso. A tal fine, introduciamo il seguente modello scritto in Prolog:\\
@@ -547,16 +550,16 @@ Rispetto all'architettura risultante dall'analisi dei requisiti sono stati inolt
 \subsection{Controller}
 Il ruolo del \texttt{Controller} è quello di gestire il modello delle risorse in base ai dati ricevuti dai sensori e alla logica applicativa, in accordo con il pattern MVC: resource model, sensori/attuatori e controller.
 
-Modelliamo quindi il \texttt{Controller} come un attore in grado di ricevere in input informazioni dagli altri componenti del sistema ed emettere in output comandi sotto forma di eventi \codescript{ctrlEvent : ctrlEvent(CATEG,NAME,CMD)}.\\
+Modelliamo quindi il \texttt{Controller} come un attore in grado di ricevere dati in input dagli altri componenti del sistema ed emettere in output informazioni sullo stato del modello sotto forma di eventi \codescript{ctrlEvent : ctrlEvent(CATEG,NAME,VALUE)}.\\
 
 \lstinputlisting[style=style_qa, lastline=19]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
-Tramite un \emph{EventHandler}, ogni evento emesso dai sensori viene mappato in un evento \codescript{inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)} ad uso interno del \texttt{Controller}, così che eventi provenienti da sensori fisici diversi possano essere trattati allo stesso modo e non venire mai persi, % (a meno che le operazioni compiute dal \texttt{Controller} non richiedano troppo tempo),
+Tramite un \emph{EventHandler}, ogni evento emesso dai sensori viene mappato in \codescript{inputCtrlEvent : inputEvent(CATEG,NAME,VALUE)} ad uso interno del \texttt{Controller}, così che eventi provenienti da sensori fisici diversi possano essere trattati allo stesso modo e non venire mai persi, % (a meno che le operazioni compiute dal \texttt{Controller} non richiedano troppo tempo),
 essendo l'\emph{EventHandler} un componente event-driven.
 
 Per discriminare la natura degli eventi ricevuti, il \texttt{Controller} può usare i campi \codescript{CATEG} e \codescript{NAME} presenti nel payload.\\
 
-Come già anticipato, ad ogni modifica del Resource Model relativa allo stato di un attuatore, il \texttt{Controller} emette a sua volta degli eventi \codescript{ctrlEvent} per notificare il cambiamento ai vari attuatori fisici.\\
+Come già anticipato, ad ogni modifica del Resource Model relativa allo stato di un attuatore, il \texttt{Controller} emette a sua volta eventi \codescript{ctrlEvent} per notificare il cambiamento ai vari attuatori fisici.\\
 
 \lstinputlisting[style=style_qa, firstline=29, lastline=122, firstnumber=29]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
@@ -578,13 +581,13 @@ In una fase preliminare, per motivi di testing, \texttt{SoftwareAgent} fa sempli
 
 \subsection{Changes to HumanOperator}
 \labelssec{humanOpPA}
-Il sistema deve inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'applicazione, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con un server più sofisticato (ad esempio per realizzare l'autenticazione degli utenti richiesta nei requisiti \code{R-Start} e \code{R-Stop}).\\
+Il sistema deve inoltre fornire un'interfaccia grafica per permettere l'interazione con l'utente da qualsiasi dispositivo (\code{R-Start}). Ciò può essere realizzato in prima battuta tramite l'inserimento del flag \codescript{-httpserver} nel contesto dell'applicazione, sfruttando il server HTTP fornito dall'infrastruttura \qa, con l'idea di poterlo sostituire in futuro con uno più sofisticato (ad esempio per realizzare l'autenticazione degli utenti richiesta nei requisiti \code{R-Start} e \code{R-Stop}).\\
 
 \lstinputlisting[style=style_qa, firstline=14, lastline=14, firstnumber=14]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
-La GUI web ottenuta tramite il flag \codescript{-httpserver} è dotata di bottoni che, quando vengono premuti, scatenano eventi \codescript{usercmd : usercmd(robotgui(X))}. Lo \texttt{HumanOperator} deve quindi catturare questi eventi e inoltrarli sotto forma di messaggi \codescript{cmd : cmd(X)} al \texttt{Controller}.
+La GUI web ottenuta tramite il flag \codescript{-httpserver} è dotata di bottoni che, quando vengono premuti, scatenano eventi \codescript{usercmd : usercmd(robotgui(X))}. \texttt{HumanOperator} deve quindi catturare questi eventi e inoltrarli sotto forma di messaggi \codescript{cmd : cmd(X)} al \texttt{Controller}.
 
-Lo \texttt{HumanOperator} è ancora un emettitore di comandi per il robot come visto nella sezione precedente, tuttavia ora è in grado di generarli in base ai pulsanti premuti dall'utilizzatore umano sulla console.\\
+\texttt{HumanOperator} è ancora un emettitore di comandi per il robot come visto nella sezione precedente, tuttavia ora è in grado di generarli in base ai pulsanti premuti dall'utilizzatore umano sulla console.\\
 
 \lstinputlisting[style=style_qa, firstline=179, lastline=194, firstnumber=179]{../it.unibo.finalTask2018/src/problemAnalysis.qa}
 
@@ -600,13 +603,12 @@ Poiché gli \emph{EventHandler} possono solo convertire eventi in messaggi con l
 
 %\lstinputlisting[style=style_qa, firstline=52, lastline=57, firstnumber=52]{../it.unibo.finalTask2018/src/virtualRobotNode.qa}
 
-\subsubsection{Virtual Robot with Node.js}
+\subsubsection{Virtual and Real robots}
 \labelssec{virtualRobotPA}
-Concettualmente, il modello del robot virtuale è esattamente lo stesso della \xss{robotRA}. L'unica differenza risiede nella diversa implementazione dei metodi Java chiamati con il comando \codescript{javaRun}: in questo caso la classe Java dovrà connettersi con il server Node (dopo averlo avviato) e tradurre i comandi di movimento ricevuti in opportuni messaggi da inviare sulla connessione TCP. Sempre dalla stessa connessione riceverà, in un certo formato, i dati relativi ai vari sonar.
+Concettualmente, il modello del robot virtuale è esattamente lo stesso della \xss{robotRA}. L'unica differenza risiede nella diversa implementazione dei metodi Java chiamati con il comando \codescript{javaRun}.
 
-Si rimanda questo argomento più nel dettaglio nella \xss{robotNodeImpl}.
+Si rimanda questo argomento più nel dettaglio nella \xss{robotNodeImpl}.\\
 
-\subsubsection{Real Robot mock}
 Per quanto riguarda il robot fisico, questi viene al momento simulato tramite un oggetto Java che si limita a stampare a video i comandi ricevuti.
 
 Un attore a parte si occupa invece di gestire lo stato del led, anch'esso rappresentato da un oggetto mock.\\
@@ -624,7 +626,7 @@ Da notare come entrambi i robot, reagendo agli stessi eventi \codescript{ctrlEve
 Al momento, l'applicazione è in grado di soddisfare i seguenti requisiti:
 \begin{itemize}
 \item \code{R-TempOk}, \code{R-TimeOk}, \code{R-TempKo} e \code{R-TimeKo}, ad opera di opportune regole Prolog presenti nella base di conoscenza del \texttt{Controller}.
-\item \code{R-BlinkLed} e \code{R-BlinkHue}\footnote{Resta da sviluppare l'implementazione della classe Java \emph{technology-dependent} che dovrà interagire in modo RESTful con la \texttt{Hue Lamp} remota}, mediante l'emissione da parte del controller di eventi \codescript{ctrlEvent : ctrlEvent(led,l1,CMD)} (poi mappati in \codescript{lightCmd}) a seguito della modifica del modello del led in base allo stato di movimento del robot. L'agent della Hue Lamp e il robot fisico sono sensibili a questi eventi.
+\item \code{R-BlinkLed} e \code{R-BlinkHue}\footnote{Resta da sviluppare l'implementazione della classe Java \emph{technology-dependent} che dovrà interagire in modo RESTful con la \texttt{Hue Lamp} remota}, mediante l'emissione da parte del controller di eventi \codescript{ctrlEvent : ctrlEvent(led,l1,CMD)} (poi mappati in \codescript{lightCmd}) a seguito della modifica del modello del led in base allo stato di movimento del robot. L'agent della Hue Lamp e il robot fisico (attore \codescript{ledrobotmock}) sono sensibili a questi eventi.
 \end{itemize}
 
 I relativi test vengono trattati nella \xsss{timeTempBlinkFTest}.\\
@@ -636,8 +638,29 @@ Rimangono da affrontare i restanti requisiti relativi al movimento autonomo del 
 \item \code{R-AvoidMobile}, \code{R-AvoidFix} e \code{R-Obstacle}: il robot deve essere in grado di rilevare ed evitare gli ostacoli sia fissi sia mobili, eventualmente fermandosi nel caso ciò non sia possibile.
 \end{enumerate}
 
+\subsection{Project architecture}
+Il ruolo centrale ricoperto dal controller ci suggerisce di impiegarlo come \emph{system integrator} per l'architettura di progetto, sfruttando la propagazione delle informazioni offerta dall'infrastruttura \qa. Ogni componente (nella forma di un micro-servizio) infatti, per entrare a far parte del sistema, deve unicamente conoscere il contesto del controller, dal quale potrà ricevere a runtime la conoscenza delle altre entità presenti.\\
+
+Tra queste, una dovrà offrire un supporto per l'interazione \textit{human-to-machine}: in particolare, occorre consentire l'invio di comandi per il robot da qualsiasi dispositivo e permettere l'autenticazione degli utenti. A tal fine, introduciamo un frontend server raggiungibile via web tramite un'interfaccia RESTful, poiché standard.
+
+Nell'architettura di progetto della \xf{projArch} bisogna quindi considerare anche i browser degli utenti (o un qualsiasi altro client RESTful), il server HTTP che gestisce le richieste e una base dati per la persistenza necessaria all'autenticazione.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.4]{img/projectArchitecture.png}
+\caption{Architettura di progetto}\labelfig{projArch}
+\end{figure}
+
+\vspace{16px}
+
+Una possibile alternativa potrebbe essere sostituire l'infrastruttura \qa con un modello del tipo publish/subscribe per la propagazione delle informazioni all'interno del sistema. In questo scenario, ogni entità è svincolata dalle altre, in quanto deve conoscere unicamente il server presso il quale registrarsi come publisher o subscriber, ad esempio un server MQTT.
+
+Considerazioni a questo proposito vengono presentate nella \xss{frontendImpl}.
+
 \subsection{Starting and stopping the agent}
-La \emph{web GUI} fornita dall'infrastruttura \qa tramite il flag \codescript{-httpserver}, oltre ai bottoni che corrispondono ai movimenti elementari del robot, presenta due pulsanti che possono essere utilizzati per l'avvio e la terminazione della pulizia della stanza ad opera di \texttt{SoftwareAgent}, con l'idea di gestire in seguito la problematica relativa all'autenticazione degli utenti.
+Prima di passare all'implementazione del frontend (\xss{frontendImpl}), per avere in breve tempo un prototipo funzionante della console, decidiamo di modificare quella fornita tramite il flag \codescript{-httpserver}.
+
+Questa, oltre ai bottoni che corrispondono ai movimenti elementari del robot, presenta due pulsanti che possono essere utilizzati per l'avvio e la terminazione della pulizia della stanza ad opera di \texttt{SoftwareAgent}.
 
 Attualmente la console emette eventi \codescript{cmd : cmd(CMD)} alla pressione di questi pulsanti, abbiamo però deciso di sostituirli con eventi \codescript{alarm : usercmd(CMD)} così che, avendo lo stesso payload degli altri (quelli legati ai movimenti del robot), la loro gestione risulti semplificata.\\
 
@@ -865,9 +888,9 @@ Il diagramma degli stati risultante è quindi rappresentato nella \xf{floorClean
 \end{figure}
 
 \subsection{Obstacle avoidance}
-Gli eventi \codescript{frontSonar} permettono a \texttt{SoftwareAgent} di individuare gli ostacoli sul cammino del robot. Poiché il robot ha solo un sonar frontale, non è in grado di riconoscere immediatamente che tipo di oggetto ha davanti: se si tratta di una parete o di un ostacolo fisso o mobile da aggirare. In presenza di uno di questi eventi, l'agent deve quindi innanzitutto cercare di distinguere tra pareti ed ostacoli e, in questo caso, tentare di evitarli.
+Gli eventi \codescript{frontSonar} permettono a \texttt{SoftwareAgent} di individuare gli ostacoli sul cammino del robot. Poiché il robot ha solo un sonar frontale, non è in grado di riconoscere immediatamente che tipo di oggetto ha davanti: se si tratta di una parete o di un ostacolo fisso o mobile da aggirare. In presenza di uno di questi eventi, l'agent deve quindi innanzitutto cercare di distinguere tra pareti ed ostacoli e, in tal caso, tentare di evitarli.
 
-Poiché abbiamo deciso di affrontare i requisiti legati al movimento autonomo del robot in maniera incrementale, in questa sezione ci concentreremo unicamente sulle politiche che regolano il superamento degli ostacoli. Successivamente queste verranno integrate con la logica di pulizia della stanza in un unico agent.\\
+Poiché abbiamo deciso di affrontare i requisiti legati al movimento autonomo del robot in maniera incrementale, in questa sezione ci concentreremo unicamente sulle politiche che regolano il superamento degli ostacoli. Successivamente queste verranno integrate con la logica di pulizia della stanza.\\
 
 Inizialmente si assume che l'ostacolo sia mobile, si aspetta dunque un piccolo intervallo di tempo per poi riprovare ad avanzare. Se non si ricevono altri eventi dal sonar frontale, si presume di essere riusciti a superare l'ostacolo.\\
 
@@ -1110,7 +1133,7 @@ Per integrare l'\emph{obstacle avoidance} con la pulizia della stanza sono neces
 
 Poiché abbiamo assunto che non vi siano ostacoli lungo le pareti, gli unici stati sensibili agli eventi del sonar frontale sono \codescript{forwardCleaning} e \codescript{backCleaning}, ai quali va quindi aggiunta la transizione che originariamente si trovava nello stato fittizio \codescript{cleaning}.
 
-Inoltre, dopo aver aggirato un ostacolo, l'agent deve tornare nello stato in cui si trovava in precedenza: a tal fine abbiamo introdotto lo stato \codescript{selectDirection}, che tramite opportune regole discrimina lo stato futuro in cui deve portarsi. Tali regole devono essere asserite nei rispettivi stati di provenienza.\\
+Inoltre, dopo aver aggirato un ostacolo, l'agent deve tornare nello stato ``di pulizia'' (forward o backward) in cui si trovava in precedenza: a tal fine abbiamo introdotto lo stato \codescript{selectDirection}, che tramite opportune regole discrimina lo stato futuro in cui deve portarsi. Tali regole devono essere asserite nei rispettivi stati di provenienza.\\
 
 \begin{qacode}[caption={SoftwareAgent, pt11}]
 Plan selectDirection [
@@ -1244,6 +1267,7 @@ Dal momento che tutte le comunicazioni con il bridge e la lampada avvengono in m
 Anche per quanto riguarda la scrittura/lettura dei dati in JSON contenuti nel body dei messaggi ci siamo appoggiati ad una libreria.
 
 \subsection{Frontend Server}
+\labelssec{frontendImpl}
 Fin'ora per permettere l'interazione fra utente e robot abbiamo utilizzato il flag \codescript{-httpserver} offerto dal linguaggio \qa. Tale scelta è stata fatta però in una fase prototipale per questioni di rapidità.\\
 
 Stando ai requisiti \code{R-Start} e \code{R-Stop}, solo gli utenti autorizzati possono accedere alla console, quindi, per una maggiore personalizzazione dell'interfaccia e per gestire l'autenticazione, abbiamo costruito un nuovo \emph{frontend server}.
@@ -1254,8 +1278,8 @@ Per quanto riguarda l'autenticazione degli utenti, la tecnologia impiegata è \e
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.5]{img/screenFrontend/mongo.png}
-\caption{Dati di un utente mantenuti nel database}
+\includegraphics[scale=0.4]{img/screenFrontend/screenCollage.PNG}
+\caption{Registrazione e autenticazione di un utente}
 \end{figure}
 
 Il frontend server utilizza un proprio modello interno del robot, scritto in JSON, che descrive lo stato in cui si trova e che viene aggiornato in base ai comandi inviati dalla console. Questo modello è svincolato da quello gestito dal controller, pertanto sono presenti tutte le problematiche relative alla sincronizzazione e alla consistenza dei due modelli. Di queste ci occuperemo nella \xsss{frontendObserver}.\\
@@ -1314,7 +1338,7 @@ Definiamo pertanto un QActor sensibile a tali eventi, in particolare a quelli ch
 
 Si noti come nello stesso contesto è presente anche un attore in grado di attivare l'applicazione Node del frontend.\\
 
-Lato server, basta aggiungere una regola di routing che si occupi di modificare il modello del robot, il quale viene periodicamente inviato al browser tramite una socket.\\
+Lato server, basta aggiungere una regola di routing che si occupi di modificare il modello del robot ad ogni richiesta PUT all'apposito indirizzo; lo stato viene poi periodicamente inviato al browser dell'utente tramite una socket.\\
 
 \begin{lstlisting}[language=java, caption={nodeCode/frontend/applCodeRobot.js}]
 robotStateMap = {h: "stopped", w: "forward", s: "backward", a: "left", d: "right"};
@@ -1365,11 +1389,72 @@ In realtà, il robot non comunica direttamente con Arduino, in quanto abbiamo sc
 
 Questa soluzione scarica dal robot fisico la responsabilità di conoscere i dettagli della comunicazione con Arduino, a favore di un'interazione tra entità di alto livello (micro-servizi).\\
 
-\lstinputlisting[style=style_qa, firstline=11, firstnumber=11, lastline=64]{../it.unibo.raspRobot/src/realrobot.qa}
+\begin{qacode}[caption={../it.unibo.raspRobot/src/realrobot.qa}]
+System finalTask2018            
+
+Event frontSonar : sonar(DISTANCE)				// out
+Event lightCmd : lightCmd(STATE)				// in
+Event ctrlEvent : ctrlEvent(CATEG,NAME,CMD)		// in
+Event local_robotCmd : moveRobot(CMD)			// internal
+Dispatch moveRobot : moveRobot(CMD)				// internal
+
+Context ctxRealRobotRasp ip [ host="192.168.43.14" port=8888 ]
+EventHandler evhreal for ctrlEvent {
+	emit local_robotCmd fromContent ctrlEvent(robot,r1,CMD) to moveRobot(CMD)
+};
+EventHandler evhrealbroker for local_robotCmd {
+	forwardEvent realrobotrasp -m moveRobot		// stesso payload
+};
+
+Context ctxAppl ip [ host="192.168.43.3" port=8018 ] -standalone 
+
+QActor realrobotrasp context ctxRealRobotRasp {
+	Plan init normal [
+	    println("realrobotrasp start");
+		demo consult("./mapping.pl");
+	    [ !? server(ADDR,PORT) ] javaRun it.unibo.raspRobot.robotClient.init(ADDR,PORT)
+  	]
+    switchTo waitForCmd
+		
+   	Plan waitForCmd [
+   		println("realrobotrasp waiting for commands")
+   	]
+  	transition stopAfter 3600000
+ 		whenMsg moveRobot -> execMove
+   	finally repeatPlan
+
+  	Plan execMove resumeLastPlan [
+     	onMsg moveRobot : moveRobot(CMD) -> addRule receivedCmd(CMD);
+     	[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
+   		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
+   	]
+}
+
+QActor ledagent context ctxRealRobotRasp {
+	Plan init normal [
+   		println("ledagent start");
+		demo consult("./mapping.pl");
+		delay 1000 // waiting for realrobotrasp to start... (robotClient.init())
+   	]
+   	switchTo waitForCommand
+  
+    Plan waitForCommand [ ]
+    transition stopAfter 3600000
+     	whenEvent lightCmd -> switchLed
+    finally repeatPlan
+   	 
+	Plan switchLed resumeLastPlan [
+ 		onEvent lightCmd : lightCmd(CMD) -> addRule receivedCmd(CMD);
+ 		[ !? mapCmd(_,OUT) ] javaRun it.unibo.raspRobot.robotClient.sendCmd(OUT);
+   		[ ?? receivedCmd(X) ] println(removed(receivedCmd(X)))
+	]
+}
+\end{qacode}
+%\lstinputlisting[style=style_qa, firstline=11, firstnumber=11, lastline=64]{../it.unibo.raspRobot/src/realrobot.qa}
 
 L'attore che rappresenta il robot utilizza un'apposita classe Java che si comporta come un client nei confronti del server Python, inviando i comandi di movimento e ricevendo da questi i dati relativi al sonar frontale.
 
-A differenza del modello del robot derivante dall'analisi, in questo caso i comandi ricevuti vengono interpretati con l'aiuto di un file Prolog esterno, il quale contiene delle regole per effettuare il mapping dei comandi nel formato accettato dal server Python che dovrà riceverli.\\
+In questo caso i comandi ricevuti vengono interpretati con l'aiuto di un file Prolog esterno, il quale contiene delle regole per effettuare il mapping dei comandi nel formato accettato dal server Python che dovrà riceverli.\\
 
 L'architettura risultante è rappresentata nel dettaglio nella \xf{raspInteractions}.
 
@@ -1583,18 +1668,18 @@ Anche l'implementazione \textit{Arduino-based} del servizio che fornisce la temp
 %===========================================================================
 
 %===========================================================================
-\section{Maintenance}
-\labelsec{Maintenance}
+%\section{Maintenance}
+%\labelsec{Maintenance}
 %===========================================================================
 
 %===========================================================================
-\section{Deployment}
-\labelsec{Deployment}
+%\section{Deployment}
+%\labelsec{Deployment}
 %===========================================================================
  
 %===========================================================================
-\section{Author}
-\labelsec{Author}
+\section{Authors}
+\labelsec{Authors}
 %===========================================================================
 
 \vskip.5cm
@@ -1602,10 +1687,10 @@ Anche l'implementazione \textit{Arduino-based} del servizio che fornisce la temp
 \begin{tabular}{ | c |  }
 \hline
   % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
-  Photo of the author 
+  Photo of the authors 
   \\
 \hline
-   %\includegraphics[scale = 0.7]{img/foto_autore.jpg}
+   \includegraphics[scale = 0.1]{img/autori.jpg}
    %\includegraphics{img/foto_autore.jpg}
   \\
 \hline

@@ -158,7 +158,7 @@ float readTemperature() {
   //conversione tensione in temperatura
   float temp = (volt - .5) * 100;
 
-  return temp;
+  return temp-5;
 }
 
 void handleTemperature() {
@@ -268,7 +268,7 @@ void handleServo() {
 */
 
 void handleMotor() {
-  if(firstChar=='h') {
+  if(firstChar=='h' && endTurn == 0) { // ignora lo stop durante la svolta
     motorState = 0;
     motorStop();
   }

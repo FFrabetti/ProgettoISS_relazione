@@ -1,11 +1,11 @@
 System finalTask2018
 
-Event clock : clock(H,M)
-Event temperature : temperature(T)
-Event frontSonar : sonar(DISTANCE)
-Event sonarSensor : sonar(NAME,DISTANCE)
-Event lightCmd : lightCmd(CMD)
-Event robotCmd : moveRobot(CMD)
+Event clock : clock(H,M)				// H = ore ([0-23]), M = minuti ([0-59])
+Event temperature : temperature(T)		// T = temperatura in celsius (float)
+Event frontSonar : sonar(DISTANCE)		// DISTANCE = distanza dell'ostacolo (int)
+Event sonarSensor : sonar(NAME,DISTANCE)	// NAME = sonar1 | sonar2
+Event lightCmd : lightCmd(CMD)			// CMD = on | off | blink
+Event robotCmd : moveRobot(CMD)			// CMD = C(X), C = w|a|s|d|h, X = velocita'
 Dispatch cmd : cmd(CMD)
 
 Context ctxReqAnalysis ip [ host="localhost" port=8888 ]

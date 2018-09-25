@@ -29,10 +29,8 @@ public class DdrApplIntegrationTest extends QATesting {
 		ddrlogger = waitForQActorToStart("ddrlogger");
 		
 		reqanal = execMain(MainCtxReqAnalysis.class);
-
 		System.out.println("Waiting for MainCtxDdr and MainCtxReqAnalysis to start...");
 		Thread.sleep(20000);
-		
 		integrator = execMain(MainCtxRaIntegrator.class);
 		Thread.sleep(10000);
 	}

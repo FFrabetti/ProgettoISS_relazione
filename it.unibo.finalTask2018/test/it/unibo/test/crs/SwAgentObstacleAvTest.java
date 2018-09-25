@@ -18,7 +18,6 @@ public class SwAgentObstacleAvTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxSwag4.initTheContext();
-		
 		swag = waitForQActorToStart("swag4");
 		Thread.sleep(2000);
 	}

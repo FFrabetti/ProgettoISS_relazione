@@ -18,7 +18,6 @@ public class SwAgentTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxApplPA.initTheContext();
-		
 		controller = waitForQActorToStart("controllerpa");
 		swagent = waitForQActorToStart("swagpa");
 		logger = waitForQActorToStart("palogger");

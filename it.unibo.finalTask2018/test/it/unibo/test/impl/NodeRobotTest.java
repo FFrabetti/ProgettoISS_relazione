@@ -31,7 +31,6 @@ public class NodeRobotTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxNodeRobotTest.initTheContext();
-
 		logger = waitForQActorToStart("nrtlogger");
 	}
 

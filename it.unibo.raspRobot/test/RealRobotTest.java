@@ -27,9 +27,8 @@ public class RealRobotTest extends QATesting {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		// in alternativa a TCPServer, avviare (python3):
+		// in alternativa avviare (python3):
 		// ..\raspberry\pyServer\server_mock_no_arduino.py
-		
 		TCPServer server = new TCPServer(SRV_PORT, msg -> {
 			receivedMsgs.add(msg);
 			return FRONT;		// front sonar
@@ -41,7 +40,6 @@ public class RealRobotTest extends QATesting {
 		Thread.sleep(5000);
 		
 		MainCtxRealRobotRasp.initTheContext();
-
 		realrobotrasp = waitForQActorToStart("realrobotrasp");
 		ledagent = waitForQActorToStart("ledagent");
 		rrrlogger = waitForQActorToStart("rrrlogger");

@@ -1496,12 +1496,12 @@ Il testing del led prevede di verificare semplicemente il comportamento dei meto
 \subsubsection{HueLampAgent unit test}
 L'\codescript{HueLampAgent} riceve eventi \codescript{lightCmd} e li traduce in comandi per la Hue Lamp remota. Poiché in questo caso l'oggetto del testing è il comportamento dell'agent e non la comunicazione tra questi e la Hue Lamp, possiamo limitarci a controllare che alla ricezione di un evento corrisponda un effettivo cambiamento di stato nell'oggetto Java che simula la lampada.\\
 
-\lstinputlisting[language=Java, firstline=15, lastline=41, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HueLampAgentTest.java}
+\lstinputlisting[language=Java, firstline=15, lastline=40, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HueLampAgentTest.java}
 
 \subsubsection{TemperatureAgent unit test}
 Lo scopo di \codescript{TemperatureAgent} è quello di emettere periodicamente eventi \codescript{temperature}. Dobbiamo quindi verificare che, dopo un tempo ragionevole, questi siano stati effettivamente generati e che i dati sulla temperatura in essi contenuti corrispondano a quanto rilevato dal sensore.\\
 
-\lstinputlisting[language=Java, firstline=15, lastline=28, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/TemperatureAgentTest.java}
+\lstinputlisting[language=Java, firstline=15, lastline=27, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/TemperatureAgentTest.java}
 
 Per registrare gli eventi emessi nel sistema è stato usato un \emph{event logger} event-driven:\\
 
@@ -1516,14 +1516,14 @@ Il comportamento da attuare alla ricezione di un evento è precisato in un file 
 \subsubsection{ClockAgent unit test}
 Un ragionamento analogo al precedente vale anche per il testing di \codescript{ClockAgent}:\\
 
-\lstinputlisting[language=Java, firstline=15, lastline=29, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/ClockAgentTest.java}
+\lstinputlisting[language=Java, firstline=15, lastline=28, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/ra/ClockAgentTest.java}
 
 \subsubsection{HumanOperator and Application logic integration test}
 Poiché lo \codescript{HumanOperator} è un attore che emette comandi per il robot nella forma di messaggi per il componente che incapsula la logica applicativa, il testing del primo è legato a quello della seconda.
 
 Nello specifico, occorre verificare che quest'ultima emetta i rispettivi eventi \codescript{robotCmd} per il robot e \codescript{lightCmd} per il led/la Hue Lamp. A tal scopo ricorriamo ancora una volta all'event logger.\\
 
-\lstinputlisting[language=Java, firstline=14, lastline=44, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HumanOpApplTest.java}
+\lstinputlisting[language=Java, firstline=14, lastline=43, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/ra/HumanOpApplTest.java}
 
 Si noti come i primi due test facciano riferimento ai messaggi inviati a fine di testing direttamente nel modello dell'analisi dei requisiti (\xss{humanOpRA}).
 
@@ -1534,7 +1534,7 @@ Infine, il robot può emettere informazioni relative al sonar frontale e al prop
 
 Il testing si concentrerà quindi su questi tre aspetti, verificando lo stato del robot in seguito all'invio di comandi sotto forma di messaggi ed eventi, e consultando la base di conoscenza dell'event logger per controllare l'effettiva emissione degli eventi \codescript{frontSonar} e \codescript{sonarSensor}.\\
 
-\lstinputlisting[language=Java, firstline=17, lastline=46, firstnumber=17]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrTest.java}
+\lstinputlisting[language=Java, firstline=17, lastline=45, firstnumber=17]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrTest.java}
 
 \subsubsection{Robot \& Application system integration test}
 Dopo aver testato che l'applicazione sia in grado di tradurre messaggi \codescript{cmd} in opportuni eventi \codescript{robotCmd} e \codescript{lightCmd}, e che il robot interpreti correttamente tali comandi, rimane da verificare che i due componenti continuino a funzionare una volta entrati a far parte di uno stesso sistema (\xss{formalRA}).\\
@@ -1545,35 +1545,35 @@ il ``system integrator'' tra gli altri due.
 
 In particolare, l'obiettivo è controllare che all'invio di un \codescript{cmd} diretto al componente che incapsula la logica applicativa, il robot mock agisca di conseguenza grazie alla propagazione degli eventi garantita dall'infrastruttura {\qa}.\\
 
-\lstinputlisting[language=Java, firstline=20, lastline=67, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrApplIntegrationTest.java}
+\lstinputlisting[language=Java, firstline=20, lastline=65, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/ra/DdrApplIntegrationTest.java}
 
 \subsection{Problem analysis testing}
 
 \subsubsection{Controller unit test}
 Gran parte della logica del \texttt{Controller} è espressa sotto forma di regole Prolog inserite all'interno della base di conoscenza del relativo attore. Per testare queste regole dobbiamo quindi, come fatto in precedenza, sfruttare i metodi dell'oggetto Java corrispondente.\\
 
-\lstinputlisting[language=Java, firstline=15, lastline=98, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
+\lstinputlisting[language=Java, firstline=15, lastline=97, firstnumber=15]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
 
 Un'altra serie di test riguardano l'aspetto dell'interazione. Nell'effettivo, il \texttt{Controller} interagisce con l'esterno tramite gli eventi \codescript{ctrlEvent} (alcuni dei quali sono convertiti in \codescript{lightCmd} da un apposito EventHandler), \codescript{inputCtrlEvent} e i messaggi \codescript{cmd}.\\
 
-\lstinputlisting[language=Java, firstline=100, lastline=134, firstnumber=100]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
+\lstinputlisting[language=Java, firstline=99, lastline=133, firstnumber=99]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ControllerTest.java}
 
 \subsubsection{Software Agent unit test}
 Per il testing di \texttt{SoftwareAgent} occorre verificare che, in seguito all'emissione degli eventi generati dai sonar (quello frontale e i due fissi), vengano recapitati al controller opportuni messaggi \codescript{cmd}. L'effetto di questi si ripercuote poi sullo stato del modello del robot e sugli eventi \codescript{ctrlEvent} emessi per pilotarlo.\\
 
-\lstinputlisting[language=Java, firstline=14, lastline=47, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/pa/SwAgentTest.java}
+\lstinputlisting[language=Java, firstline=14, lastline=46, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/pa/SwAgentTest.java}
 
 \subsubsection{HumanOperator unit test}
 Un ragionamento simile può essere fatto per \texttt{HumanOperator}: questa volta è all'emissione di eventi \codescript{usercmd} -- gli stessi originati dalla web GUI -- che deve seguire l'invio dei relativi messaggi \codescript{cmd}.\\
 
-\lstinputlisting[language=Java, firstline=14, lastline=34, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/pa/HumanOpTest.java}
+\lstinputlisting[language=Java, firstline=14, lastline=33, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/pa/HumanOpTest.java}
 
 \subsubsection{Architecture integration test}
 Dopo aver testato separatamente i vari componenti definiti nell'analisi del problema, passiamo a testare il sistema nel suo complesso. In particolare, siamo interessati a verificare che l'introduzione del resource model e del relativo controller abbia rispettato i quattro punti descritti nella \xs{ProblemAnalysis}.
 
 In altre parole, simulando il cambiamento di stato di un sensore ci aspettiamo che questo venga correttamente notificato al controller, così che questi possa aggiornarne il modello. Poi, in accordo con la logica applicativa, deve seguire una modifica del modello degli attuatori, la loro notifica da parte del controller e un effettivo riscontro sugli attuatori ``reali''.\\
 
-\lstinputlisting[language=Java, firstline=20, lastline=55, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ArchIntegrationTest.java}
+\lstinputlisting[language=Java, firstline=20, lastline=54, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/pa/ArchIntegrationTest.java}
 
 In questo caso si è simulata la pressione di un pulsante sulla console, per poi controllare sia lo stato della lampada, sia quello del robot, in entrambi i casi facendo uso di oggetti mock. Da notare come quest'ultimo, poiché si trova in un contesto diverso, offra, a fine di testing, un semplice server TCP per permettere di verificare dall'esterno il proprio stato.
 
@@ -1590,7 +1590,7 @@ Per farlo inviamo una serie di comandi di movimento al robot e, sotto opportune 
 \item La lampada deve lampeggiare quando il robot è in movimento, altrimenti deve essere spenta (\code{R-BlinkHue}).
 \end{itemize}
 
-\lstinputlisting[language=Java, firstline=22, lastline=102, firstnumber=22]{../it.unibo.finalTask2018/test/it/unibo/test/pa/TimeTempFunctionalTest.java}
+\lstinputlisting[language=Java, firstline=22, lastline=101, firstnumber=22]{../it.unibo.finalTask2018/test/it/unibo/test/pa/TimeTempFunctionalTest.java}
 
 \subsection{Project testing}
 La parte di progetto si concentra sulla realizzazione dei requisiti relativi alla pulizia della stanza ad opera di \texttt{SoftwareAgent}, affrontandoli progressivamente in maniera incrementale. Anche i test seguiranno quindi il medesimo approccio per gradi, impiegando versioni dell'agent con i soli stati necessari.
@@ -1598,7 +1598,7 @@ La parte di progetto si concentra sulla realizzazione dei requisiti relativi all
 \subsubsection{Start/Stop/End test}
 Il testing dei requisiti legati all'avvio e alla terminazione della pulizia sono effettuati emettendo gli stessi eventi generati dalla console e dai sonar fissi, verificando che solo in presenza delle giuste condizioni l'agent transiti negli stati corretti. Ciò è possibile grazie al mantenimento dello stato corrente nella base di conoscenza dell'attore.\\
 
-\lstinputlisting[language=Java, firstline=18, lastline=100, firstnumber=18]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentStartStopEndTest.java}
+\lstinputlisting[language=Java, firstline=18, lastline=99, firstnumber=18]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentStartStopEndTest.java}
 
 \begin{lstlisting}[language=Prolog, keywordstyle=\color{black}, caption={swag1 Rules}]
 setCurrentState(S) :-
@@ -1616,7 +1616,7 @@ Per testare gli stati che corrispondono alla pulizia a ``zig-zag'', la versione 
 
 Come stabilito in fase di analisi, poiché abbiamo adottato questa strategia di pulizia, quando il robot viene rilevato vicino a \code{sonar2} possiamo assumere di aver pulito l'intera superficie.\\
 
-\lstinputlisting[language=Java, firstline=14, lastline=50, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentCleaningTest.java}
+\lstinputlisting[language=Java, firstline=14, lastline=49, firstnumber=14]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentCleaningTest.java}
 
 Questa versione dell'agent, a fine di testing, tiene traccia nella propria base di conoscenza di tutti gli stati in cui è transitato, così da poterne verificare la corretta sequenza.\\
 
@@ -1632,7 +1632,7 @@ L'obiettivo di questi test è verificare i requisiti che riguardano il superamen
 \item Se finisce i tentativi di esplorazione a destra, prova a sinistra; se fallisce nuovamente, rinuncia
 \end{itemize}
 
-\lstinputlisting[language=Java, firstline=16, lastline=152, firstnumber=16]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentObstacleAvTest.java}
+\lstinputlisting[language=Java, firstline=16, lastline=151, firstnumber=16]{../it.unibo.finalTask2018/test/it/unibo/test/crs/SwAgentObstacleAvTest.java}
 
 \subsection{Implementation testing}
 Poiché i modelli dei vari componenti sono già stati testati nelle sezioni precedenti, per verificarne l'implementazione relativa ad una certa tecnologia ci basta strutturare dei test che coprano i metodi Java esposti ed impiegati tramite \codescript{javaRun}.
@@ -1651,19 +1651,19 @@ Il componente che rappresenta il robot virtuale necessita di interagire con il s
 
 I test devono pertanto verificare la comunicazione in entrambe le direzioni: per farlo si ricorre ad un oggetto mock che funga da server, così da poterne controllare sia i dati inviati sia quello che viene effettivamente ricevuto.\\
 
-\lstinputlisting[language=Java, firstline=28, lastline=98, firstnumber=28]{../it.unibo.finalTask2018/test/it/unibo/test/impl/NodeRobotTest.java}
+\lstinputlisting[language=Java, firstline=28, lastline=97, firstnumber=28]{../it.unibo.finalTask2018/test/it/unibo/test/impl/NodeRobotTest.java}
 
 \subsubsection{Real Rasp-Robot test}
 Come illustrato nella \xss{realRobotRaspImpl}, il robot reale che si trova sul RaspberryPi si rivolge ad un server scritto in Python che mostra all'esterno una visione di alto livello dei sensori e degli attuatori collegati alla board di Arduino.
 
 Il server, opportunamente simulato a fini di test, deve ricevere sia i comandi di movimento del robot sia quelli che regolano il led presente su di esso, tutti espressi nel giusto formato; inoltre, deve rendere disponibili i dati del sonar frontale al relativo client Java, così che questi possa emetterli sotto forma di eventi \codescript{frontSonar}.\\
 
-\lstinputlisting[language=Java, firstline=18, lastline=97, firstnumber=18]{../it.unibo.raspRobot/test/RealRobotTest.java}
+\lstinputlisting[language=Java, firstline=18, lastline=85, firstnumber=18]{../it.unibo.raspRobot/test/RealRobotTest.java}
 
 \subsubsection{Real temperature sensor test}
 Anche l'implementazione \textit{Arduino-based} del servizio che fornisce la temperatura deve comunicare con un apposito server Python, il quale risponde ad ogni richiesta con il dato aggiornato sulla temperatura corrente. Alla ricezione di questi, \codescript{TemperatureAgent} deve emettere nel sistema eventi \codescript{temperature}.\\
 
-\lstinputlisting[language=Java, firstline=20, lastline=68, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/impl/TemperatureAgentTest.java}
+\lstinputlisting[language=Java, firstline=20, lastline=64, firstnumber=20]{../it.unibo.finalTask2018/test/it/unibo/test/impl/TemperatureAgentTest.java}
 
 %===========================================================================
 

@@ -20,7 +20,6 @@ public class SwAgentStartStopEndTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxSwag1.initTheContext();
-		
 		swag = waitForQActorToStart("swag1");
 	}
 

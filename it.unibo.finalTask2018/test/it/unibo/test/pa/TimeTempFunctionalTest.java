@@ -28,7 +28,6 @@ public class TimeTempFunctionalTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxApplPA.initTheContext();
-		
 		controller = waitForQActorToStart("controllerpa");
 		
 		robot = execMain(MainCtxRealRobotMock.class);

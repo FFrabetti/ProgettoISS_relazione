@@ -18,7 +18,6 @@ public class ControllerTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxApplPA.initTheContext();
-		
 		controller = waitForQActorToStart("controllerpa");
 		logger = waitForQActorToStart("palogger");
 	}

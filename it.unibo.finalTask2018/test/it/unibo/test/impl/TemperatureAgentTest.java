@@ -18,7 +18,7 @@ import it.unibo.sockutils.tcp.TCPServer;
 public class TemperatureAgentTest extends QATesting {
 
 	private static QActor crslogger;
-	private static QActor temperatureagent;
+	private static QActor tempagent;
 
 	private static final int SRV_PORT = 6667;
 	private static List<String> receivedMsgs = new LinkedList<>();
@@ -42,26 +42,22 @@ public class TemperatureAgentTest extends QATesting {
 	public static void setUpBeforeClass() throws Exception {
 		setUpMockServer();
 //		setUpThermoServer();
-
 		MainCtxAppl.initTheContext();
-
 		crslogger = waitForQActorToStart("crslogger");
-		temperatureagent = waitForQActorToStart("temperatureagent");
+		tempagent = waitForQActorToStart("temperatureagent");
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		stopProcess(thermoServer);
-
 		if (serverThread != null && serverThread.isAlive())
 			serverThread.interrupt();
 	}
 
 	@Test
 	public void temperatureEmissionTest() throws Exception {
-		int period = Integer.parseInt(temperatureagent.solveGoal("requestPeriod(P)").getVarValue("P").toString());
+		int period = Integer.parseInt(tempagent.solveGoal("requestPeriod(P)").getVarValue("P").toString());
 		Thread.sleep(period + 1000);
-
 		if (serverThread != null)
 			assertFalse(receivedMsgs.isEmpty());
 		assertTrue(isEventReceived(crslogger, "temperature", "temperature(" + TEMP + ")"));

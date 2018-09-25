@@ -17,7 +17,6 @@ public class HumanOpApplTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxReqAnalysis.initTheContext();
-
 		ralogger = waitForQActorToStart("ralogger");
 		humanoperatorra = waitForQActorToStart("humanoperatorra");
 	}

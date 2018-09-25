@@ -16,7 +16,6 @@ public class HumanOpTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxApplPA.initTheContext();
-		
 		controller = waitForQActorToStart("controllerpa");
 		controller.addRule("canMove");
 	}

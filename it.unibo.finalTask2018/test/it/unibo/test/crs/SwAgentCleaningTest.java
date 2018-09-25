@@ -16,7 +16,6 @@ public class SwAgentCleaningTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxSwag3.initTheContext();
-		
 		swag = waitForQActorToStart("swag3");
 	}
 

@@ -19,7 +19,6 @@ public class DdrTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxDdr.initTheContext();
-
 		ddrlogger = waitForQActorToStart("ddrlogger");
 	}
 

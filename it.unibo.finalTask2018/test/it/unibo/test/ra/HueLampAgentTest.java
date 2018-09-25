@@ -17,7 +17,6 @@ public class HueLampAgentTest extends QATesting {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		MainCtxReqAnalysis.initTheContext();
-
 		huelampagentra = waitForQActorToStart("huelampagentra");
 	}
 
